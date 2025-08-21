@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Accessibility Compliance – Project Dashboard (Mockup)</title>
+  <style>
+    :root{
+      --uga-red:#BA0C2F; --black:#000; --white:#fff; --gray:#554F47; --light:#f7f7f7; --border:#e5e5e5;
+    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f9f9f9;color:#222}
+    .wrap{max-width:1120px;margin:auto;padding:24px}
+    header.site{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--border)}
+    .row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+    .badge{display:inline-block;padding:.35rem .6rem;border-radius:999px;font-size:.75rem;border:1px solid var(--border)}
+    .badge--solid{background:var(--black);color:#fff;border-color:var(--black)}
+    .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:20px}
+    .card>.p{padding:16px}
+    .progress{height:10px;background:#e6e6e6;border-radius:999px;overflow:hidden}
+    .progress>span{display:block;height:100%;background:var(--uga-red)}
+    .priority{display:inline-block;padding:.2rem .5rem;border-radius:6px;font-size:.75rem;color:#fff}
+    .p-high{background:var(--uga-red)}
+    .p-med{background:#E0A800}
+    .p-low{background:#198754}
+      .mini-table{width:100%;border-collapse:collapse;margin-top:10px}
+    .mini-table th,.mini-table td{padding:8px 10px;border-top:1px solid var(--border);text-align:left}
+    .mini-table thead{background:#fafafa}
+    .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#cfcfcf;vertical-align:middle}
+    .dot.ok{background:#198754}
+    .legend{font-size:.8rem;color:#666;margin-top:6px}
+    .counter{display:inline-block;margin-left:8px;padding:.15rem .5rem;border:1px solid var(--border);border-radius:999px;font-size:.8rem;color:#444}
+  </style>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap row">
+      <div class="row" style="flex:1;align-items:center">
+        <div aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:conic-gradient(var(--uga-red),var(--black))"></div>
+        <div>
+          <h1 style="margin:0;font-size:1.25rem;font-weight:800;color:var(--uga-red)">Accessibility Compliance</h1>
+          <div style="color:#666;font-size:.9rem">Office of the Registrar · WCAG 2.1/2.2 Dashboard</div>
+        </div>
+      </div>
+      <div class="row">
+        <span class="badge badge--solid">Phase: Inventory</span>
+        <span class="badge">Updated Aug 20, 2025</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- KPI Tiles -->
+    <section style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+      <div class="card"><div class="p"><h2>Overall</h2><p style="color:#666">309 of 750 items complete</p><div class="progress"><span style="width:41%"></span></div></div></div>
+      <div class="card"><div class="p"><h2>Time to checkpoint</h2><div style="font-weight:800;font-size:1.6rem">238 days</div><div style="color:#666">Until April 15, 2026</div></div></div>
+      <div class="card"><div class="p"><h2>Open tasks</h2><div style="font-weight:800;font-size:1.6rem">4</div><div style="color:#666">Across all categories</div></div></div>
+      <div class="card"><div class="p"><h2>By priority</h2><div class="row"><span class="badge">High: 2</span><span class="badge">Medium: 2</span><span class="badge">Low: 1</span></div></div></div>
+    </section>
+
+    <!-- Category Details -->
+    <section style="margin-top:24px">
+      <h2>Categories</h2>
+
+      <article class="card">
+        <div class="p">
+          <h3>HTML Pages</h3>
+          <p style="color:#666">Owner: Web Team · Priority: <span class="priority p-med">Medium</span></p>
+          <div class="progress" aria-label="HTML pages"><span style="width:35%"></span></div>
+          <p style="margin-top:8px;font-size:.9rem;color:#444">Focus on updating older templates and ensuring headings and ARIA roles are correct across high-traffic pages.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="p">
+          <h3>PDFs &amp; Docs</h3>
+          <p style="color:#666">Owner: Records · Priority: <span class="priority p-high">High</span></p>
+          <div class="progress" aria-label="PDFs"><span style="width:25%"></span></div>
+          <p style="margin-top:8px;font-size:.9rem;color:#444">Large backlog of instructions/forms in PDF format need tagging or conversion to HTML. High visibility for compliance risk.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="p">
+          <h3>Forms &amp; Workflows</h3>
+          <p style="color:#666">Owner: Student Services · Priority: <span class="priority p-high">High</span></p>
+          <div class="progress" aria-label="Forms"><span style="width:25%"></span></div>
+          <p style="margin-top:8px;font-size:.9rem;color:#444">Interactive forms like late add approvals and graduation apps need alt paths for accessibility. High student impact.</p>
+
+          <h4 style="margin:14px 0 6px;font-size:.95rem">Forms progress <span class="counter">1/12 complete</span></h4>
+          <table class="mini-table" aria-label="Forms progress table">
+            <thead>
+              <tr>
+                <th scope="col">Form</th>
+                <th scope="col">Converted</th>
+                <th scope="col">Routing</th>
+                <th scope="col">Tested</th>
+                <th scope="col">Finalized</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Address Change</td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+              <tr><td>Course Challenges</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+              <tr><td>Dean's Certification</td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot ok" aria-label="Routing complete"></span></td><td><span class="dot ok" aria-label="Testing complete"></span></td><td><span class="dot ok" aria-label="Finalized complete"></span></td></tr>
+              <tr><td>FERPA Restriction Flag Removal/Addition</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+              <tr><td>Gender Change</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+              <tr><td>Late Adds</td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+              <tr><td>Name Change</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+              <tr><td>Pass/Fail Option</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+              <tr><td>Permission to Audit</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+              <tr><td>Release Educational Information</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+              <tr><td>Petition to Reinstate Schedule</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+              <tr><td>Section Change</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+            </tbody>
+          </table>
+          <div class="legend"><span class="dot ok" aria-hidden="true"></span> Complete · <span class="dot" aria-hidden="true"></span> Incomplete</div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="p">
+          <h3>Images / Video / Captions</h3>
+          <p style="color:#666">Owner: Comms · Priority: <span class="priority p-low">Low</span></p>
+          <div class="progress" aria-label="Media"><span style="width:76%"></span></div>
+          <p style="margin-top:8px;font-size:.9rem;color:#444">Caption backlog ongoing but overall media compliance is progressing well. Mostly routine captioning of new uploads.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="p">
+          <h3>Training &amp; SOPs</h3>
+          <p style="color:#666">Owner: All Staff · Priority: <span class="priority p-med">Medium</span></p>
+          <div class="progress" aria-label="Training"><span style="width:33%"></span></div>
+          <p style="margin-top:8px;font-size:.9rem;color:#444">Workshops scheduled for document tagging and accessible design practices. Needs broader participation.</p>
+        </div>
+      </article>
+    </section>
+
+  </main>
+</body>
+</html>
