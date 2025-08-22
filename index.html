@@ -1,265 +1,466 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Accessibility Compliance – Project Dashboard (Mockup)</title>
-  <style>
-    :root{
-      --uga-red:#BA0C2F; --black:#000; --white:#fff; --gray:#554F47; --light:#f7f7f7; --border:#e5e5e5;
-    }
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f9f9f9;color:#222}
-    .wrap{max-width:1120px;margin:auto;padding:24px}
-    header.site{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--border)}
-    .row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
-    .badge{display:inline-block;padding:.35rem .6rem;border-radius:999px;font-size:.75rem;border:1px solid var(--border)}
-    .badge--solid{background:var(--black);color:#fff;border-color:var(--black)}
-    .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:20px}
-    .card>.p{padding:16px}
-    .progress{height:10px;background:#e6e6e6;border-radius:999px;overflow:hidden}
-    .progress>span{display:block;height:100%;background:var(--uga-red)}
-    .priority{display:inline-block;padding:.2rem .5rem;border-radius:6px;font-size:.75rem;color:#fff}
-    .p-high{background:var(--uga-red)}
-    .p-med{background:#E0A800}
-    .p-low{background:#198754}
-      .mini-table{width:100%;border-collapse:collapse;margin-top:10px}
-    .mini-table th,.mini-table td{padding:8px 10px;border-top:1px solid var(--border);text-align:left}
-    .mini-table thead{background:#fafafa}
-    .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#cfcfcf;vertical-align:middle}
-    .dot.ok{background:#198754}
-    .legend{font-size:.8rem;color:#666;margin-top:6px}
-    .counter{display:inline-block;margin-left:8px;padding:.15rem .5rem;border:1px solid var(--border);border-radius:999px;font-size:.8rem;color:#444}
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ro-wai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Manrope:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --uga-red: #BA0C2F; --uga-black: #000000; --uga-gray: #554F47;
+            --uga-light-gray: #F7F7F7; --uga-border-gray: #E5E5E5;
+            --p-high:#BA0C2F; --p-med:#DD6B20; --p-low:#2F855A;
+            --g0:#121419; --g1:#1A1F26; --g2:#232933; --g3:#2C333E; --g4:#38414D; --g5:#454F5E; --w0:#F7F8FA; --redAlpha:.35;
+        }
+        body { font-family:'Inter',sans-serif; background-color:var(--uga-light-gray); color:var(--uga-gray); }
+        .glass-effect { background:#fff; box-shadow:0 5px 12px rgba(0,0,0,.25); }
+        /* Striped progress */
+        .progress{--pct:0;position:relative;height:12px;border-radius:999px;background:#E5E7EB;overflow:hidden}
+        .progress>span{content:"";position:absolute;inset:0;width:calc(var(--pct)*1%);
+            background:repeating-linear-gradient(45deg,var(--uga-red) 0 10px,#E02E4C 10px 20px);
+        }
+        .priority{display:inline-block;text-align:center;padding:.1rem .4rem;border-radius:6px;font-size:.85rem;font-weight:600}
+        .p-high{background:#FECACA;color:#7F1D1D}.p-med{background:#FEF08A;color:#713F12}.p-low{background:#BBF7D0;color:#065F46}
+        .mini-table{width:100%;border-collapse:collapse;margin-top:10px}
+        .mini-table th,.mini-table td{padding:8px 10px;border-top:1px solid var(--uga-border-gray);text-align:left}
+        .mini-table thead{background:rgba(0,0,0,.03)}
+        .dot{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:05%;background:#CBD5E0;color:#fff;font-size:14px;font-weight:700}
+        .dot::before{content:"–"}.dot.ok{background:#38A169}.dot.ok::before{content:"✓"}
+        .legend{font-size:.8rem;color:var(--uga-gray);margin-top:6px}
+        .counter{display:inline-block;margin-left:8px;padding:.15rem .5rem;border:1px solid var(--uga-border-gray);border-radius:6px;font-size:.8rem;color:var(--uga-gray)}
+        .badge{display:inline-block;padding:.35rem .6rem;border-radius:999px;font-size:.75rem;border:1px solid var(--uga-border-gray);background:#fff}
+        .badge--solid{background:var(--uga-black);color:#fff;border-color:var(--uga-black);font-weight:600}
+        .wrap{max-width:1620px;margin:auto;padding:24px}
+
+        /* Fixed background layer (no more “moving” while expanding) */
+        body.dark-uga{background:var(--uga-light-gray);position:relative}
+        body.dark-uga::before{
+            content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+            background:
+                    radial-gradient(600px 600px at 15% 20%, rgba(186,12,47,.28) 0%, transparent 60%),
+                    radial-gradient(500px 500px at 85% 25%, rgba(186,12,47,.22) 0%, transparent 60%),
+                    radial-gradient(700px 700px at 30% 80%, rgba(186,12,47,.2) 0%, transparent 70%),
+                    radial-gradient(800px 800px at 70% 90%, rgba(245,240,230,.3) 0%, transparent 70%),
+                    radial-gradient(500px 500px at 10% 90%, rgba(200,200,200,.25) 0%, transparent 70%),
+                    linear-gradient(#e5e7eb33 2px, transparent 2px),
+                    linear-gradient(90deg, #e5e7eb33 2px, transparent 2px),
+                    linear-gradient(180deg, #ffffff, #f9fafb);
+            background-size:auto,auto,auto,auto,auto,36px 36px,36px 36px,auto;
+            background-position:center center;
+            will-change:transform;
+        }
+
+        /* Accordion */
+        .acc{border-radius:.75rem}
+        .acc-header{display:flex;align-items:flex-start;justify-content:space-between;width:100%;gap:.75rem;text-align:left}
+        .acc-panel{overflow:hidden;max-height:0;opacity:0;transition:max-height .28s ease, opacity .2s ease}
+        .acc[aria-expanded="true"] .acc-panel{opacity:1}
+        @media (prefers-reduced-motion:reduce){.acc-panel{transition:none}}
+        .chev{transition:transform .2s ease}.acc[aria-expanded="true"] .chev{transform:rotate(180deg)}
+        /* Let columns be different heights */
+        #categoriesGrid{align-items:start}
+    </style>
 </head>
-<body>
-  <header class="site">
-    <div class="wrap row">
-      <div class="row" style="flex:1;align-items:center">
-        <div aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:conic-gradient(var(--uga-red),var(--black))"></div>
-        <div>
-          <h1 style="margin:0;font-size:1.25rem;font-weight:800;color:var(--uga-red)">WAIS</h1>
-          <div style="color:#666;font-size:.9rem">Web Accessibility Implementation Strategy</div>
-        </div>
-      </div>
-      <div class="row">
-        <span class="badge badge--solid">Phase: Inventory</span>
-        <span class="badge">Updated Aug 20, 2025</span>
-      </div>
+
+<body class="dark-uga">
+<div class="min-h-screen w-full relative overflow-hidden">
+    <div class="wrap">
+        <main class="relative z-10 p-4 sm:p-6 lg:p-8">
+            <!-- Header -->
+            <header class="glass-effect rounded-md p-4 mb-6">
+                <div class="flex flex-wrap gap-4 justify-between items-center">
+                    <div class="flex gap-4 items-center">
+                        <div aria-hidden="true" class="w-10 h-10 rounded-lg bg-[var(--uga-black)] flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-[var(--uga-red)]">ro-wai</h1>
+                            <div class="text-[var(--uga-gray)] text-sm">Web Accessibility Implementation</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 items-center">
+                        <span class="badge badge--solid">Phase: Planning</span>
+                        <span class="badge">Updated Aug 22, 2025</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- KPI Cards -->
+            <section id="kpi" class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+                <div class="glass-effect p-6 rounded-xl">
+                    <h2 class="text-xl font-medium text-[var(--uga-gray)]">Overall Progress</h2>
+                    <p id="overall-text" class="text-2xl font-bold mt-1 text-black">—</p>
+                    <div class="progress mt-2" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                        <span id="overall-bar" style="width:0%"></span>
+                    </div>
+                </div>
+                <div class="glass-effect p-6 rounded-xl">
+                    <h2 class="text-xl font-medium text-[var(--uga-gray)]">Time to checkpoint</h2>
+                    <div id="days-to" class="text-4xl font-bold mt-1 text-black">—</div>
+                    <div class="text-[var(--uga-gray)] text-xl">Until April 15, 2026</div>
+                </div>
+                <div class="glass-effect p-6 rounded-xl">
+                    <h2 class="text-sm font-medium text-[var(--uga-gray)] mb-2">Progress By Content Type</h2>
+                    <ul id="by-type" class="list-none p-0 m-0 grid gap-2"></ul>
+                </div>
+                <div class="glass-effect p-6 rounded-xl">
+                    <div>
+                        <div class="text-sm font-medium text-[var(--uga-gray)] uppercase tracking-wider">In Dev</div>
+                        <div id="in-dev-title" class="font-semibold text-black mt-1">—</div>
+                        <div id="in-dev-meta" class="text-xs text-[var(--uga-gray)]">—</div>
+                    </div>
+                    <div class="mt-3 border-t border-[var(--uga-border-gray)] pt-3">
+                        <div class="text-sm font-medium text-[var(--uga-gray)] uppercase tracking-wider">In Testing</div>
+                        <div id="in-test-title" class="font-semibold text-black mt-1">—</div>
+                        <div id="in-test-meta" class="text-xs text-[var(--uga-gray)]">—</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Category Details (4 categories only) -->
+            <section>
+                <h2 class="text-2xl font-bold mb-4 text-black">Categories</h2>
+                <div id="categoriesGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    <!-- WebApps -->
+                    <article class="glass-effect p-0 acc" id="cat-webapps" data-done="1" data-total="5" aria-expanded="false">
+                        <button class="acc-header w-full p-6" aria-controls="panel-webapps" aria-expanded="false">
+                            <div class="w-full">
+                                <div class="flex items-center gap-3 justify-between">
+                                    <h3 class="text-lg font-semibold text-black m-0">WebApps</h3>
+                                    <div class="flex items-center gap-3">
+                                        <span id="webapps-counter" class="counter">1/5 complete</span>
+                                        <span class="text-sm text-[var(--uga-gray)]">Priority: <span class="priority p-high">High</span></span>
+                                    </div>
+                                </div>
+                                <div class="progress mt-2" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1">
+                                    <span style="width:0%"></span>
+                                </div>
+                            </div>
+                            <svg class="chev w-5 h-5 text-[var(--uga-gray)] ml-4 shrink-0" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+
+                        <div id="panel-webapps" class="acc-panel px-6 pb-6" role="region" aria-labelledby="cat-webapps">
+                            <p class="text-sm mt-0">Modernize core apps to be accessible with semantic labels, focus management, keyboard flows, input labels, etc.</p>
+                            <div class="overflow-x-auto">
+                                <table class="mini-table" aria-label="WebApps progress table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">App</th>
+                                        <th scope="col">Planning</th>
+                                        <th scope="col">Coding</th>
+                                        <th scope="col">Testing</th>
+                                        <th scope="col">Approved</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="webapps-tbody"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="legend">
+                                <span class="dot ok" aria-hidden="true"></span> Complete ·
+                                <span class="dot" aria-hidden="true"></span> Incomplete
+                            </div>
+
+                        </div>
+                    </article>
+
+                    <!-- Forms -->
+                    <article class="glass-effect p-0 acc" id="cat-forms" data-done="1" data-total="12" aria-expanded="false">
+                        <button class="acc-header w-full p-6" aria-controls="panel-forms" aria-expanded="false">
+                            <div class="w-full">
+                                <div class="flex items-center gap-3 justify-between">
+                                    <h3 class="text-lg font-semibold text-black m-0">Forms</h3>
+                                    <div class="flex items-center gap-3">
+                                        <span id="forms-counter" class="counter">1/12 complete</span>
+                                        <span class="text-sm text-[var(--uga-gray)]">Priority: <span class="priority p-high">High</span></span>
+                                    </div>
+                                </div>
+                                <div class="progress mt-2" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                                    <span style="width:0%"></span>
+                                </div>
+                            </div>
+                            <svg class="chev w-5 h-5 text-[var(--uga-gray)] ml-4 shrink-0" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+
+                        <div id="panel-forms" class="acc-panel px-6 pb-6" role="region" aria-labelledby="cat-forms">
+                            <p class="text-sm mt-0">All forms need accessible tagging, labels, instructions, error handling, and alt paths.</p>
+
+                            <h4 class="mt-4 mb-2 font-semibold text-black">Forms Progress
+                                <span class="counter">1/12 complete</span></h4>
+
+                            <div class="overflow-x-auto">
+                                <table class="mini-table" aria-label="Forms progress table">
+                                    <thead>
+                                    <tr><th scope="col">Form</th><th scope="col">Converted</th><th scope="col">Routed</th><th scope="col">Tested</th><th scope="col">Approved</th></tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td><a href="item.html?slug=address-change" style="text-decoration:none;color:#BA0C2F">Address Change</a></td>
+                                        <td><span class="dot ok" aria-label="Converted complete"></span></td>
+                                        <td><span class="dot" aria-label="Routing incomplete"></span></td>
+                                        <td><span class="dot" aria-label="Testing incomplete"></span></td>
+                                        <td><span class="dot" aria-label="Finalized incomplete"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Course Challenges</td>
+                                        <td><span class="dot" aria-label="Converted incomplete"></span></td>
+                                        <td><span class="dot" aria-label="Routing incomplete"></span></td>
+                                        <td><span class="dot" aria-label="Testing incomplete"></span></td>
+                                        <td><span class="dot" aria-label="Finalized incomplete"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Dean's Certification</td>
+                                        <td><span class="dot ok" aria-label="Converted complete"></span></td>
+                                        <td><span class="dot ok" aria-label="Routing complete"></span></td>
+                                        <td><span class="dot ok" aria-label="Testing complete"></span></td>
+                                        <td><span class="dot ok" aria-label="Finalized complete"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Late Adds</td>
+                                        <td><span class="dot ok" aria-label="Converted complete"></span></td>
+                                        <td><span class="dot" aria-label="Routing incomplete"></span></td>
+                                        <td><span class="dot" aria-label="Testing incomplete"></span></td>
+                                        <td><span class="dot" aria-label="Finalized incomplete"></span></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="legend"><span class="dot ok" aria-hidden="true"></span> Complete · <span class="dot" aria-hidden="true"></span> Incomplete</div>
+                        </div>
+                    </article>
+
+                    <!-- PDFs & Docs -->
+                    <article class="glass-effect p-0 acc" id="cat-pdfs" data-done="1" data-total="300" aria-expanded="false">
+                        <button class="acc-header w-full p-6" aria-controls="panel-pdfs" aria-expanded="false">
+                            <div class="w-full">
+                                <div class="flex items-center gap-3 justify-between">
+                                    <h3 class="text-lg font-semibold text-black m-0">PDFs &amp; Docs</h3>
+                                    <div class="flex items-center gap-3">
+                                        <span id="pdfs-counter" class="counter">1/300 complete</span>
+                                        <span class="text-sm text-[var(--uga-gray)]">Priority: <span class="priority p-med">Medium</span></span>
+                                    </div>
+                                </div>
+                                <div class="progress mt-2" role="progressbar" aria-valuemin="1" aria-valuemax="300" aria-valuenow="1">
+                                    <span style="width:0%"></span>
+                                </div>
+                            </div>
+                            <svg class="chev w-5 h-5 text-[var(--uga-gray)] ml-4 shrink-0" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+
+                        <div id="panel-pdfs" class="acc-panel px-6 pb-6" role="region" aria-labelledby="cat-pdfs">
+                            <p class="text-sm mt-0">All PDFs must be either marked as archival, converted to static HTML pages, or remedied to be accessible.</p>
+                        </div>
+                    </article>
+
+                    <!-- Images & Videos -->
+                    <article class="glass-effect p-0 acc" id="cat-media" data-done="15" data-total="25" aria-expanded="false">
+                        <button class="acc-header w-full p-6" aria-controls="panel-media" aria-expanded="false">
+                            <div class="w-full">
+                                <div class="flex items-center gap-3 justify-between">
+                                    <h3 class="text-lg font-semibold text-black m-0">Images &amp; Videos</h3>
+                                    <div class="flex items-center gap-3">
+                                        <span id="media-counter" class="counter">15/25 complete</span>
+                                        <span class="text-sm text-[var(--uga-gray)]">Priority: <span class="priority p-low">Low</span></span>
+                                    </div>
+                                </div>
+                                <div class="progress mt-2" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                                    <span style="width:0%"></span>
+                                </div>
+                            </div>
+                            <svg class="chev w-5 h-5 text-[var(--uga-gray)] ml-4 shrink-0" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+
+                        <div id="panel-media" class="acc-panel px-6 pb-6" role="region" aria-labelledby="cat-media">
+                            <p class="text-sm mt-0">All non-decorative images must have alternative text. All videos must have CC and transcripts.</p>
+                        </div>
+                    </article>
+
+                </div>
+            </section>
+        </main>
     </div>
-  </header>
+</div>
 
-  <main class="wrap">
-    <!-- KPI Tiles -->
-<!--    <section style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">-->
-<!--      <div class="card"><div class="p"><h2>Overall</h2><p style="color:#666">309 of 750 items complete</p><div class="progress"><span style="width:41%"></span></div></div></div>-->
-<!--      <div class="card"><div class="p"><h2>Time to checkpoint</h2><div style="font-weight:800;font-size:1.6rem">238 days</div><div style="color:#666">Until April 15, 2026</div></div></div>-->
-<!--      <div class="card"><div class="p"><h2>Open tasks</h2><div style="font-weight:800;font-size:1.6rem">4</div><div style="color:#666">Across all categories</div></div></div>-->
-<!--      <div class="card"><div class="p"><h2>By priority</h2><div class="row"><span class="badge">High: 2</span><span class="badge">Medium: 2</span><span class="badge">Low: 1</span></div></div></div>-->
-<!--    </section>-->
-    <!-- KPI Bar (new) -->
-    <section id="kpi" class="wrap" style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:16px">
-      <!-- Overall -->
-      <div class="card"><div class="p">
-        <h2>Overall</h2>
-        <p id="overall-text" style="color:#666">—</p>
-        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-          <span id="overall-bar" style="width:0%"></span>
-        </div>
-      </div></div>
-
-      <!-- Time to checkpoint -->
-      <div class="card"><div class="p">
-        <h2>Time to checkpoint</h2>
-        <div id="days-to" style="font-weight:800;font-size:1.6rem">—</div>
-        <div style="color:#666">Until April 15, 2026</div>
-      </div></div>
-
-      <!-- By content type -->
-      <div class="card"><div class="p">
-        <h2>By content type</h2>
-        <ul id="by-type" style="list-style:none;padding:0;margin:.5rem 0 0;display:grid;gap:8px"></ul>
-      </div></div>
-
-      <!-- Pipeline (split) -->
-      <div class="card"><div class="p">
-
-        <div>
-          <div style="padding-top:10px">
-            <div style="font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:#666">In dev</div>
-            <div id="in-dev-title" style="font-weight:600">—</div>
-            <div id="in-dev-meta" style="font-size:.8rem;color:#666">—</div>
-          </div>
-          <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
-            <div style="font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:#666">In testing</div>
-            <div id="in-test-title" style="font-weight:600">—</div>
-            <div id="in-test-meta" style="font-size:.8rem;color:#666">—</div>
-          </div>
-        </div>
-      </div></div>
-    </section>
-
-
-    <!-- Category Details -->
-    <section style="margin-top:24px">
-      <h2>Categories</h2>
-
-      <article class="card" id="cat-html" data-done="42" data-total="120">
-        <div class="p">
-          <h3>HTML Pages</h3>
-          <p style="color:#666">Owner: Web Team · Priority: <span class="priority p-med">Medium</span></p>
-          <div class="progress" aria-label="HTML pages"><span style="width:35%"></span></div>
-          <p style="margin-top:8px;font-size:.9rem;color:#444">Focus on updating older templates and ensuring headings and ARIA roles are correct across high-traffic pages.</p>
-        </div>
-      </article>
-
-      <article class="card" id="cat-pdfs" data-done="1" data-total="100">
-        <div class="p">
-          <h3>PDFs &amp; Docs</h3>
-          <p style="color:#666">Owner: Records · Priority: <span class="priority p-high">High</span></p>
-          <div class="progress" aria-label="PDFs"><span style="width:25%"></span></div>
-          <p style="margin-top:8px;font-size:.9rem;color:#444">Large backlog of instructions/forms in PDF format need tagging or conversion to HTML. High visibility for compliance risk.</p>
-        </div>
-      </article>
-
-      <article class="card" id="cat-forms" data-done="1"  data-total="12">
-        <div class="p">
-          <h3>Forms &amp; Workflows</h3>
-          <p style="color:#666">Owner: Student Services · Priority: <span class="priority p-high">High</span></p>
-          <div class="progress" aria-label="Forms"><span style="width:25%"></span></div>
-          <p style="margin-top:8px;font-size:.9rem;color:#444">Interactive forms like late add approvals and graduation apps need alt paths for accessibility. High student impact.</p>
-
-          <h4 style="margin:14px 0 6px;font-size:.95rem">Forms progress <span class="counter">1/12 complete</span></h4>
-          <table class="mini-table" aria-label="Forms progress table">
-            <thead>
-              <tr>
-                <th scope="col">Form</th>
-                <th scope="col">Converted</th>
-                <th scope="col">Routing</th>
-                <th scope="col">Tested</th>
-                <th scope="col">Finalized</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>
-                <a href="item.html?slug=address-change" style="text-decoration:none;color:#BA0C2F">
-                  Address Change
-                </a>
-              </td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
-              <tr><td>Course Challenges</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
-              <tr><td>Dean's Certification</td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot ok" aria-label="Routing complete"></span></td><td><span class="dot ok" aria-label="Testing complete"></span></td><td><span class="dot ok" aria-label="Finalized complete"></span></td></tr>
-              <tr><td>FERPA Restriction Flag Removal/Addition</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
-              <tr><td>Gender Change</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
-              <tr><td>Late Adds</td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
-              <tr><td>Name Change</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
-              <tr><td>Pass/Fail Option</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
-              <tr><td>Permission to Audit</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
-              <tr><td>Release Educational Information</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
-              <tr><td>Petition to Reinstate Schedule</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
-              <tr><td>Section Change</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
-            </tbody>
-          </table>
-          <div class="legend"><span class="dot ok" aria-hidden="true"></span> Complete · <span class="dot" aria-hidden="true"></span> Incomplete</div>
-        </div>
-      </article>
-
-      <article class="card" id="cat-media" data-done="1" data-total="25">
-        <div class="p">
-          <h3>Images / Video / Captions</h3>
-          <p style="color:#666">Owner: Comms · Priority: <span class="priority p-low">Low</span></p>
-          <div class="progress" aria-label="Media"><span style="width:76%"></span></div>
-          <p style="margin-top:8px;font-size:.9rem;color:#444">Caption backlog ongoing but overall media compliance is progressing well. Mostly routine captioning of new uploads.</p>
-        </div>
-      </article>
-
-      <article class="card" id="cat-training" data-done="4" data-total="12">
-        <div class="p">
-          <h3>Training &amp; SOPs</h3>
-          <p style="color:#666">Owner: All Staff · Priority: <span class="priority p-med">Medium</span></p>
-          <div class="progress" aria-label="Training"><span style="width:33%"></span></div>
-          <p style="margin-top:8px;font-size:.9rem;color:#444">Workshops scheduled for document tagging and accessible design practices. Needs broader participation.</p>
-        </div>
-      </article>
-    </section>
-
-  </main>
-</body>
+<!-- Data + KPI + progress wiring -->
 <script>
-  (() => {
-    // ---- CONFIG you can tweak quickly ----
-    const checkpoint = '2026-04-15'; // YYYY-MM-DD
-    // If you have a tasks CSV later, you can replace these two with live picks
-    const pipeline = {
-      inDev:   { title: 'Replace PDF instructions with HTML guide', owner: 'Web Team', due: '2025-09-30' },
-      inTest:  { title: 'Campus screen reader QA (Policies)',      owner: 'Accessibility', due: '2025-10-08' }
-    };
+    (function(){
+        const checkpoint = '2026-04-15';
+        const pipeline = {
+            inDev:  { title: 'CASIS', due: '2025-09-30' },
+            inTest: { title: 'Form: Address Change', due: '2025-09-19' }
+        };
+        const $ = s => document.querySelector(s);
+        const daysUntil = d => Math.ceil((new Date(d + 'T00:00:00') - new Date()) / 86400000);
+        const pct = (done,total) => total ? Math.round((done/total)*100) : 0;
 
-    // ---- Helpers ----
-    const $ = s => document.querySelector(s);
-    const daysUntil = d => Math.ceil((new Date(d+'T00:00:00') - new Date()) / 86400000);
-    const pct = (done,total) => total ? Math.round((done/total)*100) : 0;
+        /* === Four categories only === */
+        const catIds = [
+            { id:'cat-webapps', label:'WebApps' },
+            { id:'cat-forms',   label:'Forms' },
+            { id:'cat-pdfs',    label:'PDFs & Docs' },
+            { id:'cat-media',   label:'Images & Videos' }
+        ];
 
-    // ---- Read categories from existing cards (by id + data-*) ----
-    const catIds = [
-      {id:'cat-html',    label:'HTML Pages'},
-      {id:'cat-pdfs',    label:'PDFs & Docs'},
-      {id:'cat-forms',   label:'Forms & Workflows'},
-      {id:'cat-media',   label:'Images/Video/Captions'},
-      {id:'cat-training',label:'Training & SOPs'}
-    ];
-    const cats = catIds
-            .map(c => {
-              const el = document.getElementById(c.id);
-              if (!el) return null;
-              const done = Number(el.getAttribute('data-done') || 0);
-              const total = Number(el.getAttribute('data-total') || 0);
-              return { name: c.label, done, total, pct: pct(done,total) };
-            })
-            .filter(Boolean);
+        const cats = catIds.map(c=>{
+            const el = document.getElementById(c.id);
+            if(!el) return null;
+            const done = Number(el.getAttribute('data-done')||0);
+            const total = Number(el.getAttribute('data-total')||0);
+            const calculatedPct = pct(done,total);
+            // Header progress bar (striped)
+            const headerBar = el.querySelector('.acc-header .progress > span');
+            if(headerBar){ headerBar.style.width = calculatedPct + '%'; }
+            const headerProg = el.querySelector('.acc-header .progress');
+            if(headerProg){ headerProg.setAttribute('aria-valuenow', calculatedPct); }
+            return { name:c.label, done, total, pct:calculatedPct };
+        }).filter(Boolean);
 
-    // ---- Overall ----
-    const totals = cats.reduce((a,c)=>({done:a.done+c.done,total:a.total+c.total}),{done:0,total:0});
-    const overallPct = pct(totals.done, totals.total);
-    const txt = $('#overall-text'); const bar = $('#overall-bar'); const prog = $('#kpi .progress');
-    if (txt) txt.textContent = `${totals.done} of ${totals.total} items complete`;
-    if (bar) bar.style.width = overallPct + '%';
-    if (prog) prog.setAttribute('aria-valuenow', overallPct);
+        // Totals
+        const totals = cats.reduce((a,c)=>({done:a.done+c.done,total:a.total+c.total}),{done:0,total:0});
+        const overallPct = pct(totals.done, totals.total);
 
-    // ---- Time to checkpoint ----
-    const d = $('#days-to'); if (d) d.textContent = `${daysUntil(checkpoint)} days`;
+        const txt = $('#overall-text'), bar = $('#overall-bar'), prog = $('#kpi .progress');
+        if(txt) txt.textContent = `${totals.done} of ${totals.total}`;
+        if(bar) bar.style.width = overallPct + '%';
+        if(prog) prog.setAttribute('aria-valuenow', overallPct);
 
-    // ---- By content type list ----
-    const list = $('#by-type');
-    if (list) {
-      list.innerHTML = '';
-      cats.forEach(c => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <span style="font-size:.9rem;color:#333">${c.name}</span>
-        <span style="font-size:.8rem" class="tabular-nums">${c.pct}%</span>
-      </div>
-      <div class="progress" style="height:8px">
-        <span style="display:block;height:100%;width:${c.pct}%;background:var(--uga-red)"></span>
-      </div>`;
-        list.appendChild(li);
-      });
-    }
+        const d = $('#days-to'); if(d) d.textContent = `${daysUntil(checkpoint)} days`;
 
+        // Progress by content type (keep striped style—no solid override)
+        const list = $('#by-type');
+        if(list){
+            list.innerHTML = '';
+            cats.forEach(c=>{
+                const li = document.createElement('li');
+                li.innerHTML = `
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-sm">${c.name}</span>
+            <span class="text-xs font-mono text-[var(--uga-gray)]">${c.pct}%</span>
+          </div>
+          <div class="progress" style="height:6px"><span style="width:${c.pct}%"></span></div>`;
+                list.appendChild(li);
+            });
+        }
 
-    // ---- Pipeline split card ----
-    function fmt(dateStr){
-      const d = new Date(dateStr+'T00:00:00');
-      return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
-    }
-    if (pipeline.inDev) {
-      $('#in-dev-title').textContent = pipeline.inDev.title;
-      $('#in-dev-meta').textContent  = `Owner: ${pipeline.inDev.owner} • Due ${fmt(pipeline.inDev.due)}`;
-    }
-    if (pipeline.inTest) {
-      $('#in-test-title').textContent = pipeline.inTest.title;
-      $('#in-test-meta').textContent  = `Owner: ${pipeline.inTest.owner} • Due ${fmt(pipeline.inTest.due)}`;
-    }
-  })();
+        function fmt(dateStr){
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+        }
+        if(pipeline.inDev){ $('#in-dev-title').textContent = pipeline.inDev.title; $('#in-dev-meta').textContent = `Due ${fmt(pipeline.inDev.due)}`; }
+        if(pipeline.inTest){ $('#in-test-title').textContent = pipeline.inTest.title; $('#in-test-meta').textContent = `Due ${fmt(pipeline.inTest.due)}`; }
+    })();
 </script>
 
+<!-- Accordion behavior -->
+<script>
+    (function () {
+        function setPanelHeight(panel, open) {
+            if (!panel) return;
+            if (open) {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+                panel.style.opacity = "1";
+            } else {
+                panel.style.maxHeight = "0px";
+                panel.style.opacity = "0";
+            }
+        }
+        function toggleAcc(article, button, panel) {
+            var isOpen = article.getAttribute("aria-expanded") === "true";
+            var next = !isOpen;
+            article.setAttribute("aria-expanded", String(next));
+            button.setAttribute("aria-expanded", String(next));
+            setPanelHeight(panel, next);
+        }
+        function initAcc(article) {
+            var btn = article.querySelector(".acc-header");
+            if (!btn) return;
+            var panelId = btn.getAttribute("aria-controls");
+            var panel = document.getElementById(panelId);
+            if (!panel) return;
+
+            article.setAttribute("aria-expanded", "false");
+            btn.setAttribute("aria-expanded", "false");
+            setPanelHeight(panel, false);
+
+            btn.addEventListener("click", function(){ toggleAcc(article, btn, panel); });
+            btn.addEventListener("keydown", function(e){
+                if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggleAcc(article, btn, panel); }
+            });
+
+            var mediaQuerySupported = typeof window.matchMedia === "function";
+            if (mediaQuerySupported) {
+                var prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                if (prefersReduced) { panel.style.transition = "none"; }
+            }
+        }
+        document.querySelectorAll(".acc").forEach(initAcc);
+    })();
+</script>
+
+<script>
+    (function(){
+        // Edit statuses here (true = green/complete)
+        const WEBAPPS_STATUS = [
+            { name: 'CASIS',                slug: 'casis',                planning: true,  coding: false, testing: false, approved: false },
+            { name: 'FERPA',                slug: 'ferpa',                planning: true,  coding: false, testing: false, approved: false },
+            { name: 'Reporting',            slug: 'reporting',            planning: true,  coding: false, testing: false, approved: false },
+            { name: 'Schedule of Classes',  slug: 'schedule-of-classes',  planning: true,  coding: false, testing: false, approved: false },
+            { name: 'University Council',   slug: 'university-council',   planning: true,  coding: false, testing: false, approved: false }
+        ];
+
+        function cell(ok, label){
+            return `<span class="dot ${ok ? 'ok' : ''}" aria-label="${label} ${ok ? 'complete' : 'incomplete'}"></span>`;
+        }
+
+        function buildWebappsTable(){
+            const tbody   = document.getElementById('webapps-tbody');
+            const counter = document.getElementById('webapps-counter');
+            if(!tbody) return;
+
+            tbody.innerHTML = '';
+            let complete = 0;
+
+            WEBAPPS_STATUS.forEach(app => {
+                const isComplete = !!(app.planning && app.coding && app.testing && app.approved);
+                if(isComplete) complete++;
+
+                const link = app.slug
+                    ? `<a href="item.html?slug=${app.slug}" style="text-decoration:none;color:#BA0C2F">${app.name}</a>`
+                    : app.name;
+
+                tbody.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${link}</td>
+          <td>${cell(!!app.planning, 'Planning')}</td>
+          <td>${cell(!!app.coding,   'Coding')}</td>
+          <td>${cell(!!app.testing,  'Testing')}</td>
+          <td>${cell(!!app.approved, 'Approved')}</td>
+        </tr>
+      `);
+            });
+
+            if(counter) counter.textContent = `${complete}/${WEBAPPS_STATUS.length} complete`;
+        }
+
+        // Build on load
+        buildWebappsTable();
+    })();
+</script>
+</body>
 </html>

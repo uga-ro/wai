@@ -1,0 +1,15 @@
+record_type,category,id,name,slug,priority,done,total,status_converted,status_routed,status_tested,status_approved,notes
+category,WebApps,cat-webapps,,,Medium,1,5,,,,,Web apps accessibility work; milestones TBD
+category,Forms,cat-forms,,,High,1,12,,,,,Form rebuilds & routing
+category,PDFs & Docs,cat-pdfs,,,High,1,100,,,,,Legacy PDFs to convert/tag
+category,Images & Videos,cat-media,,,Low,19,25,,,,,Captions / alt text backlog
+item,WebApps,webapp-casis,CASIS,casis,High,3,10,,,,,In Dev; due 2025-09-30
+item,WebApps,webapp-catalog-loader,Catalog Loader,catalog-loader,Medium,4,10,,,,,UI/ARIA pass planned
+item,Forms,form-address-change,Address Change,address-change,High,,,True,False,False,False,
+item,Forms,form-deans-cert,Dean's Certification,deans-certification,High,,,True,True,True,True,
+item,Forms,form-late-adds,Late Adds,late-adds,High,,,True,False,False,False,
+item,Forms,form-course-challenges,Course Challenges,course-challenges,Medium,,,False,False,False,False,
+item,PDFs & Docs,pdf-grad-instructions,Graduation Instructions,graduation-instructions,High,0,1,,,,,Convert to HTML
+item,PDFs & Docs,pdf-transfer-checklist,Transfer Checklist,transfer-checklist,Medium,0,1,,,,,Tag headings / lists
+item,Images & Videos,media-commencement,Commencement Highlight Reel,commencement-reel,Low,1,1,,,,,Captions complete
+item,Images & Videos,media-homepage-carousel,Homepage Carousel,homepage-carousel,Low,4,6,,,,,Alt text QA pending
