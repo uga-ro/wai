@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UGA Branded Accessibility Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --uga-red: #BA0C2F;
+            --uga-black: #000000;
+            --uga-gray: #554F47;
+            --uga-light-gray: #F7F7F7;
+            --uga-border-gray: #E5E5E5;
+
+            --p-high: #BA0C2F;
+            --p-med: #DD6B20;
+            --p-low: #2F855A;
+            --g0:#121419; /* near-black (not pure) */
+            --g1:#1A1F26;
+            --g2:#232933;
+            --g3:#2C333E;
+            --g4:#38414D;
+            --g5:#454F5E;
+            --w0:#F7F8FA;
+            --redAlpha:.35;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--uga-light-gray);
+            color: var(--uga-gray);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--uga-border-gray);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+        }
+        .progress {
+            height: 10px;
+            background: var(--uga-border-gray);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress > span {
+            display: block;
+            height: 100%;
+            background: var(--uga-red);
+        }
+        .priority {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #fff;
+        }
+        .p-high { background: var(--p-high); }
+        .p-med { background: var(--p-med); }
+        .p-low { background: var(--p-low); }
+
+        .mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .mini-table th, .mini-table td {
+            padding: 8px 10px;
+            border-top: 1px solid var(--uga-border-gray);
+            text-align: left;
+        }
+        .mini-table thead {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        .dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #CBD5E0; /* Gray for incomplete */
+            vertical-align: middle;
+        }
+        .dot.ok {
+            background: #38A169; /* Green for complete */
+        }
+        .legend {
+            font-size: .8rem;
+            color: var(--uga-gray);
+            margin-top: 6px;
+        }
+        .counter {
+            display: inline-block;
+            margin-left: 8px;
+            padding: .15rem .5rem;
+            border: 1px solid var(--uga-border-gray);
+            border-radius: 999px;
+            font-size: .8rem;
+            color: var(--uga-gray);
+        }
+        .badge {
+            display: inline-block;
+            padding: .35rem .6rem;
+            border-radius: 999px;
+            font-size: .75rem;
+            border: 1px solid var(--uga-border-gray);
+            background: #fff;
+        }
+        .badge--solid {
+            background: var(--uga-black);
+            color: #fff;
+            border-color: var(--uga-black);
+            font-weight: 600;
+        }
+        .wrap{max-width:1620px;margin:auto;padding:24px}
+
+        body.dark-uga {
+            background:
+                /* splash multiple red blobs */
+                    radial-gradient(600px 600px at 15% 20%, rgba(186,12,47,var(--redAlpha)) 0%, rgba(186,12,47,0) 60%),
+                    radial-gradient(500px 500px at 85% 25%, rgba(186,12,47,calc(var(--redAlpha)*.9)) 0%, rgba(186,12,47,0) 60%),
+                    radial-gradient(700px 700px at 30% 80%, rgba(186,12,47,calc(var(--redAlpha)*.8)) 0%, rgba(186,12,47,0) 70%),
+                        /* horizontal grid lines */
+                    linear-gradient(#ffffff26 2px, transparent 2px),
+                        /* vertical grid lines */
+                    linear-gradient(90deg, #ffffff26 2px, transparent 2px),
+                        /* dark base */
+                    linear-gradient(180deg, var(--g2), var(--g1));
+            background-size: auto, auto, auto, 36px 36px, 36px 36px, auto;
+            background-position: center center;
+        }
+    </style>
+<!--    /*background-color: #f9f9f9;*/-->
+<!--    /*background-image: linear-gradient(#e0e0e0 1px, transparent 1px),*/-->
+<!--    /*linear-gradient(90deg, #e0e0e0 1px, transparent 1px);*/-->
+<!--    /*background-size: 40px 40px;*/-->
+</head>
+<body class="dark-uga">
+
+<div class="min-h-screen w-full relative overflow-hidden">
+    <!-- Background Blobs -->
+
+    <div class="wrap">
+    <!-- Main Content -->
+    <main class="relative z-10 p-4 sm:p-6 lg:p-8">
+        <!-- Header -->
+        <header class="glass-effect rounded-2xl p-4 mb-6">
+            <div class="flex flex-wrap gap-4 justify-between items-center">
+                <div class="flex gap-4 items-center">
+                    <div aria-hidden="true" class="w-10 h-10 rounded-lg bg-[var(--uga-black)] flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-[var(--uga-red)]">WAIS</h1>
+                        <div class="text-[var(--uga-gray)] text-sm">Web Accessibility Implementation Strategy</div>
+                    </div>
+                </div>
+                <div class="flex gap-3 items-center">
+                    <span class="badge badge--solid">Phase: Inventory</span>
+                    <span class="badge">Updated Aug 21, 2025</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- KPI Cards -->
+        <section id="kpi" class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+            <div class="glass-effect p-6 rounded-xl">
+                <h2 class="text-sm font-medium text-[var(--uga-gray)]">Overall Progress</h2>
+                <p id="overall-text" class="text-2xl font-bold mt-1 text-black">—</p>
+                <div class="progress mt-2" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <span id="overall-bar" style="width:0%"></span>
+                </div>
+            </div>
+            <div class="glass-effect p-6 rounded-xl">
+                <h2 class="text-sm font-medium text-[var(--uga-gray)]">Time to checkpoint</h2>
+                <div id="days-to" class="text-3xl font-bold mt-1 text-black">—</div>
+                <div class="text-[var(--uga-gray)] text-sm">Until April 15, 2026</div>
+            </div>
+            <div class="glass-effect p-6 rounded-xl">
+                <h2 class="text-sm font-medium text-[var(--uga-gray)] mb-2">By Content Type</h2>
+                <ul id="by-type" class="list-none p-0 m-0 grid gap-2"></ul>
+            </div>
+            <div class="glass-effect p-6 rounded-xl">
+                <div>
+                    <div class="text-sm font-medium text-[var(--uga-gray)] uppercase tracking-wider">In Dev</div>
+                    <div id="in-dev-title" class="font-semibold text-black mt-1">—</div>
+                    <div id="in-dev-meta" class="text-xs text-[var(--uga-gray)]">—</div>
+                </div>
+                <div class="mt-3 border-t border-[var(--uga-border-gray)] pt-3">
+                    <div class="text-sm font-medium text-[var(--uga-gray)] uppercase tracking-wider">In Testing</div>
+                    <div id="in-test-title" class="font-semibold text-black mt-1">—</div>
+                    <div id="in-test-meta" class="text-xs text-[var(--uga-gray)]">—</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Category Details -->
+        <section>
+            <h2 class="text-2xl font-bold mb-4 text-black">Categories</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <article class="glass-effect p-6 rounded-xl" id="cat-html" data-done="42" data-total="120">
+                    <h3 class="text-lg font-semibold text-black">HTML Pages</h3>
+                    <p class="text-sm text-[var(--uga-gray)]">Owner: Web Team · Priority: <span class="priority p-med">Medium</span></p>
+                    <div class="progress mt-2" aria-label="HTML pages"><span style="width:35%"></span></div>
+                    <p class="mt-3 text-sm">Focus on updating older templates and ensuring headings and ARIA roles are correct across high-traffic pages.</p>
+                </article>
+
+                <article class="glass-effect p-6 rounded-xl" id="cat-pdfs" data-done="1" data-total="100">
+                    <h3 class="text-lg font-semibold text-black">PDFs &amp; Docs</h3>
+                    <p class="text-sm text-[var(--uga-gray)]">Owner: Records · Priority: <span class="priority p-high">High</span></p>
+                    <div class="progress mt-2" aria-label="PDFs"><span style="width:1%"></span></div>
+                    <p class="mt-3 text-sm">Large backlog of instructions/forms in PDF format need tagging or conversion to HTML. High visibility for compliance risk.</p>
+                </article>
+
+                <article class="glass-effect p-6 rounded-xl lg:col-span-2" id="cat-forms" data-done="1" data-total="12">
+                    <h3 class="text-lg font-semibold text-black">Forms &amp; Workflows</h3>
+                    <p class="text-sm text-[var(--uga-gray)]">Owner: Student Services · Priority: <span class="priority p-high">High</span></p>
+                    <p class="mt-3 text-sm">Interactive forms like late add approvals and graduation apps need alt paths for accessibility. High student impact.</p>
+                    <h4 class="mt-4 mb-2 font-semibold text-black">Forms Progress <span class="counter">1/12 complete</span></h4>
+                    <div class="overflow-x-auto">
+                        <table class="mini-table" aria-label="Forms progress table">
+                            <thead><tr><th scope="col">Form</th><th scope="col">Converted</th><th scope="col">Routing</th><th scope="col">Tested</th><th scope="col">Finalized</th></tr></thead>
+                            <tbody>
+                            <tr><td><a href="#" class="text-[var(--uga-red)] hover:underline font-semibold">Address Change</a></td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+                            <tr><td>Course Challenges</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+                            <tr><td>Dean's Certification</td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot ok" aria-label="Routing complete"></span></td><td><span class="dot ok" aria-label="Testing complete"></span></td><td><span class="dot ok" aria-label="Finalized complete"></span></td></tr>
+                            <tr><td>Late Adds</td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="legend"><span class="dot ok" aria-hidden="true"></span> Complete · <span class="dot" aria-hidden="true"></span> Incomplete</div>
+                </article>
+
+                <article class="glass-effect p-6 rounded-xl" id="cat-media" data-done="19" data-total="25">
+                    <h3 class="text-lg font-semibold text-black">Images / Video / Captions</h3>
+                    <p class="text-sm text-[var(--uga-gray)]">Owner: Comms · Priority: <span class="priority p-low">Low</span></p>
+                    <div class="progress mt-2" aria-label="Media"><span style="width:76%"></span></div>
+                    <p class="mt-3 text-sm">Caption backlog ongoing but overall media compliance is progressing well. Mostly routine captioning of new uploads.</p>
+                </article>
+
+                <article class="glass-effect p-6 rounded-xl" id="cat-training" data-done="4" data-total="12">
+                    <h3 class="text-lg font-semibold text-black">Training &amp; SOPs</h3>
+                    <p class="text-sm text-[var(--uga-gray)]">Owner: All Staff · Priority: <span class="priority p-med">Medium</span></p>
+                    <div class="progress mt-2" aria-label="Training"><span style="width:33%"></span></div>
+                    <p class="mt-3 text-sm">Workshops scheduled for document tagging and accessible design practices. Needs broader participation.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+</div>
+</div>
+<script>
+    // Lucide icons script is not needed for the SVG icon I added, but keeping it in case you want to use it elsewhere.
+    // lucide.createIcons();
+
+    // Original script to populate data - unchanged
+    (() => {
+        const checkpoint = '2026-04-15';
+        const pipeline = {
+            inDev: { title: 'Replace PDF instructions with HTML guide', owner: 'Web Team', due: '2025-09-30' },
+            inTest: { title: 'Campus screen reader QA (Policies)', owner: 'Accessibility', due: '2025-10-08' }
+        };
+        const $ = s => document.querySelector(s);
+        const daysUntil = d => Math.ceil((new Date(d + 'T00:00:00') - new Date()) / 86400000);
+        const pct = (done, total) => total ? Math.round((done / total) * 100) : 0;
+        const catIds = [
+            { id: 'cat-html', label: 'HTML Pages' }, { id: 'cat-pdfs', label: 'PDFs & Docs' },
+            { id: 'cat-forms', label: 'Forms & Workflows' }, { id: 'cat-media', label: 'Images/Video/Captions' },
+            { id: 'cat-training', label: 'Training & SOPs' }
+        ];
+        const cats = catIds.map(c => {
+            const el = document.getElementById(c.id);
+            if (!el) return null;
+            const done = Number(el.getAttribute('data-done') || 0);
+            const total = Number(el.getAttribute('data-total') || 0);
+            const bar = el.querySelector('.progress > span');
+            const calculatedPct = pct(done,total);
+            if(bar) bar.style.width = calculatedPct + '%';
+            return { name: c.label, done, total, pct: calculatedPct };
+        }).filter(Boolean);
+        const totals = cats.reduce((a, c) => ({ done: a.done + c.done, total: a.total + c.total }), { done: 0, total: 0 });
+        const overallPct = pct(totals.done, totals.total);
+        const txt = $('#overall-text'); const bar = $('#overall-bar'); const prog = $('#kpi .progress');
+        if (txt) txt.textContent = `${totals.done} of ${totals.total}`;
+        if (bar) bar.style.width = overallPct + '%';
+        if (prog) prog.setAttribute('aria-valuenow', overallPct);
+        const d = $('#days-to'); if (d) d.textContent = `${daysUntil(checkpoint)} days`;
+        const list = $('#by-type');
+        if (list) {
+            list.innerHTML = '';
+            cats.forEach(c => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm">${c.name}</span>
+                            <span class="text-xs font-mono text-[var(--uga-gray)]">${c.pct}%</span>
+                        </div>
+                        <div class="progress" style="height:6px"><span style="width:${c.pct}%; background: var(--uga-red);"></span></div>`;
+                list.appendChild(li);
+            });
+        }
+        function fmt(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        if (pipeline.inDev) {
+            $('#in-dev-title').textContent = pipeline.inDev.title;
+            $('#in-dev-meta').textContent = `Owner: ${pipeline.inDev.owner} • Due ${fmt(pipeline.inDev.due)}`;
+        }
+        if (pipeline.inTest) {
+            $('#in-test-title').textContent = pipeline.inTest.title;
+            $('#in-test-meta').textContent = `Owner: ${pipeline.inTest.owner} • Due ${fmt(pipeline.inTest.due)}`;
+        }
+    })();
+</script>
+</body>
+</html>

@@ -37,8 +37,8 @@
       <div class="row" style="flex:1;align-items:center">
         <div aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:conic-gradient(var(--uga-red),var(--black))"></div>
         <div>
-          <h1 style="margin:0;font-size:1.25rem;font-weight:800;color:var(--uga-red)">Accessibility Compliance</h1>
-          <div style="color:#666;font-size:.9rem">Office of the Registrar · WCAG 2.1/2.2 Dashboard</div>
+          <h1 style="margin:0;font-size:1.25rem;font-weight:800;color:var(--uga-red)">WAIS</h1>
+          <div style="color:#666;font-size:.9rem">Web Accessibility Implementation Strategy</div>
         </div>
       </div>
       <div class="row">
@@ -50,18 +50,60 @@
 
   <main class="wrap">
     <!-- KPI Tiles -->
-    <section style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
-      <div class="card"><div class="p"><h2>Overall</h2><p style="color:#666">309 of 750 items complete</p><div class="progress"><span style="width:41%"></span></div></div></div>
-      <div class="card"><div class="p"><h2>Time to checkpoint</h2><div style="font-weight:800;font-size:1.6rem">238 days</div><div style="color:#666">Until April 15, 2026</div></div></div>
-      <div class="card"><div class="p"><h2>Open tasks</h2><div style="font-weight:800;font-size:1.6rem">4</div><div style="color:#666">Across all categories</div></div></div>
-      <div class="card"><div class="p"><h2>By priority</h2><div class="row"><span class="badge">High: 2</span><span class="badge">Medium: 2</span><span class="badge">Low: 1</span></div></div></div>
+<!--    <section style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">-->
+<!--      <div class="card"><div class="p"><h2>Overall</h2><p style="color:#666">309 of 750 items complete</p><div class="progress"><span style="width:41%"></span></div></div></div>-->
+<!--      <div class="card"><div class="p"><h2>Time to checkpoint</h2><div style="font-weight:800;font-size:1.6rem">238 days</div><div style="color:#666">Until April 15, 2026</div></div></div>-->
+<!--      <div class="card"><div class="p"><h2>Open tasks</h2><div style="font-weight:800;font-size:1.6rem">4</div><div style="color:#666">Across all categories</div></div></div>-->
+<!--      <div class="card"><div class="p"><h2>By priority</h2><div class="row"><span class="badge">High: 2</span><span class="badge">Medium: 2</span><span class="badge">Low: 1</span></div></div></div>-->
+<!--    </section>-->
+    <!-- KPI Bar (new) -->
+    <section id="kpi" class="wrap" style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:16px">
+      <!-- Overall -->
+      <div class="card"><div class="p">
+        <h2>Overall</h2>
+        <p id="overall-text" style="color:#666">—</p>
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span id="overall-bar" style="width:0%"></span>
+        </div>
+      </div></div>
+
+      <!-- Time to checkpoint -->
+      <div class="card"><div class="p">
+        <h2>Time to checkpoint</h2>
+        <div id="days-to" style="font-weight:800;font-size:1.6rem">—</div>
+        <div style="color:#666">Until April 15, 2026</div>
+      </div></div>
+
+      <!-- By content type -->
+      <div class="card"><div class="p">
+        <h2>By content type</h2>
+        <ul id="by-type" style="list-style:none;padding:0;margin:.5rem 0 0;display:grid;gap:8px"></ul>
+      </div></div>
+
+      <!-- Pipeline (split) -->
+      <div class="card"><div class="p">
+
+        <div>
+          <div style="padding-top:10px">
+            <div style="font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:#666">In dev</div>
+            <div id="in-dev-title" style="font-weight:600">—</div>
+            <div id="in-dev-meta" style="font-size:.8rem;color:#666">—</div>
+          </div>
+          <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+            <div style="font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:#666">In testing</div>
+            <div id="in-test-title" style="font-weight:600">—</div>
+            <div id="in-test-meta" style="font-size:.8rem;color:#666">—</div>
+          </div>
+        </div>
+      </div></div>
     </section>
+
 
     <!-- Category Details -->
     <section style="margin-top:24px">
       <h2>Categories</h2>
 
-      <article class="card">
+      <article class="card" id="cat-html" data-done="42" data-total="120">
         <div class="p">
           <h3>HTML Pages</h3>
           <p style="color:#666">Owner: Web Team · Priority: <span class="priority p-med">Medium</span></p>
@@ -70,7 +112,7 @@
         </div>
       </article>
 
-      <article class="card">
+      <article class="card" id="cat-pdfs" data-done="1" data-total="100">
         <div class="p">
           <h3>PDFs &amp; Docs</h3>
           <p style="color:#666">Owner: Records · Priority: <span class="priority p-high">High</span></p>
@@ -79,7 +121,7 @@
         </div>
       </article>
 
-      <article class="card">
+      <article class="card" id="cat-forms" data-done="1"  data-total="12">
         <div class="p">
           <h3>Forms &amp; Workflows</h3>
           <p style="color:#666">Owner: Student Services · Priority: <span class="priority p-high">High</span></p>
@@ -98,7 +140,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td>Address Change</td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
+              <tr><td>
+                <a href="item.html?slug=address-change" style="text-decoration:none;color:#BA0C2F">
+                  Address Change
+                </a>
+              </td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
               <tr><td>Course Challenges</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
               <tr><td>Dean's Certification</td><td><span class="dot ok" aria-label="Converted complete"></span></td><td><span class="dot ok" aria-label="Routing complete"></span></td><td><span class="dot ok" aria-label="Testing complete"></span></td><td><span class="dot ok" aria-label="Finalized complete"></span></td></tr>
               <tr><td>FERPA Restriction Flag Removal/Addition</td><td><span class="dot" aria-label="Converted incomplete"></span></td><td><span class="dot" aria-label="Routing incomplete"></span></td><td><span class="dot" aria-label="Testing incomplete"></span></td><td><span class="dot" aria-label="Finalized incomplete"></span></td></tr>
@@ -116,7 +162,7 @@
         </div>
       </article>
 
-      <article class="card">
+      <article class="card" id="cat-media" data-done="1" data-total="25">
         <div class="p">
           <h3>Images / Video / Captions</h3>
           <p style="color:#666">Owner: Comms · Priority: <span class="priority p-low">Low</span></p>
@@ -125,7 +171,7 @@
         </div>
       </article>
 
-      <article class="card">
+      <article class="card" id="cat-training" data-done="4" data-total="12">
         <div class="p">
           <h3>Training &amp; SOPs</h3>
           <p style="color:#666">Owner: All Staff · Priority: <span class="priority p-med">Medium</span></p>
@@ -137,4 +183,83 @@
 
   </main>
 </body>
+<script>
+  (() => {
+    // ---- CONFIG you can tweak quickly ----
+    const checkpoint = '2026-04-15'; // YYYY-MM-DD
+    // If you have a tasks CSV later, you can replace these two with live picks
+    const pipeline = {
+      inDev:   { title: 'Replace PDF instructions with HTML guide', owner: 'Web Team', due: '2025-09-30' },
+      inTest:  { title: 'Campus screen reader QA (Policies)',      owner: 'Accessibility', due: '2025-10-08' }
+    };
+
+    // ---- Helpers ----
+    const $ = s => document.querySelector(s);
+    const daysUntil = d => Math.ceil((new Date(d+'T00:00:00') - new Date()) / 86400000);
+    const pct = (done,total) => total ? Math.round((done/total)*100) : 0;
+
+    // ---- Read categories from existing cards (by id + data-*) ----
+    const catIds = [
+      {id:'cat-html',    label:'HTML Pages'},
+      {id:'cat-pdfs',    label:'PDFs & Docs'},
+      {id:'cat-forms',   label:'Forms & Workflows'},
+      {id:'cat-media',   label:'Images/Video/Captions'},
+      {id:'cat-training',label:'Training & SOPs'}
+    ];
+    const cats = catIds
+            .map(c => {
+              const el = document.getElementById(c.id);
+              if (!el) return null;
+              const done = Number(el.getAttribute('data-done') || 0);
+              const total = Number(el.getAttribute('data-total') || 0);
+              return { name: c.label, done, total, pct: pct(done,total) };
+            })
+            .filter(Boolean);
+
+    // ---- Overall ----
+    const totals = cats.reduce((a,c)=>({done:a.done+c.done,total:a.total+c.total}),{done:0,total:0});
+    const overallPct = pct(totals.done, totals.total);
+    const txt = $('#overall-text'); const bar = $('#overall-bar'); const prog = $('#kpi .progress');
+    if (txt) txt.textContent = `${totals.done} of ${totals.total} items complete`;
+    if (bar) bar.style.width = overallPct + '%';
+    if (prog) prog.setAttribute('aria-valuenow', overallPct);
+
+    // ---- Time to checkpoint ----
+    const d = $('#days-to'); if (d) d.textContent = `${daysUntil(checkpoint)} days`;
+
+    // ---- By content type list ----
+    const list = $('#by-type');
+    if (list) {
+      list.innerHTML = '';
+      cats.forEach(c => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:.9rem;color:#333">${c.name}</span>
+        <span style="font-size:.8rem" class="tabular-nums">${c.pct}%</span>
+      </div>
+      <div class="progress" style="height:8px">
+        <span style="display:block;height:100%;width:${c.pct}%;background:var(--uga-red)"></span>
+      </div>`;
+        list.appendChild(li);
+      });
+    }
+
+
+    // ---- Pipeline split card ----
+    function fmt(dateStr){
+      const d = new Date(dateStr+'T00:00:00');
+      return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+    }
+    if (pipeline.inDev) {
+      $('#in-dev-title').textContent = pipeline.inDev.title;
+      $('#in-dev-meta').textContent  = `Owner: ${pipeline.inDev.owner} • Due ${fmt(pipeline.inDev.due)}`;
+    }
+    if (pipeline.inTest) {
+      $('#in-test-title').textContent = pipeline.inTest.title;
+      $('#in-test-meta').textContent  = `Owner: ${pipeline.inTest.owner} • Due ${fmt(pipeline.inTest.due)}`;
+    }
+  })();
+</script>
+
 </html>

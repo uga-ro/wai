@@ -1,0 +1,6 @@
+slug,test_id,description,result,notes,updated_by,updated_at
+address-change,A,"Keyboard-only flow with visible focus; no traps",Pass,,tester1,2025-08-20
+address-change,B,"ARIA live errors; focus moves to first error",,,"",
+address-change,C,"Labels & groups announced correctly (NVDA/JAWS)",Fail,"Group label missing on address block",tester2,2025-08-21
+late-adds,A,"Before cutoff: no extra docs required",Pass,,qa1,2025-08-18
+late-adds,B,"After cutoff: must require documentation",Fail,"Upload rule didn’t trigger",qa2,2025-08-19
