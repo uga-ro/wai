@@ -36,133 +36,271 @@
       background-size: auto, auto, auto, auto, auto, 36px 36px, 36px 36px, auto;
       background-position: center center;
     }
+    
   </style>
 </head>
 <body>
+
 <main class="wrap">
-  <div class="card">
+  <nav aria-label="Breadcrumb" style="font-size:16px;color:#666;margin:0 0 8px">
+    <a href="index.html" style="color:var(--uga-red);text-decoration:none">← Return to Dashboard</a>
+    <span style="margin:0 6px">/</span>
+    <span id="crumb-item">Current Item</span>
+  </nav>
+
+  <!-- Not found state -->
+  <div id="not-found" class="card" style="display:none">
     <div class="p">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-        <h1 id="item-title" style="margin:0;color:var(--uga-red)">Item — Detail</h1>
-        <div><a href="index.html" class="badge">← Back to dashboard</a></div>
-      </div>
-      <p style="color:#666;margin:.25rem 0 1rem">
-        Owner: <span id="item-owner">—</span> ·
-        Priority: <span id="item-priority" class="priority">—</span>
+      <h1 style="margin:0;color:#000;font-weight:800">Item not found</h1>
+      <p style="color:#666;margin:.5rem 0 0">
+        No item matches this slug. Check the <code>Slugs</code> tab and the <code>?slug=</code> in the URL.
       </p>
+    </div>
+  </div>
 
-      <h2 style="margin:.25rem 0 .5rem">Requirements &amp; Logic (summary)</h2>
-      <p id="item-summary" style="max-width:70ch;line-height:1.5">—</p>
+  <!-- Header / hero -->
+  <header id="hero" class="card" style="display:none;margin-bottom:16px">
+    <div class="p" style="display:flex;gap:16px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap">
+      <div>
+        <div id="item-category" style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6b7280">
+          Category
+        </div>
+        <h1 id="item-name" style="margin:.1rem 0 0;font-size:28px;line-height:1.2;color:#111827;font-weight:800">—</h1>
 
-      <div class="card" style="margin-top:16px">
-        <div class="p">
-          <h2 style="margin:0 0 .5rem">Defined Tests</h2>
-          <table class="mini-table" aria-label="Tests">
-            <thead>
-            <tr><th>Test</th><th>Description</th><th>Result</th></tr>
-            </thead>
-            <tbody id="tests-body"><tr><td colspan="3">Loading…</td></tr></tbody>
-          </table>
-          <div style="font-size:.85rem;color:#666;margin-top:6px">
-            <span class="dot ok" aria-hidden="true"></span> Pass ·
-            <span class="dot fail" aria-hidden="true"></span> Fail ·
-            <span class="dot" aria-hidden="true"></span> Not tested
-          </div>
+        <!-- Link/type/slug chips -->
+        <div id="item-meta-chips" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <!-- optional chips populated by script -->
+          <span id="item-type" class="badge">Type: —</span>
+          <span id="item-slug" class="badge">Slug: —</span>
+          <!-- script will add: Original / Remediated chips if present -->
         </div>
       </div>
 
+      <!-- Micro segmented bar -->
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end">
+          <div role="group" aria-label="Plan, Build, Test" style="display:flex;gap:4px">
+            <span id="mb-1" style="display:inline-block;width:28px;height:6px;border-radius:4px;background:#e5e7eb"></span>
+            <span id="mb-2" style="display:inline-block;width:28px;height:6px;border-radius:4px;background:#e5e7eb"></span>
+            <span id="mb-3" style="display:inline-block;width:28px;height:6px;border-radius:4px;background:#e5e7eb"></span>
+          </div>
+          <span id="pct-label" style="font:11px/1 ui-monospace,Menlo,Consolas,monospace;color:#6b7280">0%</span>
+        </div>
+        <div id="step-labels" style="text-align:right;color:#6b7280;font-size:12px;margin-top:6px">
+          Plan / Build / Test
+        </div>
+      </div>
     </div>
+  </header>
+
+  <!-- Category guidance / description -->
+  <section id="category-guidance" class="card" style="display:none;margin-bottom:16px">
+    <div class="p">
+      <h2 style="margin:0 0 .5rem;color:#111827">What this category needs</h2>
+      <p id="category-desc" style="margin:0;color:#374151">—</p>
+    </div>
+  </section>
+
+  <!-- Two-column checks -->
+  <div style="display:grid;grid-template-columns:1fr;gap:16px">
+    <!-- Audit -->
+    <section id="audit-card" class="card" style="display:none">
+      <div class="p">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="margin:0;color:#111827">Audit</h3>
+          <div id="audit-count" style="font-size:12px;color:#6b7280">0 checks</div>
+        </div>
+        <ul id="audit-list" style="margin-top:12px;display:grid;gap:8px;list-style:none;padding:0"></ul>
+      </div>
+    </section>
+
+    <!-- Test -->
+    <section id="test-card" class="card" style="display:none">
+      <div class="p">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="margin:0;color:#111827">Test</h3>
+          <div id="test-count" style="font-size:12px;color:#6b7280">0 checks</div>
+        </div>
+        <ul id="test-list" style="margin-top:12px;display:grid;gap:8px;list-style:none;padding:0"></ul>
+      </div>
+    </section>
   </div>
 </main>
 
+
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
 <script>
-  (async () => {
-    // Read ?slug=address-change from URL
-    const params = new URLSearchParams(location.search);
-    const SLUG = (params.get('slug') || '').toLowerCase().trim();
+  (() => {
+    // ===== CONFIG =====
+    const SHEET_ID = '1naeWFQsNyjY3g0yNeZHcAg5VW-DTdOehH_Zjy3pCe7k'; // keep your real ID
+    const TAB = 'Slugs';
 
-    const ITEMS_CSV = 'data/items.csv';   // slug,title,owner,priority,summary
-    const TESTS_CSV = 'data/tests.csv';   // slug,test_id,description,result,notes,updated_by,updated_at
+    // ===== UTILS =====
+    const $  = s => document.querySelector(s);
+    const qs = new URLSearchParams(location.search);
+    const slug = (qs.get('slug')||'').trim();
 
-    // Robust CSV parser (quotes + commas supported)
-    function parseCSV(text){
-      const rows=[]; let field='', row=[], i=0, q=false;
-      const pushF=()=>{row.push(field);field='';}, pushR=()=>{if(row.length)rows.push(row.slice());row=[];};
-      while(i<text.length){
-        const c=text[i];
-        if(q){ if(c=='"'){ if(text[i+1]=='"'){field+='"'; i+=2; continue;} q=false; i++; continue; } field+=c; i++; continue; }
-        if(c=='"'){ q=true; i++; continue; }
-        if(c==','){ pushF(); i++; continue; }
-        if(c=='\n'){ pushF(); pushR(); i++; continue; }
-        if(c=='\r'){ i++; continue; }
-        field+=c; i++;
-      }
-      if(field!==''||row.length){ pushF(); pushR(); }
-      const header=(rows.shift()||[]).map(h=>h.trim());
-      return rows.filter(r=>r.some(v=>(v||'').trim()!==''))
-              .map(r=>Object.fromEntries(header.map((h,idx)=>[h,(r[idx]||'').trim()])));
+    const csvUrl = sheet =>
+            `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}&v=${Date.now()}`;
+
+    const norm = v => {
+      const t = String(v ?? '').trim().toLowerCase();
+      if (['2','done','complete','true','yes','ok','y','✅'].includes(t)) return 'done';
+      if (['1','in progress','in-progress','progress','wip','⏳'].includes(t)) return 'wip';
+      return 'todo';
+    };
+
+    function microBar(el, status){
+      const map = { done:'#22c55e', wip:'#fb923c', todo:'#e5e7eb' };
+      el.style.background = map[status] || map.todo;
+    }
+    function set3Bars(s1,s2,s3){
+      microBar($('#mb-1'), s1);
+      microBar($('#mb-2'), s2);
+      microBar($('#mb-3'), s3);
     }
 
-    const $ = (s,r=document)=>r.querySelector(s);
-
-    // 0) Basic 404 if slug missing
-    if (!SLUG) {
-      $('#item-title').textContent = 'Item not specified';
-      $('#tests-body').innerHTML = '<tr><td colspan="3">Missing ?slug=…</td></tr>';
-      return;
+    function chipHTML(text, tone){
+      const bg = tone==='good' ? '#dcfce7'
+              : tone==='warn' ? '#ffedd5'
+                      : tone==='bad'  ? '#fee2e2'
+                              : '#f3f4f6';
+      const fg = tone==='good' ? '#166534'
+              : tone==='warn' ? '#9a3412'
+                      : tone==='bad'  ? '#991b1b'
+                              : '#374151';
+      return `<span style="display:inline-block;padding:.15rem .45rem;border-radius:999px;font-size:12px;background:${bg};color:${fg}">${text}</span>`;
     }
 
-    // 1) Item metadata
-    try{
-      const itxt = await (await fetch(ITEMS_CSV,{cache:'no-store'})).text();
-      const items = parseCSV(itxt);
-      const item = items.find(r=>(r.slug||'').toLowerCase()===SLUG);
-      if(!item){
-        $('#item-title').textContent = 'Item not found';
-        $('#tests-body').innerHTML = '<tr><td colspan="3">No item for this slug.</td></tr>';
-        return;
-      }
-      $('#item-title').textContent = (item.title||SLUG) + ' — Detail';
-      if(item.owner)   $('#item-owner').textContent   = item.owner;
-      if(item.priority){
-        const pEl = $('#item-priority');
-        pEl.textContent = item.priority;
-        const v = item.priority.toLowerCase();
-        if (v==='high')   pEl.style.background='#BA0C2F';
-        if (v==='medium') pEl.style.background='#E0A800';
-        if (v==='low')    pEl.style.background='#198754';
-      }
-      if(item.summary) $('#item-summary').textContent = item.summary;
-    }catch(e){ /* ignore */ }
+    const pretty = (k) => k
+            .replace(/^audit_/, '')
+            .replace(/^test_/, '')
+            .replace(/_(assignees|notes)$/,'')
+            .replace(/[_-]+/g, ' ')
+            .replace(/\b\w/g, m => m.toUpperCase());
 
-    // 2) Tests for this item
-    try{
-      const ttxt = await (await fetch(TESTS_CSV,{cache:'no-store'})).text();
-      const all = parseCSV(ttxt);
-      const tests = all.filter(r=>(r.slug||'').toLowerCase()===SLUG);
-      const tbody = $('#tests-body');
-      tbody.innerHTML = '';
+    function parseYN(v){
+      const t = String(v||'').trim().toLowerCase();
+      if (['y','yes','true'].includes(t)) return {text:'Yes', tone:'good'};
+      if (['n','no','false'].includes(t)) return {text:'No',  tone:'bad'};
+      if (['n/a','na'].includes(t))       return {text:'N/A', tone:'mute'};
+      if (['in progress','wip'].includes(t)) return {text:'In progress', tone:'warn'};
+      return {text:'Unset', tone:'warn'};
+    }
 
-      if (!tests.length) {
-        tbody.innerHTML = '<tr><td colspan="3">No tests defined yet.</td></tr>';
-      } else {
-        tests.forEach(t=>{
-          const id=(t.test_id||'').toUpperCase();
-          const desc=t.description || t.name || '';
-          const res=(t.result||'').toLowerCase();
-          const dot = res==='pass'?'ok':(res==='fail'?'fail':'');
-          const label = res ? (res[0].toUpperCase()+res.slice(1)) : '—';
-          const tr=document.createElement('tr');
-          tr.innerHTML = `
-            <td><strong>${id}</strong></td>
-            <td>${desc.replace(/</g,'&lt;')}</td>
-            <td><span class="dot ${dot}" aria-label="Latest result: ${label}"></span>
-                <span class="badge" style="margin-left:6px">${label}</span></td>`;
-          tbody.appendChild(tr);
+    async function fetchCSV(sheet){
+      const res  = await fetch(csvUrl(sheet));
+      const text = await res.text();
+      const out  = Papa.parse(text, { header:true, skipEmptyLines:true });
+      return out.data || [];
+    }
+
+    function titleFromSlug(s){
+      return s.replace(/[-_]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
+    }
+
+    function show(el){ if (el) el.style.display = ''; }
+    function hide(el){ if (el) el.style.display = 'none'; }
+
+    async function main(){
+      // require slug
+      if (!slug) { hide($('#hero')); show($('#not-found')); return; }
+
+      let rows = [];
+      try { rows = await fetchCSV(TAB); }
+      catch (e) { console.error(e); hide($('#hero')); show($('#not-found')); return; }
+
+      const row = rows.find(r => String(r.slug||'').trim() === slug);
+      if (!row) { hide($('#hero')); show($('#not-found')); return; }
+
+      // ===== Header =====
+      const step1 = row.step1 || 'Plan';
+      const step2 = row.step2 || 'Build';
+      const step3 = row.step3 || 'Test';
+
+      show($('#hero'));
+      $('#item-name').textContent = row.name || titleFromSlug(slug);
+      $('#item-category').textContent = row.category || '—';
+      $('#item-type').textContent = `Type: ${row.type || '—'}`;
+      $('#item-slug').textContent = `Slug: ${slug}`;
+      $('#step-labels').textContent = `${step1} / ${step2} / ${step3}`;
+
+      // micro bars
+      const s1 = norm(row.s1), s2 = norm(row.s2), s3 = norm(row.s3);
+      set3Bars(s1,s2,s3);
+      const score = s => s==='done'?1 : s==='wip'?0.5 : 0;
+      const present = ['s1','s2','s3'].filter(k=>row[k]).length || 1;
+      const pct = Math.round(((row.s1?score(s1):0)+(row.s2?score(s2):0)+(row.s3?score(s3):0)) / present * 100);
+      $('#pct-label').textContent = (isFinite(pct) ? pct : 0) + '%';
+
+      // description
+      const desc = String(row.description||'').trim();
+      if (desc) {
+        show($('#category-guidance'));
+        $('#category-desc').textContent = desc;
+      }
+
+      // link chips (Original/Remediated)
+      const chipRow = $('#item-meta-chips');
+      function addChip(href, label){
+        if (!href) return;
+        const a = document.createElement('a');
+        a.href = href; a.target = '_blank'; a.rel = 'noopener';
+        a.className = 'badge';
+        a.textContent = label + ' ↗';
+        chipRow.appendChild(a);
+      }
+      addChip(row['original url'] || row.original_url, 'Original');
+      addChip(row['remediated url'] || row.remediated_url, 'Remediated');
+
+      // ===== Build Audit / Test lists =====
+      const entries = Object.entries(row);
+      const isCheck = (k,pfx) => k.toLowerCase().startsWith(pfx) &&
+              !k.toLowerCase().endsWith('_assignees') &&
+              !k.toLowerCase().endsWith('_notes');
+
+      const audit = entries.filter(([k]) => isCheck(k,'audit_'));
+      const test  = entries.filter(([k]) => isCheck(k,'test_'));
+
+      function renderList(listEl, countEl, pairs){
+        listEl.innerHTML = '';
+        pairs.forEach(([k, v]) => {
+          const label = pretty(k);
+          const {text, tone} = parseYN(v);
+          const assign = row[`${k}_assignees`] || '';
+          const notes  = row[`${k}_notes`] || '';
+          const chips = assign.split(',').map(s=>s.trim()).filter(Boolean)
+                  .map(a=>`<span style="display:inline-block;padding:.15rem .45rem;border-radius:999px;font-size:11px;background:#f3f4f6;color:#374151">${a}</span>`)
+                  .join('');
+
+          const li = document.createElement('li');
+          li.innerHTML = `
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+            <div>
+              <div style="font-size:14px;color:#111827;font-weight:600">${label}</div>
+              ${notes? `<div style="font-size:12px;color:#6b7280;margin-top:4px">${notes}</div>`:''}
+            </div>
+            <div>${chipHTML(text, tone)}</div>
+          </div>
+          ${chips? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span style="font-size:11px;color:#6b7280;margin-right:4px">Assignees:</span>${chips}</div>`:''}
+        `;
+          listEl.appendChild(li);
         });
+        countEl.textContent = `${pairs.length} checks`;
       }
-    }catch(e){ /* ignore */ }
+
+      if (audit.length) { show($('#audit-card'));  renderList($('#audit-list'), $('#audit-count'), audit); }
+      if (test.length)  { show($('#test-card'));   renderList($('#test-list'),  $('#test-count'),  test);  }
+    }
+
+    if (document.readyState !== 'loading') main();
+    else document.addEventListener('DOMContentLoaded', main);
   })();
 </script>
+
+
+
 </body>
 </html>
