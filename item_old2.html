@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>RO-WAI • Item</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root{
+            --uga-red:#BA0C2F;
+            --uga-black:#000;
+            --uga-white:#fff;
+            --uga-gray:#554F47;
+            --card-bg:#ffffffF2;
+            --muted:#6b7280;
+            --ok:#38A169;
+            --pending:#CBD5E0;
+            --warn:#C05621;
+            --ring: rgba(186,12,47,.25);
+        }
+        *{box-sizing:border-box}
+        body{
+            margin:0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+            color:#111827;
+            background:
+                    radial-gradient(600px 600px at 15% 20%, rgba(186,12,47,.28) 0%, transparent 60%),
+                    radial-gradient(500px 500px at 85% 25%, rgba(186,12,47,.22) 0%, transparent 60%),
+                    radial-gradient(700px 700px at 30% 80%, rgba(245,240,230,.3) 0%, transparent 70%),
+                    radial-gradient(500px 500px at 10% 90%, rgba(200,200,200,.25) 0%, transparent 70%),
+                    linear-gradient(#e5e7eb33 2px, transparent 2px),
+                    linear-gradient(90deg, #e5e7eb33 2px, transparent 2px),
+                    linear-gradient(180deg, #f7f7f7, #fafafa);
+            background-size: auto,auto,auto,auto,20px 20px,20px 20px,auto;
+            min-height:100dvh;
+        }
+        .container{max-width:1100px;margin:40px auto;padding:0 20px}
+        .header{
+            display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px;
+        }
+        .title{font-size:1.6rem; font-weight:700; line-height:1.2; margin:0}
+        .meta{color:var(--muted); font-size:.95rem}
+        .badge{
+            display:inline-flex; align-items:center; gap:.4rem;
+            padding:.2rem .55rem; border:1px solid #e5e7eb; border-radius:999px; background:#fff;
+            font-size:.8rem; color:#374151;
+        }
+        .card{
+            background:var(--card-bg); backdrop-filter:saturate(1.1) blur(4px);
+            border:1px solid #e5e7eb; border-radius:16px; padding:18px 16px; margin:14px 0;
+            box-shadow:0 10px 25px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.5);
+        }
+        .card h2{font-size:1.05rem;margin:0 0 10px 0}
+        .desc{color:#1f2937; line-height:1.6}
+        .links a{display:inline-block; margin-right:12px; text-decoration:none; color:var(--uga-red); border-bottom:1px dashed rgba(186,12,47,.5)}
+        .progress{
+            display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; align-items:center;
+        }
+        .step{
+            position:relative; padding:10px 12px; border:1px solid #e5e7eb; border-radius:12px; background:#fff;
+        }
+        .step strong{display:block; font-size:.85rem}
+        .step small{display:block; color:var(--muted)}
+        .step.ok{border-color:#c6f6d5; box-shadow:0 0 0 3px rgba(56,161,105,.12) inset}
+        .step.pending{opacity:.85}
+        .step::after{
+            content:""; position:absolute; right:-6px; top:50%; width:12px; height:2px; background:#e5e7eb; transform:translateY(-50%);
+        }
+        .step:last-child::after{display:none}
+
+        /* Test form */
+        .form-row{display:grid; grid-template-columns: minmax(220px, 1fr) 2fr; gap:14px; align-items:start; padding:10px 0; border-top:1px dashed #e5e7eb}
+        .form-row:first-child{border-top:0}
+        .q-text{font-weight:600}
+        .answers{display:flex; flex-wrap:wrap; gap:16px; align-items:center}
+        .notes{width:100%; min-height:66px; resize:vertical; padding:10px; border:1px solid #e5e7eb; border-radius:10px}
+        .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+        .select, .input{
+            padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:10px; background:#fff; min-width:200px;
+        }
+        .btn{
+            appearance:none; border:0; border-radius:999px; padding:.6rem 1rem; font-weight:700; cursor:pointer;
+            background:var(--uga-red); color:#fff; box-shadow:0 6px 18px rgba(186,12,47,.25);
+        }
+        .btn:focus{outline:4px solid var(--ring)}
+        .helper{color:var(--muted); font-size:.9rem}
+        .pill{
+            display:inline-flex; align-items:center; gap:.35rem;
+            padding:.2rem .55rem; border-radius:999px; background:#F3F4F6; color:#374151; font-size:.8rem;
+        }
+
+        /* Radios (accessible, modern look) */
+        .choice{
+            --size: 18px;
+            display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; user-select:none;
+        }
+        .choice input{ position:absolute; opacity:0; width:0; height:0; }
+        .control{
+            width:var(--size); height:var(--size); border-radius:999px; border:2px solid #c7cbd1; display:inline-grid; place-items:center;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .control::after{
+            content:""; width:calc(var(--size) - 8px); height:calc(var(--size) - 8px); border-radius:999px; background:transparent; transition: background .15s;
+        }
+        .choice input:checked + .control{ border-color: var(--uga-red); box-shadow:0 0 0 3px var(--ring); }
+        .choice input:checked + .control::after{ background: var(--uga-red); }
+        .sr-only{position:absolute;left:-9999px}
+        @media (max-width: 720px){
+            .form-row{grid-template-columns: 1fr}
+            .answers{gap:12px}
+        }
+
+
+    </style>
+</head>
+<body>
+
+
+<div class="container" id="app" aria-live="polite">
+
+    <div class="header">
+        <div>
+            <h1 class="title" id="item-title">Loading…</h1>
+            <div class="meta">
+                <span class="badge" id="item-category">Category: —</span>
+                <span class="badge" id="item-slug">Slug: —</span>
+            </div>
+        </div>
+        <div class="badge" id="test-run-pill" title="This test execution ID helps group your answers">Test ID: —</div>
+    </div>
+
+    <!-- Description -->
+    <section class="card" aria-labelledby="descTitle">
+        <h2 id="descTitle">Item Description</h2>
+        <div class="desc" id="item-description">—</div>
+        <div class="links" style="margin-top:10px">
+            <a id="orig-link" href="#" target="_blank" rel="noreferrer noopener">Original URL</a>
+            <a id="new-link" href="#" target="_blank" rel="noreferrer noopener">New URL</a>
+        </div>
+    </section>
+
+    <!-- Plan / Build / Test progress -->
+    <section class="card" aria-labelledby="progTitle">
+        <h2 id="progTitle">Progress</h2>
+        <div class="progress" id="progress-steps" role="list" aria-label="Plan, Build, Test progress">
+            <!-- steps injected -->
+        </div>
+        <div class="helper" style="margin-top:8px">Statuses come from <code>s1</code>/<code>s2</code>/<code>s3</code> and their labels in the item row.</div>
+    </section>
+
+    <!-- Test -->
+    <section class="card" aria-labelledby="testTitle">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+            <h2 id="testTitle">Test</h2>
+            <div class="controls">
+                <label class="sr-only" for="tester">Tester</label>
+                <select id="tester" class="select" aria-label="Select tester"></select>
+                <button id="startRun" class="btn" type="button">Start New Test Run</button>
+            </div>
+        </div>
+        <div class="helper" style="margin:8px 0 4px" id="runHelp">Pick your name, then start a run to record answers.</div>
+        <div class="helper">Questions are filtered by this item’s category and the “Test” stage.</div>
+
+        <form id="testForm" style="margin-top:10px">
+            <!-- questions injected -->
+            <div style="margin-top:14px; display:flex; gap:10px; align-items:center">
+                <button class="btn" type="submit" id="submitBtn" disabled>Submit Answers</button>
+                <span class="pill" id="questions-count">0 questions</span>
+                <span class="pill" id="answers-target">Answers → Answers sheet</span>
+            </div>
+        </form>
+    </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<script>
+    (() => {
+        // ========= CONFIG =========
+        const SHEET_ID = '1naeWFQsNyjY3g0yNeZHcAg5VW-DTdOehH_Zjy3pCe7k'; // <— set your real ID
+        const CATEGORY_SHEETS = ['WebApps','Forms','PDFs','Media'];
+        const SHEET_QUESTIONS = 'Questions';
+        const SHEET_TESTERS   = 'Testers';
+        // If you don't have a writer yet, leave REPLACE_ME to run in DRY RUN (logs only)
+        const ANSWERS_ENDPOINT = 'https://script.google.com/macros/s/REPLACE_ME/exec';
+
+        const DEBUG = true;
+
+        // ========= UTILS =========
+        const $ = (s,el=document) => el.querySelector(s);
+        const $$ = (s,el=document) => Array.from(el.querySelectorAll(s));
+        const qs = new URLSearchParams(location.search);
+        const SLUG = (qs.get('slug')||'').trim();
+
+        const csvUrl = (sheet) =>
+            `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}&v=${Date.now()}`;
+
+        const nKey = k => String(k||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+        const nStr = v => String(v ?? '').trim();
+        const nCmp = v => nStr(v).toLowerCase();
+
+        function parseCSV(text){
+            // robust CSV parser (quotes, commas, newlines)
+            text = text.replace(/^\uFEFF/, ''); // strip BOM
+            const rows = [];
+            let i=0, field='', row=[], inQ=false;
+            while (i < text.length){
+                const c = text[i];
+                if (inQ){
+                    if (c === '"'){
+                        if (text[i+1] === '"'){ field += '"'; i+=2; continue; }
+                        inQ = false; i++; continue;
+                    }
+                    field += c; i++; continue;
+                } else {
+                    if (c === '"'){ inQ = true; i++; continue; }
+                    if (c === ','){ row.push(field); field=''; i++; continue; }
+                    if (c === '\r'){ i++; continue; }
+                    if (c === '\n'){ row.push(field); rows.push(row); field=''; row=[]; i++; continue; }
+                    field += c; i++;
+                }
+            }
+            if (field.length || row.length){ row.push(field); rows.push(row); }
+
+            if (!rows.length) return [];
+            const header = rows[0].map(nKey);
+            return rows.slice(1)
+                .filter(r => r.some(v => String(v||'').trim() !== ''))
+                .map(r => {
+                    const obj = {};
+                    for (let j=0;j<header.length;j++) obj[header[j]] = nStr(r[j] ?? '');
+                    return obj;
+                });
+        }
+
+        async function fetchSheet(sheet){
+            const res = await fetch(csvUrl(sheet));
+            if (!res.ok) throw new Error(`Fetch failed for ${sheet}: ${res.status}`);
+            const txt = await res.text();
+            const rows = parseCSV(txt);
+            if (DEBUG) console.log(`[${sheet}] parsed`, rows.slice(0,3));
+            return rows;
+        }
+
+        function normStatus(v){
+            const t = nCmp(v);
+            if (['2','done','complete','completed','true','yes','ok','y','✅','pass','passed','ready','approved'].includes(t)) return 2;
+            if (['1','in progress','in-progress','started','wip','partial','ongoing','doing'].includes(t)) return 1;
+            // treat everything else (including "to do", blank) as 0
+            return 0;
+        }
+
+        function fmtDateYYYYMMDD(d=new Date()){
+            return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function stepBadgeHTML(label, status){
+            const cls = status === 2 ? 'step ok' : (status === 1 ? 'step pending' : 'step');
+            const sub = status === 2 ? 'Complete' : (status === 1 ? 'In progress' : 'Not started');
+            return `
+      <div class="${cls}" role="listitem" aria-label="${label}: ${sub}">
+        <strong>${label}</strong>
+        <small>${sub}</small>
+      </div>
+    `;
+        }
+
+        function ensureDebugCard(){
+            let el = document.getElementById('debug-card');
+            if (!el){
+                el = document.createElement('section');
+                el.id='debug-card';
+                el.className='card';
+                el.innerHTML = `<h2>Debug</h2><pre id="debug-pre" style="white-space:pre-wrap"></pre>`;
+                $('.container')?.appendChild(el);
+            }
+            return el;
+        }
+        function dlog(...args){
+            if (!DEBUG) return;
+            console.log(...args);
+            const pre = $('#debug-pre') || ensureDebugCard().querySelector('#debug-pre');
+            pre.textContent += args.map(a => (typeof a==='string'?a:JSON.stringify(a,null,2))).join(' ') + '\n';
+        }
+
+        async function fetchFirstMatchBySlug(slug){
+            const slugN = nCmp(slug);
+            for (const sheet of CATEGORY_SHEETS){
+                const rows = await fetchSheet(sheet);
+                const slugs = rows.map(r => r.slug ?? r.Slug).filter(Boolean);
+                dlog(`Sheet ${sheet} slugs:`, slugs.slice(0,15));
+                const hit = rows.find(r => nCmp(r.slug) === slugN);
+                if (hit) return {sheet, row: hit};
+            }
+            return null;
+        }
+
+        function renderItem({sheet, row}){
+            const title = row.title || '(Untitled)';
+            const category = row.category || sheet;
+            const slug = row.slug || SLUG;
+            $('#item-title').textContent = title;
+            $('#item-category').textContent = `Category: ${category}`;
+            $('#item-slug').textContent = `Slug: ${slug}`;
+            $('#item-description').textContent = row.description || '—';
+
+            const o = row.original_url || '';
+            const n = row.new_url || '';
+            $('#orig-link').href = o || '#'; $('#orig-link').style.display = o ? '' : 'none';
+            $('#new-link').href  = n || '#'; $('#new-link').style.display  = n ? '' : 'none';
+
+            const s1 = normStatus(row.s1), s2 = normStatus(row.s2), s3 = normStatus(row.s3);
+            const l1 = row.s1_label || 'Plan';
+            const l2 = row.s2_label || 'Build';
+            const l3 = row.s3_label || 'Test';
+            $('#progress-steps').innerHTML = stepBadgeHTML(l1, s1) + stepBadgeHTML(l2, s2) + stepBadgeHTML(l3, s3);
+        }
+
+        async function loadTesters(){
+            const testers = await fetchSheet(SHEET_TESTERS);
+            const sel = $('#tester');
+            sel.innerHTML = `<option value="">Select tester…</option>` + testers
+                .filter(t => t.tester_id && t.name)
+                .map(t => `<option value="${nStr(t.tester_id)}">${nStr(t.name)}</option>`)
+                .join('');
+        }
+
+        async function loadQuestions(category){
+            const qs = await fetchSheet(SHEET_QUESTIONS);
+            const catN = nCmp(category);
+            const items = qs.filter(q => nCmp(q.category) === catN && nCmp(q.stage) === 'test');
+
+            const form = $('#testForm');
+            const submitRow = form.querySelector('div[role="submit-row"]');
+            if (submitRow) submitRow.remove(); // we’ll re-append below
+
+            $('#questions-count').textContent = `${items.length} question${items.length===1?'':'s'}`;
+
+            const html = items.map(q => `
+      <div class="form-row" data-qid="${q.qid}">
+        <div class="q-text">
+          <div class="pill" style="margin-bottom:6px">QID: ${q.qid}</div>
+          ${q.text}
+        </div>
+        <div>
+          <div class="answers" role="group" aria-label="Answer choices for ${q.qid}">
+            <label class="choice">
+              <input type="radio" name="ans-${q.qid}" value="Yes" />
+              <span class="control" aria-hidden="true"></span> Yes
+            </label>
+            <label class="choice">
+              <input type="radio" name="ans-${q.qid}" value="No" />
+              <span class="control" aria-hidden="true"></span> No
+            </label>
+            <label class="choice">
+              <input type="radio" name="ans-${q.qid}" value="N/A" />
+              <span class="control" aria-hidden="true"></span> N/A
+            </label>
+          </div>
+          <label class="sr-only" for="note-${q.qid}">Notes for ${q.qid}</label>
+          <textarea id="note-${q.qid}" class="notes" placeholder="Notes (optional)"></textarea>
+        </div>
+      </div>
+    `).join('');
+            form.innerHTML = html + `
+      <div style="margin-top:14px; display:flex; gap:10px; align-items:center" role="submit-row">
+        <button class="btn" type="submit" id="submitBtn" disabled>Submit Answers</button>
+        <span class="pill" id="answers-target">Answers → Answers sheet</span>
+      </div>
+    `;
+        }
+
+        function computeTestRunId(slug, testerId){
+            return `${slug}-${fmtDateYYYYMMDD()}-${testerId}`;
+        }
+        function enableRunControls(ok){ $('#submitBtn').disabled = !ok; }
+
+        async function postAnswerRow(row){
+            if (ANSWERS_ENDPOINT.includes('REPLACE_ME')){
+                dlog('DRY RUN — would POST row:', row);
+                return {ok:true, dryRun:true};
+            }
+            const res = await fetch(ANSWERS_ENDPOINT, {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify(row),
+            });
+            if (!res.ok){
+                const text = await res.text().catch(()=> '');
+                throw new Error(`Write failed (${res.status}): ${text}`);
+            }
+            return res.json().catch(()=> ({}));
+        }
+
+        function collectAnswers({slug, category, testerId, testRunId}){
+            const rows = [];
+            $$('#testForm .form-row[data-qid]').forEach(div => {
+                const qid = div.getAttribute('data-qid');
+                const chosen = $(`input[name="ans-${qid}"]:checked`, div);
+                const answer = chosen ? chosen.value : '';
+                const notes = $(`#note-${qid}`, div)?.value || '';
+                if (answer){
+                    rows.push({
+                        slug, category, qid, answer,
+                        tester_id: testerId,
+                        notes,
+                        timestamp: new Date().toISOString(),
+                        test_run_id: testRunId
+                    });
+                }
+            });
+            return rows;
+        }
+
+        // ========= INIT =========
+        (async function init(){
+            if (!SLUG){
+                $('#item-title').textContent = 'Missing ?slug= in the URL';
+                return;
+            }
+            $('#item-slug').textContent = `Slug: ${SLUG}`;
+
+            try{
+                const hit = await fetchFirstMatchBySlug(SLUG);
+                if (!hit){
+                    $('#item-title').textContent = 'Item not found';
+                    const card = document.createElement('section');
+                    card.className = 'card';
+                    card.innerHTML = `<h2>Not found</h2>
+          <p>No row matched slug <strong>${SLUG}</strong> in <code>${CATEGORY_SHEETS.join(', ')}</code>.</p>
+          <p>Check that your sheet tab names match exactly and that a row exists with <code>slug=${SLUG}</code>.</p>`;
+                    $('.container')?.appendChild(card);
+                    return;
+                }
+
+                renderItem(hit);
+                await loadTesters();
+                await loadQuestions(hit.row.category || hit.sheet);
+
+                // Test run controls
+                $('#test-run-pill').textContent = `Test ID: —`;
+                $('#startRun').addEventListener('click', () => {
+                    const testerId = $('#tester').value?.trim();
+                    if (!testerId){ alert('Please select a tester.'); return; }
+                    const runId = computeTestRunId(hit.row.slug || SLUG, testerId);
+                    $('#test-run-pill').textContent = `Test ID: ${runId}`;
+                    $('#runHelp').textContent = 'Answer questions below, then Submit.';
+                    enableRunControls(true);
+                });
+
+                $('#testForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const testerId = $('#tester').value?.trim();
+                    if (!testerId){ alert('Please select a tester.'); return; }
+                    const runId = ($('#test-run-pill').textContent||'').replace('Test ID: ','').trim();
+                    if (!runId || runId === '—'){ alert('Click “Start New Test Run” first.'); return; }
+
+                    const cat = hit.row.category || hit.sheet;
+                    const rows = collectAnswers({slug: hit.row.slug || SLUG, category: cat, testerId, testRunId: runId});
+                    if (!rows.length){ alert('Please answer at least one question.'); return; }
+
+                    try{
+                        for (const r of rows) await postAnswerRow(r);
+                        alert('Answers submitted. Thank you!');
+                        enableRunControls(false);
+                    }catch(err){
+                        console.error(err); dlog('Submit error:', err);
+                        alert('There was a problem saving your answers. Check the console for details.');
+                    }
+                });
+
+            }catch(err){
+                console.error(err); dlog('Init error:', err);
+                $('#item-title').textContent = 'Error loading item';
+                const card = document.createElement('section');
+                card.className = 'card';
+                card.innerHTML = `<h2>Load Error</h2><pre style="white-space:pre-wrap">${String(err)}</pre>`;
+                $('.container')?.appendChild(card);
+            }
+        })();
+    })();
+</script>
+
+</body>
+</html>
+
+

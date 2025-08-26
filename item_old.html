@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Item — Detail</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    :root{ --uga-red:#BA0C2F; --border:#e5e5e5; --black:#000; }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f9f9f9;color:#222}
+    .wrap{max-width:960px;margin:auto;padding:24px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:20px}
+    .p{padding:16px}
+    .badge{display:inline-block;padding:.35rem .6rem;border-radius:999px;font-size:.75rem;border:1px solid var(--border)}
+    .priority{display:inline-block;padding:.2rem .5rem;border-radius:6px;font-size:.75rem;color:#fff;background:#E0A800}
+    .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#cfcfcf;vertical-align:middle}
+    .dot.ok{background:#198754}
+    .dot.fail{background:#BA0C2F}
+    .mini-table{width:100%;border-collapse:collapse;margin-top:10px}
+    .mini-table th,.mini-table td{padding:8px 10px;border-top:1px solid var(--border);text-align:left}
+    .mini-table thead{background:#fafafa}
+    a{color:var(--uga-red);text-decoration:none}
+    body {
+      background:
+              radial-gradient(600px 600px at 15% 20%, rgba(186,12,47,.28) 0%, transparent 60%),
+              radial-gradient(500px 500px at 85% 25%, rgba(186,12,47,.22) 0%, transparent 60%),
+              radial-gradient(700px 700px at 30% 80%, rgba(186,12,47,.2) 0%, transparent 70%),
+              radial-gradient(800px 800px at 70% 90%, rgba(245,240,230,.3) 0%, transparent 70%),
+              radial-gradient(500px 500px at 10% 90%, rgba(200,200,200,.25) 0%, transparent 70%),
+              linear-gradient(#e5e7eb33 2px, transparent 2px),
+              linear-gradient(90deg, #e5e7eb33 2px, transparent 2px),
+              linear-gradient(180deg, #ffffff, #f9fafb);
+      background-size: auto, auto, auto, auto, auto, 36px 36px, 36px 36px, auto;
+      background-position: center center;
+    }
+    
+  </style>
+</head>
+<body>
+
+<main class="wrap">
+  <nav aria-label="Breadcrumb" style="font-size:16px;color:#666;margin:0 0 8px">
+    <a href="index.html" style="color:var(--uga-red);text-decoration:none">← Return to Dashboard</a>
+    <span style="margin:0 6px">/</span>
+    <span id="crumb-item">Current Item</span>
+  </nav>
+
+  <!-- Not found state -->
+  <div id="not-found" class="card" style="display:none">
+    <div class="p">
+      <h1 style="margin:0;color:#000;font-weight:800">Item not found</h1>
+      <p style="color:#666;margin:.5rem 0 0">
+        No item matches this slug. Check the <code>Slugs</code> tab and the <code>?slug=</code> in the URL.
+      </p>
+    </div>
+  </div>
+
+  <!-- Header / hero -->
+  <header id="hero" class="card" style="display:none;margin-bottom:16px">
+    <div class="p" style="display:flex;gap:16px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap">
+      <div>
+        <div id="item-category" style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6b7280">
+          Category
+        </div>
+        <h1 id="item-name" style="margin:.1rem 0 0;font-size:28px;line-height:1.2;color:#111827;font-weight:800">—</h1>
+
+        <!-- Link/type/slug chips -->
+        <div id="item-meta-chips" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <!-- optional chips populated by script -->
+          <span id="item-type" class="badge">Type: —</span>
+          <span id="item-slug" class="badge">Slug: —</span>
+          <!-- script will add: Original / Remediated chips if present -->
+        </div>
+      </div>
+
+      <!-- Micro segmented bar -->
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end">
+          <div role="group" aria-label="Plan, Build, Test" style="display:flex;gap:4px">
+            <span id="mb-1" style="display:inline-block;width:28px;height:6px;border-radius:4px;background:#e5e7eb"></span>
+            <span id="mb-2" style="display:inline-block;width:28px;height:6px;border-radius:4px;background:#e5e7eb"></span>
+            <span id="mb-3" style="display:inline-block;width:28px;height:6px;border-radius:4px;background:#e5e7eb"></span>
+          </div>
+          <span id="pct-label" style="font:11px/1 ui-monospace,Menlo,Consolas,monospace;color:#6b7280">0%</span>
+        </div>
+        <div id="step-labels" style="text-align:right;color:#6b7280;font-size:12px;margin-top:6px">
+          Plan / Build / Test
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Category guidance / description -->
+  <section id="category-guidance" class="card" style="display:none;margin-bottom:16px">
+    <div class="p">
+      <h2 style="margin:0 0 .5rem;color:#111827">What this category needs</h2>
+      <p id="category-desc" style="margin:0;color:#374151">—</p>
+    </div>
+  </section>
+
+  <!-- Two-column checks -->
+  <div style="display:grid;grid-template-columns:1fr;gap:16px">
+    <!-- Audit -->
+    <section id="audit-card" class="card" style="display:none">
+      <div class="p">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="margin:0;color:#111827">Audit</h3>
+          <div id="audit-count" style="font-size:12px;color:#6b7280">0 checks</div>
+        </div>
+        <ul id="audit-list" style="margin-top:12px;display:grid;gap:8px;list-style:none;padding:0"></ul>
+      </div>
+    </section>
+
+    <!-- Test -->
+    <section id="test-card" class="card" style="display:none">
+      <div class="p">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="margin:0;color:#111827">Test</h3>
+          <div id="test-count" style="font-size:12px;color:#6b7280">0 checks</div>
+        </div>
+        <ul id="test-list" style="margin-top:12px;display:grid;gap:8px;list-style:none;padding:0"></ul>
+      </div>
+    </section>
+  </div>
+</main>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<script>
+  (() => {
+    // ===== CONFIG =====
+    const SHEET_ID = '1naeWFQsNyjY3g0yNeZHcAg5VW-DTdOehH_Zjy3pCe7k'; // keep your real ID
+    const TAB = 'Slugs';
+
+    // ===== UTILS =====
+    const $  = s => document.querySelector(s);
+    const qs = new URLSearchParams(location.search);
+    const slug = (qs.get('slug')||'').trim();
+
+    const csvUrl = sheet =>
+            `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}&v=${Date.now()}`;
+
+    const norm = v => {
+      const t = String(v ?? '').trim().toLowerCase();
+      if (['2','done','complete','true','yes','ok','y','✅'].includes(t)) return 'done';
+      if (['1','in progress','in-progress','progress','wip','⏳'].includes(t)) return 'wip';
+      return 'todo';
+    };
+
+    function microBar(el, status){
+      const map = { done:'#22c55e', wip:'#fb923c', todo:'#e5e7eb' };
+      el.style.background = map[status] || map.todo;
+    }
+    function set3Bars(s1,s2,s3){
+      microBar($('#mb-1'), s1);
+      microBar($('#mb-2'), s2);
+      microBar($('#mb-3'), s3);
+    }
+
+    function chipHTML(text, tone){
+      const bg = tone==='good' ? '#dcfce7'
+              : tone==='warn' ? '#ffedd5'
+                      : tone==='bad'  ? '#fee2e2'
+                              : '#f3f4f6';
+      const fg = tone==='good' ? '#166534'
+              : tone==='warn' ? '#9a3412'
+                      : tone==='bad'  ? '#991b1b'
+                              : '#374151';
+      return `<span style="display:inline-block;padding:.15rem .45rem;border-radius:999px;font-size:12px;background:${bg};color:${fg}">${text}</span>`;
+    }
+
+    const pretty = (k) => k
+            .replace(/^audit_/, '')
+            .replace(/^test_/, '')
+            .replace(/_(assignees|notes)$/,'')
+            .replace(/[_-]+/g, ' ')
+            .replace(/\b\w/g, m => m.toUpperCase());
+
+    function parseYN(v){
+      const t = String(v||'').trim().toLowerCase();
+      if (['y','yes','true'].includes(t)) return {text:'Yes', tone:'good'};
+      if (['n','no','false'].includes(t)) return {text:'No',  tone:'bad'};
+      if (['n/a','na'].includes(t))       return {text:'N/A', tone:'mute'};
+      if (['in progress','wip'].includes(t)) return {text:'In progress', tone:'warn'};
+      return {text:'Unset', tone:'warn'};
+    }
+
+    async function fetchCSV(sheet){
+      const res  = await fetch(csvUrl(sheet));
+      const text = await res.text();
+      const out  = Papa.parse(text, { header:true, skipEmptyLines:true });
+      return out.data || [];
+    }
+
+    function titleFromSlug(s){
+      return s.replace(/[-_]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
+    }
+
+    function show(el){ if (el) el.style.display = ''; }
+    function hide(el){ if (el) el.style.display = 'none'; }
+
+    async function main(){
+      // require slug
+      if (!slug) { hide($('#hero')); show($('#not-found')); return; }
+
+      let rows = [];
+      try { rows = await fetchCSV(TAB); }
+      catch (e) { console.error(e); hide($('#hero')); show($('#not-found')); return; }
+
+      const row = rows.find(r => String(r.slug||'').trim() === slug);
+      if (!row) { hide($('#hero')); show($('#not-found')); return; }
+
+      // ===== Header =====
+      const step1 = row.step1 || 'Plan';
+      const step2 = row.step2 || 'Build';
+      const step3 = row.step3 || 'Test';
+
+      show($('#hero'));
+      $('#item-name').textContent = row.name || titleFromSlug(slug);
+      $('#item-category').textContent = row.category || '—';
+      $('#item-type').textContent = `Type: ${row.type || '—'}`;
+      $('#item-slug').textContent = `Slug: ${slug}`;
+      $('#step-labels').textContent = `${step1} / ${step2} / ${step3}`;
+
+      // micro bars
+      const s1 = norm(row.s1), s2 = norm(row.s2), s3 = norm(row.s3);
+      set3Bars(s1,s2,s3);
+      const score = s => s==='done'?1 : s==='wip'?0.5 : 0;
+      const present = ['s1','s2','s3'].filter(k=>row[k]).length || 1;
+      const pct = Math.round(((row.s1?score(s1):0)+(row.s2?score(s2):0)+(row.s3?score(s3):0)) / present * 100);
+      $('#pct-label').textContent = (isFinite(pct) ? pct : 0) + '%';
+
+      // description
+      const desc = String(row.description||'').trim();
+      if (desc) {
+        show($('#category-guidance'));
+        $('#category-desc').textContent = desc;
+      }
+
+      // link chips (Original/Remediated)
+      const chipRow = $('#item-meta-chips');
+      function addChip(href, label){
+        if (!href) return;
+        const a = document.createElement('a');
+        a.href = href; a.target = '_blank'; a.rel = 'noopener';
+        a.className = 'badge';
+        a.textContent = label + ' ↗';
+        chipRow.appendChild(a);
+      }
+      addChip(row['original url'] || row.original_url, 'Original');
+      addChip(row['remediated url'] || row.remediated_url, 'Remediated');
+
+      // ===== Build Audit / Test lists =====
+      const entries = Object.entries(row);
+      const isCheck = (k,pfx) => k.toLowerCase().startsWith(pfx) &&
+              !k.toLowerCase().endsWith('_assignees') &&
+              !k.toLowerCase().endsWith('_notes');
+
+      const audit = entries.filter(([k]) => isCheck(k,'audit_'));
+      const test  = entries.filter(([k]) => isCheck(k,'test_'));
+
+      function renderList(listEl, countEl, pairs){
+        listEl.innerHTML = '';
+        pairs.forEach(([k, v]) => {
+          const label = pretty(k);
+          const {text, tone} = parseYN(v);
+          const assign = row[`${k}_assignees`] || '';
+          const notes  = row[`${k}_notes`] || '';
+          const chips = assign.split(',').map(s=>s.trim()).filter(Boolean)
+                  .map(a=>`<span style="display:inline-block;padding:.15rem .45rem;border-radius:999px;font-size:11px;background:#f3f4f6;color:#374151">${a}</span>`)
+                  .join('');
+
+          const li = document.createElement('li');
+          li.innerHTML = `
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+            <div>
+              <div style="font-size:14px;color:#111827;font-weight:600">${label}</div>
+              ${notes? `<div style="font-size:12px;color:#6b7280;margin-top:4px">${notes}</div>`:''}
+            </div>
+            <div>${chipHTML(text, tone)}</div>
+          </div>
+          ${chips? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span style="font-size:11px;color:#6b7280;margin-right:4px">Assignees:</span>${chips}</div>`:''}
+        `;
+          listEl.appendChild(li);
+        });
+        countEl.textContent = `${pairs.length} checks`;
+      }
+
+      if (audit.length) { show($('#audit-card'));  renderList($('#audit-list'), $('#audit-count'), audit); }
+      if (test.length)  { show($('#test-card'));   renderList($('#test-list'),  $('#test-count'),  test);  }
+    }
+
+    if (document.readyState !== 'loading') main();
+    else document.addEventListener('DOMContentLoaded', main);
+  })();
+</script>
+
+
+
+</body>
+</html>

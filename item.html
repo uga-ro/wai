@@ -1,306 +1,713 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Item — Detail</title>
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-    :root{ --uga-red:#BA0C2F; --border:#e5e5e5; --black:#000; }
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f9f9f9;color:#222}
-    .wrap{max-width:960px;margin:auto;padding:24px}
-    .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:20px}
-    .p{padding:16px}
-    .badge{display:inline-block;padding:.35rem .6rem;border-radius:999px;font-size:.75rem;border:1px solid var(--border)}
-    .priority{display:inline-block;padding:.2rem .5rem;border-radius:6px;font-size:.75rem;color:#fff;background:#E0A800}
-    .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#cfcfcf;vertical-align:middle}
-    .dot.ok{background:#198754}
-    .dot.fail{background:#BA0C2F}
-    .mini-table{width:100%;border-collapse:collapse;margin-top:10px}
-    .mini-table th,.mini-table td{padding:8px 10px;border-top:1px solid var(--border);text-align:left}
-    .mini-table thead{background:#fafafa}
-    a{color:var(--uga-red);text-decoration:none}
-    body {
-      background:
-              radial-gradient(600px 600px at 15% 20%, rgba(186,12,47,.28) 0%, transparent 60%),
-              radial-gradient(500px 500px at 85% 25%, rgba(186,12,47,.22) 0%, transparent 60%),
-              radial-gradient(700px 700px at 30% 80%, rgba(186,12,47,.2) 0%, transparent 70%),
-              radial-gradient(800px 800px at 70% 90%, rgba(245,240,230,.3) 0%, transparent 70%),
-              radial-gradient(500px 500px at 10% 90%, rgba(200,200,200,.25) 0%, transparent 70%),
-              linear-gradient(#e5e7eb33 2px, transparent 2px),
-              linear-gradient(90deg, #e5e7eb33 2px, transparent 2px),
-              linear-gradient(180deg, #ffffff, #f9fafb);
-      background-size: auto, auto, auto, auto, auto, 36px 36px, 36px 36px, auto;
-      background-position: center center;
-    }
-    
-  </style>
+    <meta charset="utf-8" />
+    <title>RO-WAI • Item Template (Design Mock)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root{
+            --uga-red:#BA0C2F;
+            --uga-black:#000;
+            --uga-white:#fff;
+            --uga-gray:#554F47;
+            --muted:#6b7280;
+            --ok:#16a34a;
+            --line:#e5e7eb;
+            --card:#ffffffF2;
+            --ring: rgba(186,12,47,.25);
+        }
+        *{box-sizing:border-box}
+        body{
+            margin:0; color:#0f172a;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+
+                /* Static background image */
+            /* Background image with UGA brand gradient overlay */
+            background-image:
+                    linear-gradient(rgba(255,255,255,0.8), rgba(229,229,229,0.9), rgba(209,213,219,0.9), rgba(186,12,47,0.3)),
+                    url('https://www.uga.edu/img/prism-background.57f15081.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height:100dvh;
+        }
+        .container{max-width:1100px;margin:36px auto;padding:0 20px}
+
+        .card{
+            background:var(--card); border:1px solid var(--line); border-radius:16px;
+            padding:20px; box-shadow:0 10px 25px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.5);
+            margin:14px 0;
+        }
+
+        /* ======= HEADER (to match your screenshot) ======= */
+        .hero{display:grid; grid-template-columns:1fr auto; gap:24px; align-items:center;
+
+        }
+        .kicker{
+            text-transform:uppercase; letter-spacing:.12em; font-weight:700; font-size:.75rem; color:#9aa0a6; margin-bottom:.35rem;
+        }
+        .hero-title{font-weight:800; font-size:1.6rem; line-height:1.2; margin:.1rem 0 .4rem}
+        .hero-desc{color:#4b5563; margin:0}
+        .hero-links{display:flex; flex-direction:column; gap:10px}
+        .pill-link{
+            display:inline-flex; align-items:center; gap:.55rem; text-decoration:none;
+            padding:.6rem .85rem; border:1px solid var(--line); border-radius:999px; background:#fff; color:#111827; font-weight:600;
+            box-shadow:0 2px 8px rgba(0,0,0,.04);
+        }
+        .pill-link:hover{border-color:#d1d5db; transform:translateY(-1px)}
+        .pill-link .i{
+            width:16px; height:16px; display:inline-block; background:no-repeat center/16px 16px
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23374151' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.5 5.5l-5 5'/%3E%3Cpath d='M8.5 3.5h4v4'/%3E%3Cpath d='M7.5 12.5h-4v-4'/%3E%3C/svg%3E");
+        }
+
+        /* ======= PROGRESS ======= */
+        .section-head{display:flex; align-items:center; gap:.5rem; font-weight:700; color:#374151; margin-bottom:10px}
+        .section-head .lock{
+            width:16px; height:16px; display:inline-block; background:no-repeat center/16px 16px
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23554F47' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='7' width='10' height='7' rx='1.5'/%3E%3Cpath d='M5.5 7V5a2.5 2.5 0 015 0v2'/%3E%3C/svg%3E");
+        }
+
+        .steps{position:relative; display:flex; gap:14px; align-items:stretch; counter-reset:pstep}
+        .steps::after{content:""; position:absolute; left:0; right:0; top:50%; height:2px; background:#e5e7eb; z-index:0}
+        .step{counter-increment:pstep; position:relative; z-index:1; min-width:230px;
+            padding:12px 14px 10px 48px; border-radius:999px; background:#fff; border:1px solid var(--line);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+        }
+        .step strong{display:block; font-size:.95rem; color:#0f172a; font-weight:800}
+        .step strong::before{content:"STEP " counter(pstep); display:block; font-size:.7rem; letter-spacing:.12em; font-weight:700; color:#9aa0a6; margin-bottom:2px}
+        .step small{
+            position:absolute; right:10px; top:10px; padding:.15rem .5rem; border-radius:999px; font-size:.7rem; font-weight:700;
+            border:1px solid var(--line); color:#4b5563; background:#f9fafb;
+        }
+        .step::before{
+            content:""; position:absolute; left:14px; top:50%; transform:translateY(-50%);
+            width:22px; height:22px; border-radius:999px; border:2px solid #d1d5db; background:#fff;
+        }
+        .step.ok small{background:#E7F8EC; color:#166534; border-color:#bbf7d0}
+        .step.ok::before{border-color:#34d399; background: radial-gradient(circle at center, #34d399 50%, transparent 51%); box-shadow:0 0 0 4px rgba(52,211,153,.15)}
+
+        /* ======= TEST CARD ======= */
+        .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+        .select, .btn{padding:.55rem .8rem; border-radius:10px; border:1px solid var(--line); background:#fff}
+        .btn{border:0; cursor:pointer; font-weight:700; background:var(--uga-red); color:#fff; box-shadow:0 6px 18px rgba(186,12,47,.25)}
+        .btn:focus{outline:4px solid var(--ring)}
+        .helper{color:var(--muted); font-size:.9rem}
+
+        .form-row{display:grid; grid-template-columns:minmax(220px,1fr) 2fr; gap:14px; align-items:start; padding:12px 0; border-top:1px dashed var(--line)}
+        .form-row:first-child{border-top:0}
+        .q-text{font-weight:600}
+        .answers{display:flex; flex-wrap:wrap; gap:16px; align-items:center}
+        .notes{width:100%; min-height:66px; resize:vertical; padding:10px; border:1px solid var(--line); border-radius:10px}
+
+        /* Modern radios (accessible) */
+        .choice{--size:18px; display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; user-select:none}
+        .choice input{position:absolute; opacity:0; width:0; height:0}
+        .control{width:var(--size); height:var(--size); border-radius:999px; border:2px solid #c7cbd1; display:inline-grid; place-items:center; transition:border-color .2s, box-shadow .2s}
+        .control::after{content:""; width:calc(var(--size) - 8px); height:calc(var(--size) - 8px); border-radius:999px; background:transparent; transition:background .15s}
+        .choice input:checked + .control{border-color:var(--uga-red); box-shadow:0 0 0 3px var(--ring)}
+        .choice input:checked + .control::after{background:var(--uga-red)}
+        .pill{display:inline-flex; align-items:center; gap:.35rem; padding:.2rem .55rem; border-radius:999px; background:#F3F4F6; color:#374151; font-size:.8rem}
+
+        /* Keep these hidden so the script can still target them later */
+        #item-slug, #test-run-pill { display:none }
+
+        @media (max-width:800px){
+            .hero{grid-template-columns:1fr}
+            .hero-links{flex-direction:row; flex-wrap:wrap}
+            .form-row{grid-template-columns:1fr}
+        }
+        /* a) Clipboard icon instead of lock */
+        .clipboard{
+            width:16px; height:16px; display:inline-block;
+            background:no-repeat center/16px 16px
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23554F47' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='3' width='8' height='12' rx='1.5'/%3E%3Cpath d='M6 3h4v2H6z'/%3E%3C/svg%3E");
+        }
+
+        /* b) Ensure line spans full width of step container */
+        .steps.wide::after{left:0; right:0;}
+
+        /* c) Cleaner green radio dot */
+        .step.ok::before{
+            border-color:#34d399;
+            background:#34d399;
+            box-shadow:0 0 0 4px rgba(52,211,153,.15), inset 0 0 2px rgba(0,0,0,.2);
+        }
+        /* Make the progress rail span the entire card */
+        #progress-steps.steps,
+        #progress-steps.nice-steps,
+        #progress-steps {
+            width: 100%;
+            display: flex;
+            gap: 14px;
+            justify-content: space-between;   /* evenly distribute */
+            align-items: stretch;
+            position: relative;
+        }
+
+        /* Edge-to-edge connector line */
+        #progress-steps::after{
+            content:"";
+            position:absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 2px;
+            background: #e5e7eb;
+            z-index: 0;
+        }
+
+        /* Each step expands to share the width; no minimums that force overflow */
+        #progress-steps .step{
+            flex: 1 1 0;
+            min-width: 0;
+            z-index: 1; /* sit above the line */
+        }
+
+        /* d) 4-digit tester code entry */
+        .test-wrap{display:flex; flex-direction:column; gap:.9rem}
+        .code-inputs{display:flex; gap:.6rem}
+        .code-input{
+            width:3.2rem; height:3.4rem; text-align:center; font-size:1.6rem; font-weight:700;
+            border-radius:12px; border:1.5px solid #d1d5db; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.05);
+        }
+        .code-input:focus{outline:3px solid rgba(186,12,47,.35); outline-offset:2px; border-color:var(--uga-red)}
+        .btn-primary{display:inline-flex; align-items:center; gap:.5rem; padding:.6rem 1rem; border-radius:12px; background:var(--uga-red); color:#fff; border:0; cursor:pointer; font-weight:700}
+        .btn-primary[disabled]{opacity:.6; cursor:not-allowed}
+        .btn-primary:focus{outline:3px solid rgba(186,12,47,.35); outline-offset:2px}
+        .status{font-size:.95rem}
+        .status.ok{color:#0f7b45}
+        .status.err{color:#b91c1c}
+        .visually-hidden{position:absolute; left:-9999px}
+        /* 4-digit tester code entry */
+        .code-inputs{display:flex; gap:.6rem; align-items:center}
+        .code-input{
+            width:3.2rem; height:3.4rem; text-align:center; font-size:1.6rem; font-weight:700;
+            border-radius:12px; border:1.5px solid #d1d5db; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.05);
+        }
+        .code-input:focus{outline:3px solid rgba(186,12,47,.35); outline-offset:2px; border-color:var(--uga-red)}
+        .btn-primary{
+            display:inline-flex; align-items:center; gap:.5rem; padding:.6rem 1rem;
+            border-radius:12px; background:var(--uga-red); color:#fff; border:0; cursor:pointer; font-weight:700
+        }
+        .btn-primary[disabled]{opacity:.6; cursor:not-allowed}
+        .visually-hidden{position:absolute; left:-9999px}
+
+        #tester-controls, .controls {
+            display: block !important; /* override any flex layout */
+        }
+
+        .code-inputs {
+            display: flex; gap: .6rem;
+            margin: 0.6rem 0; /* add breathing room */
+        }
+
+        #beginBtn {
+            margin: 0.6rem 0; /* space above/below the button */
+        }
+        /* Center the "setup" section of the Test card */
+        .test-setup {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;   /* center text like the directions */
+            gap: 0.9rem;          /* even spacing between children */
+            margin: 1rem 0 1.5rem;
+        }
+
+        .test-setup .code-inputs {
+            display: flex;
+            gap: 0.6rem;
+            justify-content: center;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;                /* space between q-text, answers, and notes */
+            padding: 14px 0;
+            border-top: 1px dashed var(--line);
+        }
+
+        .form-row:first-child {
+            border-top: 0;
+        }
+
+        .q-text {
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .answers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem 1.5rem;           /* row + column spacing for radios */
+        }
+
+        .notes {
+            width: 100%;
+            min-height: 70px;
+            resize: vertical;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+
+    </style>
 </head>
 <body>
-
-<main class="wrap">
-  <nav aria-label="Breadcrumb" style="font-size:16px;color:#666;margin:0 0 8px">
-    <a href="index.html" style="color:var(--uga-red);text-decoration:none">← Return to Dashboard</a>
-    <span style="margin:0 6px">/</span>
-    <span id="crumb-item">Current Item</span>
-  </nav>
-
-  <!-- Not found state -->
-  <div id="not-found" class="card" style="display:none">
-    <div class="p">
-      <h1 style="margin:0;color:#000;font-weight:800">Item not found</h1>
-      <p style="color:#666;margin:.5rem 0 0">
-        No item matches this slug. Check the <code>Slugs</code> tab and the <code>?slug=</code> in the URL.
-      </p>
-    </div>
-  </div>
-
-  <!-- Header / hero -->
-  <header id="hero" class="card" style="display:none;margin-bottom:16px">
-    <div class="p" style="display:flex;gap:16px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap">
-      <div>
-        <div id="item-category" style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6b7280">
-          Category
+<div class="container" id="app">
+    <nav aria-label="Breadcrumb" style="font-size:16px;color:#666;margin:0 0 8px">
+        <a href="index.html" style="color:var(--uga-red);text-decoration:none">← Return to Dashboard</a>
+        <span style="margin:0 6px">/</span>
+        <span id="crumb-item">Current Item</span>
+    </nav>
+    <!-- ===== HEADER (Dummy values) ===== -->
+    <section class="card hero">
+        <div>
+            <div id="item-category" class="kicker">WEBAPPS</div>
+            <h1 id="item-title" class="hero-title">CASIS Access Tool</h1>
+            <p id="item-description" class="hero-desc">
+                Centralized access request and training workflow for Registrar staff users.
+                This mock shows how your spreadsheet data maps into an info card and progress UI.
+            </p>
         </div>
-        <h1 id="item-name" style="margin:.1rem 0 0;font-size:28px;line-height:1.2;color:#111827;font-weight:800">—</h1>
-
-        <!-- Link/type/slug chips -->
-        <div id="item-meta-chips" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-          <!-- optional chips populated by script -->
-          <span id="item-type" class="badge">Type: —</span>
-          <span id="item-slug" class="badge">Slug: —</span>
-          <!-- script will add: Original / Remediated chips if present -->
+        <div class="hero-links">
+            <a id="orig-link" href="#" class="pill-link"><span class="i" aria-hidden="true"></span><span>Original URL</span></a>
+            <a id="new-link"  href="#" class="pill-link"><span class="i" aria-hidden="true"></span><span>New URL</span></a>
         </div>
-      </div>
-
-      <!-- Micro segmented bar -->
-      <div>
-        <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end">
-          <div role="group" aria-label="Plan, Build, Test" style="display:flex;gap:4px">
-            <span id="mb-1" style="display:inline-block;width:28px;height:6px;border-radius:4px;background:#e5e7eb"></span>
-            <span id="mb-2" style="display:inline-block;width:28px;height:6px;border-radius:4px;background:#e5e7eb"></span>
-            <span id="mb-3" style="display:inline-block;width:28px;height:6px;border-radius:4px;background:#e5e7eb"></span>
-          </div>
-          <span id="pct-label" style="font:11px/1 ui-monospace,Menlo,Consolas,monospace;color:#6b7280">0%</span>
-        </div>
-        <div id="step-labels" style="text-align:right;color:#6b7280;font-size:12px;margin-top:6px">
-          Plan / Build / Test
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Category guidance / description -->
-  <section id="category-guidance" class="card" style="display:none;margin-bottom:16px">
-    <div class="p">
-      <h2 style="margin:0 0 .5rem;color:#111827">What this category needs</h2>
-      <p id="category-desc" style="margin:0;color:#374151">—</p>
-    </div>
-  </section>
-
-  <!-- Two-column checks -->
-  <div style="display:grid;grid-template-columns:1fr;gap:16px">
-    <!-- Audit -->
-    <section id="audit-card" class="card" style="display:none">
-      <div class="p">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <h3 style="margin:0;color:#111827">Audit</h3>
-          <div id="audit-count" style="font-size:12px;color:#6b7280">0 checks</div>
-        </div>
-        <ul id="audit-list" style="margin-top:12px;display:grid;gap:8px;list-style:none;padding:0"></ul>
-      </div>
+        <!-- kept for script compatibility; hidden via CSS -->
+        <span id="item-slug">casis</span>
+        <span id="test-run-pill">Test ID: —</span>
     </section>
 
-    <!-- Test -->
-    <section id="test-card" class="card" style="display:none">
-      <div class="p">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <h3 style="margin:0;color:#111827">Test</h3>
-          <div id="test-count" style="font-size:12px;color:#6b7280">0 checks</div>
+    <!-- ===== PROGRESS (Dummy values from item row: s1/s2/s3 + labels) ===== -->
+    <!-- ===== PROGRESS ===== -->
+    <section class="card" aria-labelledby="progTitle">
+        <div class="section-head">
+            <span class="clipboard" aria-hidden="true"></span>
+            <span id="progTitle">Progress</span>
         </div>
-        <ul id="test-list" style="margin-top:12px;display:grid;gap:8px;list-style:none;padding:0"></ul>
-      </div>
+        <div class="steps wide" id="progress-steps" role="list" aria-label="Plan, Build, Test progress">
+            <div class="step ok" role="listitem"><strong>Audit &amp; Planning</strong><small>Done</small></div>
+            <div class="step pending" role="listitem"><strong>Testing</strong><small>In Progress</small></div>
+            <div class="step" role="listitem"><strong>Approve &amp; Publish</strong><small>To Do</small></div>
+        </div>
     </section>
-  </div>
-</main>
 
+    <!-- ===== TEST (Dummy questions for category=WebApps, stage=Test) ===== -->
+    <section class="card" aria-labelledby="testTitle">
+        <h2 id="testTitle" class="card-title">Test</h2>
 
+        <div class="test-setup">
+            <p id="testHelp" class="hint">
+                Enter your assigned 4-digit code, then press <strong>Begin Testing</strong>.
+            </p>
 
+            <div class="code-inputs" aria-describedby="testHelp">
+                <input id="code1" class="code-input" type="text" maxlength="1" inputmode="numeric" />
+                <input id="code2" class="code-input" type="text" maxlength="1" inputmode="numeric" />
+                <input id="code3" class="code-input" type="text" maxlength="1" inputmode="numeric" />
+                <input id="code4" class="code-input" type="text" maxlength="1" inputmode="numeric" />
+            </div>
+
+            <button id="beginBtn" class="btn-primary" type="button" disabled>Begin Testing</button>
+            <div id="testStatus" class="status" aria-live="polite"></div>
+        </div>
+
+<!--        <div class="helper">Questions are filtered by this item’s category and the “Test” stage.</div>-->
+
+        <form id="testForm" style="margin-top:10px">
+            <!-- Dummy Qs from Questions sheet (category=WebApps, stage=Test) -->
+            <div class="form-row" data-qid="WA-T-001">
+                <div class="q-text"><div class="pill" style="margin-bottom:6px">QID: WA-T-001</div>Can the app be used with keyboard only?</div>
+                <div>
+                    <div class="answers" role="group" aria-label="Answers for WA-T-001">
+                        <label class="choice"><input type="radio" name="ans-WA-T-001" value="Yes"><span class="control"></span>Yes</label>
+                        <label class="choice"><input type="radio" name="ans-WA-T-001" value="No"><span class="control"></span>No</label>
+                        <label class="choice"><input type="radio" name="ans-WA-T-001" value="N/A"><span class="control"></span>N/A</label>
+                    </div>
+                    <textarea id="note-WA-T-001" class="notes" placeholder="Notes (optional)"></textarea>
+                </div>
+            </div>
+
+            <div class="form-row" data-qid="WA-T-002">
+                <div class="q-text"><div class="pill" style="margin-bottom:6px">QID: WA-T-002</div>Are focus states visible and consistent?</div>
+                <div>
+                    <div class="answers" role="group" aria-label="Answers for WA-T-002">
+                        <label class="choice"><input type="radio" name="ans-WA-T-002" value="Yes"><span class="control"></span>Yes</label>
+                        <label class="choice"><input type="radio" name="ans-WA-T-002" value="No"><span class="control"></span>No</label>
+                        <label class="choice"><input type="radio" name="ans-WA-T-002" value="N/A"><span class="control"></span>N/A</label>
+                    </div>
+                    <textarea id="note-WA-T-002" class="notes" placeholder="Notes (optional)"></textarea>
+                </div>
+            </div>
+
+            <div class="form-row" data-qid="WA-T-003">
+                <div class="q-text"><div class="pill" style="margin-bottom:6px">QID: WA-T-003</div>Does the app reflow and remain usable at 400% zoom?</div>
+                <div>
+                    <div class="answers" role="group" aria-label="Answers for WA-T-003">
+                        <label class="choice"><input type="radio" name="ans-WA-T-003" value="Yes"><span class="control"></span>Yes</label>
+                        <label class="choice"><input type="radio" name="ans-WA-T-003" value="No"><span class="control"></span>No</label>
+                        <label class="choice"><input type="radio" name="ans-WA-T-003" value="N/A"><span class="control"></span>N/A</label>
+                    </div>
+                    <textarea id="note-WA-T-003" class="notes" placeholder="Notes (optional)"></textarea>
+                </div>
+            </div>
+
+            <div style="margin-top:14px; display:flex; gap:10px; align-items:center">
+                <button class="btn" type="submit" id="submitBtn" disabled>Submit Answers</button>
+                <span class="pill" id="questions-count">3 questions</span>
+                <span class="pill" id="answers-target">Answers → Answers sheet</span>
+            </div>
+        </form>
+    </section>
+
+</div>
+<!--code script-->
+<script>
+    const inputs = document.querySelectorAll('.code-input');
+    const beginBtn = document.getElementById('beginBtn');
+    inputs.forEach((inp,i) => {
+        inp.addEventListener('input', e => {
+            if (inp.value.length === 1 && i < inputs.length-1) inputs[i+1].focus();
+            beginBtn.disabled = [...inputs].some(x => x.value.length !== 1);
+        });
+        inp.addEventListener('keydown', e => {
+            if(e.key === 'Backspace' && !inp.value && i>0) inputs[i-1].focus();
+        });
+    });
+</script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <script>
-  (() => {
-    // ===== CONFIG =====
-    const SHEET_ID = '1naeWFQsNyjY3g0yNeZHcAg5VW-DTdOehH_Zjy3pCe7k'; // keep your real ID
-    const TAB = 'Slugs';
+    (() => {
+        // ========== CONFIG ==========
+        const SHEET_ID = '1naeWFQsNyjY3g0yNeZHcAg5VW-DTdOehH_Zjy3pCe7k';              // <-- your real Google Sheet ID
+        const CATEGORY_SHEETS = ['WebApps','Forms','PDFs','Media'];
+        const SHEET_QUESTIONS = 'Questions';
+        const SHEET_TESTERS   = 'Testers';                      // not required for code entry, but kept if you need it later
+        const ANSWERS_ENDPOINT = 'https://script.google.com/macros/s/REPLACE_ME/exec'; // <-- Apps Script writer; leave REPLACE_ME for DRY RUN
 
-    // ===== UTILS =====
-    const $  = s => document.querySelector(s);
-    const qs = new URLSearchParams(location.search);
-    const slug = (qs.get('slug')||'').trim();
+        // ========== DOM SHORTCUTS ==========
+        const $  = (s, el=document) => el.querySelector(s);
+        const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
 
-    const csvUrl = sheet =>
+        // Required elements from your template:
+        const elTitle   = $('#item-title');
+        const elCat     = $('#item-category');
+        const elDesc    = $('#item-description');
+        const elOrig    = $('#orig-link');
+        const elNew     = $('#new-link');
+        const elSteps   = $('#progress-steps');
+        const elSlug    = $('#item-slug');          // can be hidden
+        const elRunPill = $('#test-run-pill');      // can be hidden
+        const elQCount  = $('#questions-count');
+        const elForm    = $('#testForm');
+        const elSubmit  = $('#submitBtn');
+        const elStatus  = $('#testStatus');
+
+        // Code-entry bits (must exist in template):
+        const codeInputs = ['code1','code2','code3','code4'].map(id => document.getElementById(id)).filter(Boolean);
+        const beginBtn   = document.getElementById('beginBtn');
+
+        // ========== HELPERS ==========
+        const qs = new URLSearchParams(location.search);
+        const SLUG = (qs.get('slug') || (elSlug?.textContent || '')).trim();
+
+        const csvUrl = (sheet) =>
             `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}&v=${Date.now()}`;
 
-    const norm = v => {
-      const t = String(v ?? '').trim().toLowerCase();
-      if (['2','done','complete','true','yes','ok','y','✅'].includes(t)) return 'done';
-      if (['1','in progress','in-progress','progress','wip','⏳'].includes(t)) return 'wip';
-      return 'todo';
-    };
+        const nKey = k => String(k||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+        const nStr = v => String(v ?? '').trim();
+        const nCmp = v => nStr(v).toLowerCase();
 
-    function microBar(el, status){
-      const map = { done:'#22c55e', wip:'#fb923c', todo:'#e5e7eb' };
-      el.style.background = map[status] || map.todo;
-    }
-    function set3Bars(s1,s2,s3){
-      microBar($('#mb-1'), s1);
-      microBar($('#mb-2'), s2);
-      microBar($('#mb-3'), s3);
-    }
+        function parseCSV(text){
+            text = text.replace(/^\uFEFF/,'');
+            const rows = [];
+            let i=0, f='', row=[], q=false;
+            while(i<text.length){
+                const c=text[i];
+                if(q){
+                    if(c === '"'){
+                        if(text[i+1] === '"'){ f+='"'; i+=2; continue; }
+                        q=false; i++; continue;
+                    }
+                    f+=c; i++; continue;
+                }else{
+                    if(c === '"'){ q=true; i++; continue; }
+                    if(c === ','){ row.push(f); f=''; i++; continue; }
+                    if(c === '\r'){ i++; continue; }
+                    if(c === '\n'){ row.push(f); rows.push(row); f=''; row=[]; i++; continue; }
+                    f+=c; i++;
+                }
+            }
+            if(f.length || row.length){ row.push(f); rows.push(row); }
+            if(!rows.length) return [];
+            const header = rows[0].map(nKey);
+            return rows.slice(1)
+                .filter(r => r.some(v => String(v||'').trim() !== ''))
+                .map(r => {
+                    const obj={};
+                    for(let j=0;j<header.length;j++) obj[header[j]] = nStr(r[j] ?? '');
+                    return obj;
+                });
+        }
 
-    function chipHTML(text, tone){
-      const bg = tone==='good' ? '#dcfce7'
-              : tone==='warn' ? '#ffedd5'
-                      : tone==='bad'  ? '#fee2e2'
-                              : '#f3f4f6';
-      const fg = tone==='good' ? '#166534'
-              : tone==='warn' ? '#9a3412'
-                      : tone==='bad'  ? '#991b1b'
-                              : '#374151';
-      return `<span style="display:inline-block;padding:.15rem .45rem;border-radius:999px;font-size:12px;background:${bg};color:${fg}">${text}</span>`;
-    }
+        async function fetchSheet(sheet){
+            const res = await fetch(csvUrl(sheet));
+            if(!res.ok) throw new Error(`Fetch failed for ${sheet}: ${res.status}`);
+            return parseCSV(await res.text());
+        }
 
-    const pretty = (k) => k
-            .replace(/^audit_/, '')
-            .replace(/^test_/, '')
-            .replace(/_(assignees|notes)$/,'')
-            .replace(/[_-]+/g, ' ')
-            .replace(/\b\w/g, m => m.toUpperCase());
+        function normStatus(v){
+            const t = nCmp(v);
+            if(['2','done','complete','completed','true','yes','ok','y','✅','pass','passed','ready','approved'].includes(t)) return 2;
+            if(['1','in progress','in-progress','started','wip','partial','ongoing','doing'].includes(t)) return 1;
+            return 0;
+        }
 
-    function parseYN(v){
-      const t = String(v||'').trim().toLowerCase();
-      if (['y','yes','true'].includes(t)) return {text:'Yes', tone:'good'};
-      if (['n','no','false'].includes(t)) return {text:'No',  tone:'bad'};
-      if (['n/a','na'].includes(t))       return {text:'N/A', tone:'mute'};
-      if (['in progress','wip'].includes(t)) return {text:'In progress', tone:'warn'};
-      return {text:'Unset', tone:'warn'};
-    }
+        function yyyymmdd(d=new Date()){
+            return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+        }
 
-    async function fetchCSV(sheet){
-      const res  = await fetch(csvUrl(sheet));
-      const text = await res.text();
-      const out  = Papa.parse(text, { header:true, skipEmptyLines:true });
-      return out.data || [];
-    }
+        function createStep(label, status){
+            const div = document.createElement('div');
+            div.className = 'step' + (status===2 ? ' ok' : status===1 ? ' pending' : '');
+            div.setAttribute('role','listitem');
+            div.innerHTML = `<strong>${label || ''}</strong><small>${
+                status===2 ? 'Done' : status===1 ? 'In Progress' : 'To Do'
+            }</small>`;
+            return div;
+        }
 
-    function titleFromSlug(s){
-      return s.replace(/[-_]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
-    }
+        function ensureStepsClass(){
+            if(elSteps && !elSteps.classList.contains('steps')) elSteps.classList.add('steps'); // for your CSS
+        }
 
-    function show(el){ if (el) el.style.display = ''; }
-    function hide(el){ if (el) el.style.display = 'none'; }
+        // ========== RENDERERS ==========
+        function renderHeader(item){
+            const title = item.title || '(Untitled)';
+            const category = item.category || '';
+            const desc = item.description || '—';
+            elTitle && (elTitle.textContent = title);
+            elCat   && (elCat.textContent   = (category || '').toUpperCase());
+            elDesc  && (elDesc.textContent  = desc);
+            const o = item.original_url || '';
+            const n = item.new_url || '';
+            if(elOrig){ elOrig.href = o || '#'; elOrig.style.display = o ? '' : 'none'; }
+            if(elNew ){ elNew.href  = n || '#'; elNew.style.display  = n ? '' : 'none'; }
+            if(elSlug){ elSlug.textContent = item.slug || SLUG; } // keep for run id build
+        }
 
-    async function main(){
-      // require slug
-      if (!slug) { hide($('#hero')); show($('#not-found')); return; }
+        function renderProgress(item){
+            ensureStepsClass();
+            const s1 = normStatus(item.s1), s2 = normStatus(item.s2), s3 = normStatus(item.s3);
+            const l1 = item.s1_label || 'Plan';
+            const l2 = item.s2_label || 'Build';
+            const l3 = item.s3_label || 'Test';
+            if(elSteps){
+                elSteps.innerHTML = ''; // clear dummy
+                elSteps.appendChild(createStep(l1, s1));
+                elSteps.appendChild(createStep(l2, s2));
+                elSteps.appendChild(createStep(l3, s3));
+            }
+        }
 
-      let rows = [];
-      try { rows = await fetchCSV(TAB); }
-      catch (e) { console.error(e); hide($('#hero')); show($('#not-found')); return; }
+        async function renderQuestions(category){
+            const qs = await fetchSheet(SHEET_QUESTIONS);
+            const items = qs.filter(q => nCmp(q.category) === nCmp(category) && nCmp(q.stage) === 'test');
+            if(elQCount) elQCount.textContent = `${items.length} question${items.length===1?'':'s'}`;
 
-      const row = rows.find(r => String(r.slug||'').trim() === slug);
-      if (!row) { hide($('#hero')); show($('#not-found')); return; }
-
-      // ===== Header =====
-      const step1 = row.step1 || 'Plan';
-      const step2 = row.step2 || 'Build';
-      const step3 = row.step3 || 'Test';
-
-      show($('#hero'));
-      $('#item-name').textContent = row.name || titleFromSlug(slug);
-      $('#item-category').textContent = row.category || '—';
-      $('#item-type').textContent = `Type: ${row.type || '—'}`;
-      $('#item-slug').textContent = `Slug: ${slug}`;
-      $('#step-labels').textContent = `${step1} / ${step2} / ${step3}`;
-
-      // micro bars
-      const s1 = norm(row.s1), s2 = norm(row.s2), s3 = norm(row.s3);
-      set3Bars(s1,s2,s3);
-      const score = s => s==='done'?1 : s==='wip'?0.5 : 0;
-      const present = ['s1','s2','s3'].filter(k=>row[k]).length || 1;
-      const pct = Math.round(((row.s1?score(s1):0)+(row.s2?score(s2):0)+(row.s3?score(s3):0)) / present * 100);
-      $('#pct-label').textContent = (isFinite(pct) ? pct : 0) + '%';
-
-      // description
-      const desc = String(row.description||'').trim();
-      if (desc) {
-        show($('#category-guidance'));
-        $('#category-desc').textContent = desc;
-      }
-
-      // link chips (Original/Remediated)
-      const chipRow = $('#item-meta-chips');
-      function addChip(href, label){
-        if (!href) return;
-        const a = document.createElement('a');
-        a.href = href; a.target = '_blank'; a.rel = 'noopener';
-        a.className = 'badge';
-        a.textContent = label + ' ↗';
-        chipRow.appendChild(a);
-      }
-      addChip(row['original url'] || row.original_url, 'Original');
-      addChip(row['remediated url'] || row.remediated_url, 'Remediated');
-
-      // ===== Build Audit / Test lists =====
-      const entries = Object.entries(row);
-      const isCheck = (k,pfx) => k.toLowerCase().startsWith(pfx) &&
-              !k.toLowerCase().endsWith('_assignees') &&
-              !k.toLowerCase().endsWith('_notes');
-
-      const audit = entries.filter(([k]) => isCheck(k,'audit_'));
-      const test  = entries.filter(([k]) => isCheck(k,'test_'));
-
-      function renderList(listEl, countEl, pairs){
-        listEl.innerHTML = '';
-        pairs.forEach(([k, v]) => {
-          const label = pretty(k);
-          const {text, tone} = parseYN(v);
-          const assign = row[`${k}_assignees`] || '';
-          const notes  = row[`${k}_notes`] || '';
-          const chips = assign.split(',').map(s=>s.trim()).filter(Boolean)
-                  .map(a=>`<span style="display:inline-block;padding:.15rem .45rem;border-radius:999px;font-size:11px;background:#f3f4f6;color:#374151">${a}</span>`)
-                  .join('');
-
-          const li = document.createElement('li');
-          li.innerHTML = `
-          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
-            <div>
-              <div style="font-size:14px;color:#111827;font-weight:600">${label}</div>
-              ${notes? `<div style="font-size:12px;color:#6b7280;margin-top:4px">${notes}</div>`:''}
-            </div>
-            <div>${chipHTML(text, tone)}</div>
+            // keep stacked layout: question → answers → notes
+            const blocks = items.map(q => {
+                const qid = q.qid;
+                const text = q.text || '';
+                return `
+        <div class="form-row" data-qid="${qid}">
+          <div class="q-text">
+            <div class="pill" style="margin-bottom:6px">QID: ${qid}</div>
+            ${text}
           </div>
-          ${chips? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span style="font-size:11px;color:#6b7280;margin-right:4px">Assignees:</span>${chips}</div>`:''}
-        `;
-          listEl.appendChild(li);
-        });
-        countEl.textContent = `${pairs.length} checks`;
-      }
+          <div class="answers" role="group" aria-label="Answers for ${qid}">
+            <label class="choice"><input type="radio" name="ans-${qid}" value="Yes"><span class="control"></span> Yes</label>
+            <label class="choice"><input type="radio" name="ans-${qid}" value="No"><span class="control"></span> No</label>
+            <label class="choice"><input type="radio" name="ans-${qid}" value="N/A"><span class="control"></span> N/A</label>
+          </div>
+          <textarea id="note-${qid}" class="notes" placeholder="Notes (optional)"></textarea>
+        </div>
+      `;
+            }).join('');
 
-      if (audit.length) { show($('#audit-card'));  renderList($('#audit-list'), $('#audit-count'), audit); }
-      if (test.length)  { show($('#test-card'));   renderList($('#test-list'),  $('#test-count'),  test);  }
-    }
+            // Rebuild form (preserve the submit row already in your template)
+            if(elForm){
+                // find submit row to keep at bottom
+                const submitRow = elForm.querySelector('[role="submit-row"]') || elForm.lastElementChild;
+                elForm.innerHTML = blocks + (submitRow ? submitRow.outerHTML : `
+        <div style="margin-top:14px; display:flex; gap:10px; align-items:center" role="submit-row">
+          <button class="btn" type="submit" id="submitBtn" disabled>Submit Answers</button>
+          <span class="pill" id="answers-target">Answers → Answers sheet</span>
+        </div>
+      `);
+                // rebind elSubmit if it got replaced
+                if(!document.getElementById('submitBtn')){
+                    const b=document.createElement('button'); b.id='submitBtn'; b.type='submit'; b.className='btn'; b.textContent='Submit Answers'; b.disabled=true;
+                    elForm.appendChild(b);
+                }
+            }
+        }
 
-    if (document.readyState !== 'loading') main();
-    else document.addEventListener('DOMContentLoaded', main);
-  })();
+        // ========== LOOKUP ITEM BY SLUG ==========
+        async function fetchItemBySlug(slug){
+            for(const sheet of CATEGORY_SHEETS){
+                const rows = await fetchSheet(sheet);
+                const hit = rows.find(r => nCmp(r.slug) === nCmp(slug));
+                if(hit) return {sheet, row: hit};
+            }
+            return null;
+        }
+
+        // ========== TESTER CODE ENTRY ==========
+        function wireCodeEntry(){
+            // hidden input to carry tester_id for submit
+            let hidden = document.getElementById('testerHidden');
+            if(!hidden){
+                hidden = document.createElement('input');
+                hidden.type='hidden'; hidden.id='testerHidden'; hidden.name='testerHidden';
+                elForm && elForm.appendChild(hidden);
+            }
+
+            function allDigits(){ return codeInputs.length===4 && codeInputs.every(i => /^[0-9]$/.test(i.value)); }
+            function code(){ return codeInputs.map(i=>i.value).join(''); }
+
+            codeInputs.forEach((inp, i) => {
+                inp.addEventListener('input', () => {
+                    inp.value = inp.value.replace(/[^0-9]/g,'').slice(0,1);
+                    if(inp.value && i < codeInputs.length-1) codeInputs[i+1].focus();
+                    if(beginBtn) beginBtn.disabled = !allDigits();
+                });
+                inp.addEventListener('keydown', (e) => {
+                    if(e.key === 'Backspace' && !inp.value && i>0) codeInputs[i-1].focus();
+                });
+            });
+
+            beginBtn && beginBtn.addEventListener('click', () => {
+                if(!allDigits()) return;
+                const testerId = `t${code()}`;
+                const runId = `${SLUG || 'item'}-${yyyymmdd()}-${testerId}`;
+                hidden.value = testerId;
+                if(elRunPill) elRunPill.textContent = `Test ID: ${runId}`; // fine if hidden via CSS
+                if(elStatus){ elStatus.textContent = `Tester ID set to ${testerId}. You can answer and submit.`; elStatus.className='status ok'; }
+                const submit = document.getElementById('submitBtn');
+                if(submit) submit.disabled = false;
+            });
+
+            // guard submit if tester not set
+            elForm && elForm.addEventListener('submit', (e) => {
+                if(!hidden.value){
+                    e.preventDefault();
+                    alert('Please enter your 4-digit tester code and click “Begin Testing” before submitting.');
+                }
+            }, true);
+        }
+
+        // ========== COLLECT & POST ANSWERS ==========
+        async function postAnswerRow(row){
+            if(ANSWERS_ENDPOINT.includes('REPLACE_ME')){
+                console.log('DRY RUN → would POST:', row);
+                return {ok:true, dryRun:true};
+            }
+            const res = await fetch(ANSWERS_ENDPOINT, {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify(row),
+            });
+            if(!res.ok){
+                const txt = await res.text().catch(()=> '');
+                throw new Error(`Write failed (${res.status}): ${txt}`);
+            }
+            return res.json().catch(()=> ({}));
+        }
+
+        function collectAnswerRows({slug, category, testerId, testRunId}){
+            const rows = [];
+            $$('#testForm .form-row[data-qid]').forEach(div => {
+                const qid = div.getAttribute('data-qid');
+                const chosen = $(`input[name="ans-${qid}"]:checked`, div);
+                const answer = chosen ? chosen.value : '';
+                const notes = $(`#note-${qid}`, div)?.value || '';
+                if(answer){
+                    rows.push({
+                        slug, category, qid, answer,
+                        tester_id: testerId,
+                        notes,
+                        timestamp: new Date().toISOString(),
+                        test_run_id: testRunId
+                    });
+                }
+            });
+            return rows;
+        }
+
+        // ========== INIT ==========
+        (async function init(){
+            if(!SLUG){
+                elTitle && (elTitle.textContent = 'Missing ?slug=');
+                return;
+            }
+
+            const hit = await fetchItemBySlug(SLUG);
+            if(!hit){
+                elTitle && (elTitle.textContent = 'Item not found');
+                console.warn(`No row matched slug ${SLUG} in ${CATEGORY_SHEETS.join(', ')}`);
+                return;
+            }
+
+            // 1) top info
+            renderHeader(hit.row);
+
+            // 2) progress
+            renderProgress(hit.row);
+
+            // 3) questions (category from row or sheet)
+            await renderQuestions(hit.row.category || hit.sheet);
+
+            // 4) wire tester code entry + submit
+            wireCodeEntry();
+
+            // 5) hook submit to Answers sheet
+            const submit = document.getElementById('submitBtn');
+            if(submit && elForm){
+                elForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const testerId = (document.getElementById('testerHidden')?.value || '').trim();
+                    if(!testerId){
+                        alert('Please enter your tester code and press Begin Testing.');
+                        return;
+                    }
+                    const runId = (elRunPill?.textContent || '').replace('Test ID:','').trim() ||
+                        `${SLUG}-${yyyymmdd()}-${testerId}`;
+
+                    const rows = collectAnswerRows({slug: hit.row.slug || SLUG, category: hit.row.category || hit.sheet, testerId, testRunId: runId});
+                    if(!rows.length){
+                        alert('Please answer at least one question before submitting.');
+                        return;
+                    }
+
+                    try{
+                        for(const r of rows) await postAnswerRow(r);
+                        alert('Answers submitted. Thank you!');
+                        submit.disabled = true;
+                    }catch(err){
+                        console.error(err);
+                        alert('There was a problem saving your answers. Check console for details.');
+                    }
+                });
+            }
+        })();
+    })();
 </script>
-
-
 
 </body>
 </html>

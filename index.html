@@ -41,13 +41,13 @@
         /* Fixed background layer (no more “moving” while expanding) */
         body.dark-uga {
 
-                background:
-                        linear-gradient(#e5e7eb33 2px, transparent 2px),
-                        linear-gradient(90deg, #e5e7eb33 2px, transparent 2px),
-                        linear-gradient(180deg, #ffffff, #f9fafb);
-                background-size: 36px 36px, 36px 36px, auto;
-                background-position: center center;
-            background-attachment: fixed; /* keeps grid locked in place */
+            /* Background image with UGA brand gradient overlay */
+            background-image:
+                    linear-gradient(rgba(255,255,255,0.8), rgba(229,229,229,0.9), rgba(209,213,219,0.9), rgba(186,12,47,0.3)),
+                    url('https://www.uga.edu/img/prism-background.57f15081.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
 
 
         }
@@ -422,30 +422,35 @@
                 return { name:'(error)', done:0, total:0, pct:0 };
             }
 
-            // Expect: name, slug, s1, s2, s3
+// Expect (new): slug, category, title, description, original_url, new_url,
+//               s1, s2, s3, s1_label, s2_label, s3_label
             tbody.innerHTML = '';
             let total = 0, doneCount = 0;
 
             rows.forEach(r => {
-                const name = (r.name || '').trim();
-                if (!name) return;
+                // New source of display text; keep old 'name' as fallback just in case
+                const title = (r.title || r.name || '').trim();
+                if (!title) return;
 
+                // Status columns are unchanged in spirit—now coming from the new sheet
                 const s1 = norm(r.s1), s2 = norm(r.s2), s3 = norm(r.s3);
                 const isDone = (s1==='done' && s2==='done' && s3==='done');
                 if (isDone) doneCount++;
                 total++;
 
+                // The index view only needs slug + title; link target remains the same
                 const link = r.slug
-                    ? `<a href="item.html?slug=${encodeURIComponent(String(r.slug).trim())}" style="text-decoration:none;color:#BA0C2F">${name}</a>`
-                    : name;
+                    ? `<a href="item.html?slug=${encodeURIComponent(String(r.slug).trim())}" style="text-decoration:none;color:#BA0C2F">${title}</a>`
+                    : title;
 
                 tbody.insertAdjacentHTML('beforeend', `
-        <tr>
-          <td>${link}</td>
-          <td>${microBarHTML([s1, s2, s3], [s1Label, s2Label, s3Label])}</td>
-        </tr>
-      `);
+    <tr>
+      <td>${link}</td>
+      <td>${microBarHTML([s1, s2, s3], [s1Label, s2Label, s3Label])}</td>
+    </tr>
+  `);
             });
+
 
             const pct = total ? Math.round((doneCount/total)*100) : 0;
             if (counterEl) counterEl.textContent = `${doneCount}/${total} complete`;
