@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <title>RO-WAI • Item Template (Design Mock)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     <style>
         :root{
             --uga-red:#BA0C2F;
@@ -15,6 +17,9 @@
             --line:#e5e7eb;
             --card:#ffffffF2;
             --ring: rgba(186,12,47,.25);
+            --step-w: 5rem;    /* .step width */
+            --circle-d: 5rem;  /* circle diameter */
+            --accent: #ba0c2f; /* blue-500 */
         }
         *{box-sizing:border-box}
         body{
@@ -59,32 +64,12 @@
             width:16px; height:16px; display:inline-block; background:no-repeat center/16px 16px
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23374151' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.5 5.5l-5 5'/%3E%3Cpath d='M8.5 3.5h4v4'/%3E%3Cpath d='M7.5 12.5h-4v-4'/%3E%3C/svg%3E");
         }
+        h2 {display:flex; align-items:center; gap:.5rem; font-weight:700; font-size: 1.5rem; color: #404040; margin:0 auto 0 10px}
 
         /* ======= PROGRESS ======= */
-        .section-head{display:flex; align-items:center; gap:.5rem; font-weight:700; color:#374151; margin-bottom:10px}
-        .section-head .lock{
-            width:16px; height:16px; display:inline-block; background:no-repeat center/16px 16px
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23554F47' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='7' width='10' height='7' rx='1.5'/%3E%3Cpath d='M5.5 7V5a2.5 2.5 0 015 0v2'/%3E%3C/svg%3E");
-        }
+        .section-head{display:flex; align-items:center; gap:.5rem; font-weight:700; color:#404040; margin-bottom:10px}
 
-        .steps{position:relative; display:flex; gap:14px; align-items:stretch; counter-reset:pstep}
-        .steps::after{content:""; position:absolute; left:0; right:0; top:50%; height:2px; background:#e5e7eb; z-index:0}
-        .step{counter-increment:pstep; position:relative; z-index:1; min-width:230px;
-            padding:12px 14px 10px 48px; border-radius:999px; background:#fff; border:1px solid var(--line);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
-        }
-        .step strong{display:block; font-size:.95rem; color:#0f172a; font-weight:800}
-        .step strong::before{content:"STEP " counter(pstep); display:block; font-size:.7rem; letter-spacing:.12em; font-weight:700; color:#9aa0a6; margin-bottom:2px}
-        .step small{
-            position:absolute; right:10px; top:10px; padding:.15rem .5rem; border-radius:999px; font-size:.7rem; font-weight:700;
-            border:1px solid var(--line); color:#4b5563; background:#f9fafb;
-        }
-        .step::before{
-            content:""; position:absolute; left:14px; top:50%; transform:translateY(-50%);
-            width:22px; height:22px; border-radius:999px; border:2px solid #d1d5db; background:#fff;
-        }
-        .step.ok small{background:#E7F8EC; color:#166534; border-color:#bbf7d0}
-        .step.ok::before{border-color:#34d399; background: radial-gradient(circle at center, #34d399 50%, transparent 51%); box-shadow:0 0 0 4px rgba(52,211,153,.15)}
+
 
         /* ======= TEST CARD ======= */
         .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
@@ -116,54 +101,66 @@
             .hero-links{flex-direction:row; flex-wrap:wrap}
             .form-row{grid-template-columns:1fr}
         }
-        /* a) Clipboard icon instead of lock */
-        .clipboard{
-            width:16px; height:16px; display:inline-block;
-            background:no-repeat center/16px 16px
-            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23554F47' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='3' width='8' height='12' rx='1.5'/%3E%3Cpath d='M6 3h4v2H6z'/%3E%3C/svg%3E");
+
+
+        /* container + progress line */
+        .steps.wide{
+            position:relative; display:flex; justify-content:space-between; align-items:flex-start;
+            margin:1.5rem 0; --progress:0%;
+        }
+        /* gray track and blue bar – both span from first to last circle center */
+        .steps.wide::before,
+        .steps.wide::after{
+            content:""; position:absolute; height:4px; z-index:0;
+            top:calc(var(--circle-d)/2);
+            left:calc(var(--step-w)/2); right:calc(var(--step-w)/2); /* circles touch the line */
+        }
+        .steps.wide::before{ background:#e5e7eb; }                /* track */
+        .steps.wide::after { background:var(--accent); z-index:1;  /* bar (clipped by --progress) */
+            clip-path: inset(0 calc(100% - var(--progress)) 0 0);
         }
 
-        /* b) Ensure line spans full width of step container */
-        .steps.wide::after{left:0; right:0;}
-
-        /* c) Cleaner green radio dot */
-        .step.ok::before{
-            border-color:#34d399;
-            background:#34d399;
-            box-shadow:0 0 0 4px rgba(52,211,153,.15), inset 0 0 2px rgba(0,0,0,.2);
+        /* steps and circles */
+        .steps.wide .step{
+            width:var(--step-w); display:flex; flex-direction:column; align-items:center; text-align:center;
+            position:relative; z-index:2;  /* above the line */
         }
-        /* Make the progress rail span the entire card */
-        #progress-steps.steps,
-        #progress-steps.nice-steps,
-        #progress-steps {
-            width: 100%;
-            display: flex;
-            gap: 14px;
-            justify-content: space-between;   /* evenly distribute */
-            align-items: stretch;
-            position: relative;
+        .steps.wide .step::before{
+            content:""; width:var(--circle-d); height:var(--circle-d); border-radius:9999px;
+            background:#fff; border:2px solid #d1d5db; box-sizing:border-box;
+            display:flex; align-items:center; justify-content:center; margin-bottom:.5rem;
+            color:#9ca3af; font:900 1.6rem/1 "Font Awesome 6 Free";
         }
 
-        /* Edge-to-edge connector line */
-        #progress-steps::after{
-            content:"";
-            position:absolute;
-            left: 0;
-            right: 0;
-            top: 50%;
-            height: 2px;
-            background: #e5e7eb;
-            z-index: 0;
+        /* icons via CSS only (no JS) */
+        .steps.wide .step:nth-child(1)::before{ content:"\f568"; } /* fa-compass-drafting */
+        .steps.wide .step:nth-child(2)::before{ content:"\f6e3"; } /* fa-hammer */
+        .steps.wide .step:nth-child(3)::before{ content:"\f46c"; } /* fa-file-circle-check */
+
+        /* labels */
+        .steps.wide .step strong{ font-size:.875rem; font-weight:600; color:#6b7280; }
+        .steps.wide .step small { font-size:.75rem; color:#9ca3af; }
+
+        /* states from your function: .pending (active), .ok (complete) */
+        .steps.wide .step.pending::before,
+        .steps.wide .step.ok::before{ border-color:var(--accent); color:var(--accent); }
+        .steps.wide .step.ok::before{ background:var(--accent); color:#fff; }
+        .steps.wide .step.ok strong{ color:#111827; }
+        .steps.wide .step.pending strong{ color:var(--accent); }
+
+        /* progress snapping (order matters; last rule wins) */
+        .steps.wide:has(.step:nth-child(1).ok){ --progress:50%; }
+        .steps.wide:has(.step:nth-child(2).ok){ --progress:100%; }
+
+        .progress-wrap{
+            /* set the overall width you want */
+            max-width: 660px;         /* or 480px / 36rem / whatever */
+            margin-inline: auto;      /* center it */
+            /* safety so circles don’t overlap */
+            min-width: calc(var(--step-w) * 3);
         }
 
-        /* Each step expands to share the width; no minimums that force overflow */
-        #progress-steps .step{
-            flex: 1 1 0;
-            min-width: 0;
-            z-index: 1; /* sit above the line */
-        }
-
-        /* d) 4-digit tester code entry */
+        /* 4-digit tester code entry */
         .test-wrap{display:flex; flex-direction:column; gap:.9rem}
         .code-inputs{display:flex; gap:.6rem}
         .code-input{
@@ -252,6 +249,21 @@
             border-radius: 10px;
             font-size: 0.9rem;
         }
+        /* Container (optional if you only show one card) */
+
+
+        /* Body */
+        .plan{
+            white-space:pre-wrap;     /* preserve Sheet line breaks */
+            color:#1f2937;            /* slate-800 */
+            font-size:.95rem;
+            line-height:1.5;
+        }
+        .plan p{ margin:2rem; }
+        .plan ul,.plan ol{ margin:2.25rem 0 .5rem .95rem; }
+        .plan li{ margin:2.15rem 0; }
+        .plan a{ text-decoration:underline; }
+
 
 
     </style>
@@ -266,11 +278,10 @@
     <!-- ===== HEADER (Dummy values) ===== -->
     <section class="card hero">
         <div>
-            <div id="item-category" class="kicker">WEBAPPS</div>
-            <h1 id="item-title" class="hero-title">CASIS Access Tool</h1>
+            <div id="item-category" class="kicker">LOADING</div>
+            <h1 id="item-title" class="hero-title">CONTENT</h1>
             <p id="item-description" class="hero-desc">
-                Centralized access request and training workflow for Registrar staff users.
-                This mock shows how your spreadsheet data maps into an info card and progress UI.
+
             </p>
         </div>
         <div class="hero-links">
@@ -286,15 +297,19 @@
     <!-- ===== PROGRESS ===== -->
     <section class="card" aria-labelledby="progTitle">
         <div class="section-head">
-            <span class="clipboard" aria-hidden="true"></span>
-            <span id="progTitle">Progress</span>
+            <h2 id="progTitle" class="card-title">Progress</h2>
         </div>
+        <div class="progress-wrap">
         <div class="steps wide" id="progress-steps" role="list" aria-label="Plan, Build, Test progress">
-            <div class="step ok" role="listitem"><strong>Audit &amp; Planning</strong><small>Done</small></div>
-            <div class="step pending" role="listitem"><strong>Testing</strong><small>In Progress</small></div>
-            <div class="step" role="listitem"><strong>Approve &amp; Publish</strong><small>To Do</small></div>
+            <div class="step ok" role="listitem"><strong>Plan</strong><small>Done</small></div>
+            <div class="step pending" role="listitem"><strong>Build</strong><small>In Progress</small></div>
+            <div class="step" role="listitem"><strong>Test</strong><small>To Do</small></div>
+        </div>
         </div>
     </section>
+    <!-- ===== PLAN ===== -->
+
+    <section id="plan-cards"></section>
 
     <!-- ===== TEST (Dummy questions for category=WebApps, stage=Test) ===== -->
     <section class="card" aria-labelledby="testTitle">
@@ -385,6 +400,8 @@
     (() => {
         // ========== CONFIG ==========
         const SHEET_ID = '1naeWFQsNyjY3g0yNeZHcAg5VW-DTdOehH_Zjy3pCe7k';              // <-- your real Google Sheet ID
+        window.SHEET_ID = SHEET_ID; // <-- make it visible to the debug panel and any out-of-scope code
+
         const CATEGORY_SHEETS = ['WebApps','Forms','PDFs','Media'];
         const SHEET_QUESTIONS = 'Questions';
         const SHEET_TESTERS   = 'Testers';                      // not required for code entry, but kept if you need it later
@@ -568,6 +585,7 @@
             return null;
         }
 
+
         // ========== TESTER CODE ENTRY ==========
         function wireCodeEntry(){
             // hidden input to carry tester_id for submit
@@ -670,6 +688,8 @@
             // 2) progress
             renderProgress(hit.row);
 
+
+
             // 3) questions (category from row or sheet)
             await renderQuestions(hit.row.category || hit.sheet);
 
@@ -706,7 +726,79 @@
                 });
             }
         })();
+        /* ===== PLAN (single simple card) ===== */
+
+// Pull "Plan" from a parsed CSV row (headers were normalized by parseCSV -> lower_snake)
+        function _getPlanFromRow(row){
+            if (!row) return '';
+            if (typeof row.plan === 'string') return row.plan;
+            const k = Object.keys(row).find(k => String(k).trim().toLowerCase() === 'plan');
+            return k ? String(row[k] || '') : '';
+        }
+
+        async function renderPlanCard(){
+            const mount = document.getElementById('plan-cards');
+            if (!mount) return;
+
+            const currentSlug =
+                (typeof SLUG !== 'undefined' && SLUG) ? SLUG :
+                    new URLSearchParams(location.search).get('slug') || '';
+
+            if (!currentSlug) { mount.innerHTML = ''; return; }
+
+            // Look through your category sheets until we find the row for this slug
+            for (const sheet of CATEGORY_SHEETS) {
+                try {
+                    const rows = await fetchSheet(sheet);                  // your CSV fetch
+                    const hit  = rows.find(r => nCmp(r.slug) === nCmp(currentSlug));
+                    if (!hit) continue;
+
+                    const plan = _getPlanFromRow(hit);
+                    if (!String(plan).trim()) break;
+
+                    const safePlan = String(plan)
+                        .replace(/&/g,'&amp;')
+                        .replace(/</g,'&lt;')
+                        .replace(/>/g,'&gt;');
+
+                    mount.innerHTML = `
+        <article class="card plan-card" data-slug="${hit.slug || currentSlug}">
+          <header class="plan-header">
+            <div>
+              <h2 class="plan-title">Plan</h2>
+            </div>
+          </header>
+          <div class="plan" style="white-space:pre-wrap">${safePlan}</div>
+        </article>
+      `;
+                    return; // stop after first matching sheet
+                } catch (_) {
+                    // ignore and try the next sheet
+                }
+            }
+
+            // Nothing found — clear or show nothing
+            mount.innerHTML = '';
+        }
+
+// Run after DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderPlanCard, { once:true });
+        } else {
+            renderPlanCard();
+        }
+        /* ===== END PLAN ===== */
+
     })();
+</script>
+<!--slug to breadcrumb script-->
+<script>
+    const qs = new URLSearchParams(window.location.search);
+    const slug = qs.get("slug"); // e.g. "address-change"
+    if (slug) {
+        document.getElementById("crumb-item").textContent =
+            slug.replace(/[-_]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    }
 </script>
 
 </body>

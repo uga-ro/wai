@@ -16,24 +16,30 @@
             --g0:#121419; --g1:#1A1F26; --g2:#232933; --g3:#2C333E; --g4:#38414D; --g5:#454F5E; --w0:#F7F8FA; --redAlpha:.35;
         }
         body { font-family:'Inter',sans-serif; background-color:var(--uga-light-gray); color:var(--uga-gray); }
-        .glass-effect { background:#fff; box-shadow:0 5px 12px rgba(0,0,0,.25); }
+        .glass-effect { background: rgba(255, 255, 255, 0.4); box-shadow:0 5px 12px rgba(0,0,0,.25); }
+
         /* Striped progress */
-        .progress{--pct:0;position:relative;height:25px;border-radius:999px;background:#E5E7EB;overflow:hidden}
+        .progress{--pct:0;position:relative;height:25px;border-radius:4px;background:#E5E7EB;overflow:hidden}
         .progress>span{content:"";position:absolute;inset:0;width:calc(var(--pct)*1%);
             background:repeating-linear-gradient(45deg,var(--uga-red) 0 10px,#E02E4C 10px 20px);
         }
 
-        .priority{display:inline-block;text-align:center;padding:.1rem .4rem;border-radius:6px;font-size:.85rem;font-weight:600}
-        .p-high{background:#FECACA;color:#7F1D1D}.p-med{background:#FEF08A;color:#713F12}.p-low{background:#BBF7D0;color:#065F46}
+
         .mini-table{width:100%;border-collapse:collapse;margin-top:10px}
         .mini-table th,.mini-table td{padding:8px 10px;border-top:1px solid var(--uga-border-gray);text-align:left}
         .mini-table thead{background:rgba(0,0,0,.03)}
+        /* Only center the 2nd column */
+        .mini-table th:nth-child(2),
+        .mini-table td:nth-child(2) {
+            text-align: center;
+        }
+
         .dot{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:05%;background:#CBD5E0;color:#fff;font-size:14px;font-weight:700}
         .dot::before{content:"–"}.dot.ok{background: #4ac581
-                                 }  .dot.ok::before{content:"✓"}  .dot.progress{ background: #ffa237; }        /* orange */
+                                 }  .dot.ok::before{content:"✓"}  .dot.progress{ background: #ffd037; }        /* orange */
         td:empty::after{ content:"\00a0"; }         /* keep cell height if empty */
         .legend{font-size:.8rem;color:var(--uga-gray);margin-top:6px}
-        .counter{display:inline-block;margin-left:8px;padding:.15rem .5rem;border:1px solid var(--uga-border-gray);border-radius:6px;font-size:.8rem;color:var(--uga-gray)}
+        .counter{display:inline-block;background: #f5f5f5; margin-left:8px;padding:.15rem .5rem;border:1px solid var(--uga-border-gray);border-radius:6px;font-size:.8rem;color:var(--uga-gray)}
         .badge{display:inline-block;padding:.35rem .6rem;border-radius:999px;font-size:.75rem;border:1px solid var(--uga-border-gray);background:#fff}
         .badge--solid{background:var(--uga-black);color:#fff;border-color:var(--uga-black);font-weight:600}
         .wrap{max-width:1620px;margin:auto;padding:24px}
@@ -43,14 +49,13 @@
 
             /* Background image with UGA brand gradient overlay */
             background-image:
-                    linear-gradient(rgba(255,255,255,0.8), rgba(229,229,229,0.9), rgba(209,213,219,0.9), rgba(186,12,47,0.3)),
+                    linear-gradient(rgba(255,255,255,0.7), rgba(229,229,229,0.7), rgba(209,213,219,0.7), rgba(186,12,47,0.3)),
                     url('https://www.uga.edu/img/prism-background.57f15081.png');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-
-
         }
+        /*linear-gradient(rgba(255,255,255,0.8), rgba(229,229,229,0.9), rgba(209,213,219,0.9), rgba(186,12,47,0.3)),*/
 
         /* Accordion */
         .acc{border-radius:.75rem}
@@ -69,14 +74,15 @@
     <div class="wrap">
         <main class="relative z-10 p-4 sm:p-6 lg:p-8">
 
-            <header class="bg-white rounded-lg shadow-lg mb-8 overflow-hidden">
+            <header class="bg-black/05 rounded-lg shadow-lg mb-8 overflow-hidden">
+
                 <div class="p-6 flex justify-between items-center">
                     <div class="flex gap-4 items-center">
-                        <div aria-hidden="true" class="w-12 h-12 rounded-lg bg-[var(--uga-red)] flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        <div aria-hidden="true" class="w-15 h-15 rounded-lg  flex items-center justify-center">
+                            <svg class="w-14 h-14 text-white" fill="none" stroke="#ba0c2f" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                         </div>
                         <div>
-                            <h1 class="text-2xl font-bold text-[var(--uga-red)]">ro-wai</h1>
+                            <h1 class="text-3xl font-bold text-[var(--uga-red)]">RO-WAI</h1>
                             <p class="text-[var(--uga-gray)] text-sm">Web Accessibility Implementation</p>
                         </div>
                     </div>
@@ -85,7 +91,7 @@
                         <span class="px-3 py-1 bg-gray-100 text-[var(--uga-black)] rounded-md">Updated Aug 22, 2025</span>
                     </div>
                 </div>
-                <div class="h-1 bg-[#4a4a4a] rounded-b-lg"></div>
+<!--                <div class="h-1 bg-[#4a4a4a] rounded-b-lg"></div>-->
             </header>
 
 
@@ -211,7 +217,7 @@
                             class="glass-effect p-0 acc"
                             id="cat-pdfs"
                             data-sheet="PDFs"
-                            data-step1="Audit"
+                            data-step1="Plan"
                             data-step2="Fix"
                             data-step3="Test"
                             aria-expanded="false">
@@ -250,7 +256,7 @@
                             class="glass-effect p-0 acc"
                             id="cat-media"
                             data-sheet="Media"
-                            data-step1="Audit"
+                            data-step1="Plan"
                             data-step2="Fix"
                             data-step3="Test"
                             aria-expanded="false">
@@ -345,17 +351,17 @@
 
         // Micro segmented bar (3 tiny segments: gray default, orange for wip, green for done)
         function microBarHTML(statuses, labels=['Plan','Build','Test']) {
-            const colors = { done: 'bg-green-500', wip: 'bg-orange-400', todo: 'bg-gray-300' };
+            const colors = { done: 'bg-green-500', wip: 'bg-amber-400', todo: 'bg-gray-300' };
             const [s1, s2, s3] = statuses.map(s => colors[s] || colors.todo);
             const aria = `${labels[0]} ${statuses[0]==='done'?'done':statuses[0]==='wip'?'in progress':'to do'}, ` +
                 `${labels[1]} ${statuses[1]==='done'?'done':statuses[1]==='wip'?'in progress':'to do'}, ` +
                 `${labels[2]} ${statuses[2]==='done'?'done':statuses[2]==='wip'?'in progress':'to do'}`;
             return `
-    <div class="flex items-center gap-2" role="group" aria-label="${aria}">
-      <div class="flex gap-0.5" aria-hidden="true">
-        <span class="h-1.5 w-7 rounded ${s1}"></span>
-        <span class="h-1.5 w-7 rounded ${s2}"></span>
-        <span class="h-1.5 w-7 rounded ${s3}"></span>
+    <div class="flex items-center  justify-center w-full gap-2" role="group" aria-label="${aria}">
+      <div class="flex gap-2" aria-hidden="true">
+        <span class="h-4 w-4 rounded-[2px] ${s1}"></span>
+        <span class="h-4 w-4 rounded-[2px] ${s2}"></span>
+        <span class="h-4 w-4 rounded-[2px] ${s3}"></span>
       </div>
     </div>`;
         }
@@ -508,7 +514,7 @@
             const txt = $('#overall-text');
             const bar = $('#overall-bar');
             const prog = $('#kpi .progress');
-            if (txt)  txt.textContent = `${totals.done} of ${totals.total}`;
+            if (txt)  txt.textContent = `${totals.done} of ${totals.total} items complete`;
             if (bar)  bar.style.width = overallPct + '%';
             if (prog) prog.setAttribute('aria-valuenow', overallPct);
 
