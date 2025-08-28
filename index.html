@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>ro-wai</title>
+    <title>RO‑WAI · Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Manrope:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
         :root {
@@ -56,7 +57,9 @@
             background-attachment: fixed;
         }
         /*linear-gradient(rgba(255,255,255,0.8), rgba(229,229,229,0.9), rgba(209,213,219,0.9), rgba(186,12,47,0.3)),*/
-
+        nav a.nav-link.bg-gradient-to-br {
+            color: #fff !important;
+        }
         /* Accordion */
         .acc{border-radius:.75rem}
         .acc-header{display:flex;align-items:flex-start;justify-content:space-between;width:100%;gap:.75rem;text-align:left}
@@ -66,35 +69,52 @@
         .chev{transition:transform .2s ease}.acc[aria-expanded="true"] .chev{transform:rotate(180deg)}
         /* Let columns be different heights */
         #categoriesGrid{align-items:start}
+
+
+
     </style>
 </head>
 
 <body class="dark-uga">
 <div class="min-h-screen w-full relative overflow-hidden">
-    <div class="wrap">
-        <main class="relative z-10 p-4 sm:p-6 lg:p-8">
+    <div class="max-w-[1620px] mx-auto p-10 sm:p-12 lg:p-14">
 
-            <header class="bg-black/05 rounded-lg shadow-lg mb-8 overflow-hidden">
+            <!-- Header (borrowed from your current canvas, with Decisions active) -->
+            <div id="site-header"></div>
+            <!-- On every page, after <div id="site-header"></div> -->
+            <script>
+                (async () => {
+                    const target = document.getElementById('site-header');
+                    if (!target) return;
 
-                <div class="p-6 flex justify-between items-center">
-                    <div class="flex gap-4 items-center">
-                        <div aria-hidden="true" class="w-15 h-15 rounded-lg  flex items-center justify-center">
-                            <svg class="w-14 h-14 text-white" fill="none" stroke="#ba0c2f" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                        </div>
-                        <div>
-                            <h1 class="text-3xl font-bold text-[var(--uga-red)]">RO-WAI</h1>
-                            <p class="text-[var(--uga-gray)] text-sm">Web Accessibility Implementation</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-3 items-center text-sm">
-                        <span class="px-3 py-1 bg-gray-700 text-gray-200 rounded-md">Phase: Planning</span>
-                        <span class="px-3 py-1 bg-gray-100 text-[var(--uga-black)] rounded-md">Updated Aug 22, 2025</span>
-                    </div>
-                </div>
-<!--                <div class="h-1 bg-[#4a4a4a] rounded-b-lg"></div>-->
-            </header>
+                    try {
+                        // 1) Fetch & inject the partial
+                        const res = await fetch('partials/header.html', { cache: 'no-store' });
+                        if (!res.ok) throw new Error('Failed to load header');
+                        const html = await res.text();
+                        target.innerHTML = html;
 
+                        // 2) Execute any <script> tags in the injected HTML
+                        const scripts = target.querySelectorAll('script');
+                        for (const oldScript of scripts) {
+                            const s = document.createElement('script');
+                            if (oldScript.src) {
+                                s.src = oldScript.src;
+                                s.async = false;
+                            } else {
+                                s.textContent = oldScript.textContent;
+                            }
+                            // Use head so it executes in document context
+                            document.head.appendChild(s);
+                            oldScript.remove();
+                        }
+                    } catch (err) {
+                        console.error('Header load failed', err);
+                    }
+                })();
+            </script>
 
+        <main class="relative z-10">
             <!-- KPI Cards -->
             <section id="kpi" class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
                 <div class="bg-gradient-to-br from-[#000] to-[#9EA2A2] glass-effect p-6 rounded-xl">
@@ -163,7 +183,7 @@
                         </button>
 
                         <div id="panel-webapps" class="acc-panel px-6 pb-6" role="region" aria-labelledby="cat-webapps">
-                            <p class="text-sm mt-0">Modernize core apps to be accessible with semantic labels, focus management, keyboard flows, input labels, etc.</p>
+                            <p class="text-sm mt-0">Modernize apps to be accessible with semantic labels, focus management, keyboard flows, input labels, etc.</p>
                             <div class="overflow-x-auto">
                                 <table class="mini-table" aria-label="WebApps progress table">
                                     <thead></thead>
@@ -307,7 +327,7 @@
          *  CONFIG
          * =============================== */
         const SHEET_ID = '1naeWFQsNyjY3g0yNeZHcAg5VW-DTdOehH_Zjy3pCe7k'; // e.g., 1AbCDe...xyz
-        const CHECKPOINT_DATE = '2026-04-15';
+        const CHECKPOINT_DATE = '2026-04-24';
         const PIPELINE = {
             inDev:  { title: 'CASIS', due: '2025-09-30' },
             inTest: { title: 'Form: Address Change', due: '2025-09-19' }

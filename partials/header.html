@@ -1,0 +1,134 @@
+<!-- partials/header.html -->
+<header class="bg-black/05 rounded-lg shadow-lg mb-8 overflow-hidden">
+    <div class="p-6 flex justify-between items-center">
+        <div class="flex gap-4 items-center">
+            <div aria-hidden="true" class="w-15 h-15 rounded-lg flex items-center justify-center">
+                <svg class="w-14 h-14 text-white" fill="none" stroke="#ba0c2f" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-[var(--uga-red)]">RO-WAI</h1>
+                <p class="text-[var(--uga-gray)] text-sm">Web Accessibility Implementation</p>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <nav class="flex gap-6 items-center" aria-label="Primary">
+            <a href="index.html"  class="nav-link flex flex-col items-center px-3 py-2 rounded-md text-gray-700 hover:bg-gradient-to-br hover:from-gray-200 hover:to-gray-400" aria-label="Dashboard">
+                <i class="fas fa-home text-2xl"></i>
+                <span class="text-xs mt-1">Dashboard</span>
+            </a>
+            <a href="decisions.html" class="nav-link flex flex-col items-center px-3 py-2 rounded-md text-gray-700 hover:bg-gradient-to-br hover:from-gray-200 hover:to-gray-400" aria-label="Decisions" data-current="decisions.html">
+                <i class="fas fa-key text-2xl"></i>
+                <span class="text-xs mt-1">Decisions</span>
+            </a>
+            <a href="meetings.html" class="nav-link flex flex-col items-center px-3 py-2 rounded-md text-gray-700 hover:bg-gradient-to-br hover:from-gray-200 hover:to-gray-400" aria-label="Meetings" data-current="meetings.html">
+                <i class="fas fa-handshake text-2xl"></i>
+                <span class="text-xs mt-1">Meetings</span>
+            </a>
+            <a href="timeline.html" class="nav-link flex flex-col items-center px-3 py-2 rounded-md text-gray-700 hover:bg-gradient-to-br hover:from-gray-200 hover:to-gray-400" aria-label="Timeline" data-current="timeline.html">
+                <i class="fas fa-stream text-2xl"></i>
+                <span class="text-xs mt-1">Timeline</span>
+            </a>
+        </nav>
+
+        <div class="flex gap-3 items-center text-sm">
+            <span id="badge-phase" class="px-3 py-1 bg-gray-700 text-gray-200 rounded-md" aria-live="polite">Phase: —</span>
+            <span id="badge-updated" class="px-3 py-1 bg-gray-100 text-[var(--uga-black)] rounded-md">Updated: —</span>
+        </div>
+    </div>
+</header>
+<script>
+    (async () => {
+        const phaseBadge   = document.getElementById('badge-phase');
+        const updatedBadge = document.getElementById('badge-updated');
+        if (!phaseBadge || !updatedBadge) return;
+
+        const SHEET_ID = (window.SHEET_ID || '').trim() || '1naeWFQsNyjY3g0yNeZHcAg5VW-DTdOehH_Zjy3pCe7k';
+        const SHEET_NAME = 'Meta'; // row1 headers: Phase | Updated
+        const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SHEET_ID)}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+        function parseCsv(text) {
+            const rows = [];
+            let row = [], cell = '', q = false;
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i], n = text[i+1];
+                if (c === '"' && q && n === '"') { cell += '"'; i++; continue; }
+                if (c === '"') { q = !q; continue; }
+                if (c === ',' && !q) { row.push(cell); cell = ''; continue; }
+                if ((c === '\n' || c === '\r') && !q) {
+                    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+                    cell = ''; row = [];
+                    if (c === '\r' && n === '\n') i++;
+                    continue;
+                }
+                cell += c;
+            }
+            if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+            return rows;
+        }
+
+        function normalize(h) {
+            return (h || '').replace(/^\uFEFF/, '').trim().toLowerCase();
+        }
+
+        try {
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) throw new Error('fetch failed');
+            const text = await res.text();
+            const rows = parseCsv(text);
+            if (rows.length < 2) return;
+
+            const headers = rows[0].map(normalize);
+            const dataRow = rows[1];
+
+            const phaseIdx   = headers.findIndex(h => h === 'phase');
+            const updatedIdx = headers.findIndex(h => h === 'updated');
+
+            const phaseVal   = phaseIdx   >= 0 ? (dataRow[phaseIdx]   || '').trim() : '';
+            const updatedVal = updatedIdx >= 0 ? (dataRow[updatedIdx] || '').trim() : '';
+
+            if (phaseBadge)   phaseBadge.textContent   = phaseVal   ? `Phase: ${phaseVal}`     : 'Phase: —';
+            if (updatedBadge) updatedBadge.textContent = updatedVal ? `Updated: ${updatedVal}`  : 'Updated: —';
+
+        } catch (err) {
+            console.error('Badge update failed:', err);
+        }
+    })();
+</script>
+
+<script>
+    (() => {
+        // Highlight active nav link based on current URL
+        function markActiveNav() {
+            // Get the current file (defaults to index.html)
+            const path = location.pathname.split('/').pop() || 'index.html';
+            const here = path.toLowerCase();
+
+            // Classes to apply when active
+            const activeClasses = ['bg-gradient-to-br','from-[var(--uga-red)]','to-pink-500','text-white','shadow-inner'];
+
+            document.querySelectorAll('nav a.nav-link').forEach(a => {
+                // Normalize href (handle "./", folder roots, query/hash ignored)
+                const href = (a.getAttribute('href') || '').split('#')[0].split('?')[0].toLowerCase() || 'index.html';
+                const isActive =
+                    href === here ||
+                    a.dataset.current?.toLowerCase() === here ||
+                    // treat "/" or empty as index.html
+                    (here === 'index.html' && (href === '' || href === './' || href === '/'));
+
+                // toggle classes
+                a.classList[isActive ? 'add' : 'remove'](...activeClasses);
+                if (isActive) {
+                    a.setAttribute('aria-current', 'page');
+                } else {
+                    a.removeAttribute('aria-current');
+                }
+            });
+        }
+
+        // Run immediately (partial is already injected)
+        markActiveNav();
+    })();
+</script>

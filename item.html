@@ -16,7 +16,7 @@
             --ok:#16a34a;
             --line:#e5e7eb;
             --card:#ffffffF2;
-            --ring: rgba(186,12,47,.25);
+            --ring: rgb(186, 12, 47);
             --step-w: 5rem;    /* .step width */
             --circle-d: 5rem;  /* circle diameter */
             --accent: #ba0c2f; /* blue-500 */
@@ -167,10 +167,10 @@
             width:3.2rem; height:3.4rem; text-align:center; font-size:1.6rem; font-weight:700;
             border-radius:12px; border:1.5px solid #d1d5db; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.05);
         }
-        .code-input:focus{outline:3px solid rgba(186,12,47,.35); outline-offset:2px; border-color:var(--uga-red)}
+        .code-input:focus{outline:3px solid rgba(186, 12, 47, 0.7); outline-offset:2px; border-color:var(--uga-red)}
         .btn-primary{display:inline-flex; align-items:center; gap:.5rem; padding:.6rem 1rem; border-radius:12px; background:var(--uga-red); color:#fff; border:0; cursor:pointer; font-weight:700}
         .btn-primary[disabled]{opacity:.6; cursor:not-allowed}
-        .btn-primary:focus{outline:3px solid rgba(186,12,47,.35); outline-offset:2px}
+        .btn-primary:focus{outline:3px solid rgb(186, 12, 47); outline-offset:2px}
         .status{font-size:.95rem}
         .status.ok{color:#0f7b45}
         .status.err{color:#b91c1c}
@@ -186,7 +186,7 @@
             display:inline-flex; align-items:center; gap:.5rem; padding:.6rem 1rem;
             border-radius:12px; background:var(--uga-red); color:#fff; border:0; cursor:pointer; font-weight:700
         }
-        .btn-primary[disabled]{opacity:.6; cursor:not-allowed}
+        .btn-primary[disabled]{background:var(--uga-gray); opacity:.6; cursor:not-allowed}
         .visually-hidden{position:absolute; left:-9999px}
 
         #tester-controls, .controls {
@@ -253,16 +253,33 @@
 
 
         /* Body */
-        .plan{
-            white-space:pre-wrap;     /* preserve Sheet line breaks */
-            color:#1f2937;            /* slate-800 */
-            font-size:.95rem;
-            line-height:1.5;
+        /* Body */
+        .plan {
+            white-space: pre-wrap;     /* preserve Sheet line breaks */
+            color: #1f2937;            /* slate-800 */
+            font-size: 1rem;
+            line-height: 1.5;
+            margin: 10px 20px;            /* match header side margin */
         }
-        .plan p{ margin:2rem; }
-        .plan ul,.plan ol{ margin:2.25rem 0 .5rem .95rem; }
-        .plan li{ margin:2.15rem 0; }
-        .plan a{ text-decoration:underline; }
+
+        .plan p {
+            margin: 1rem 0;            /* balanced vertical rhythm */
+        }
+
+        .plan ul,
+        .plan ol {
+            margin: 1rem 0 1rem 2rem;  /* list indentation consistent with header */
+            padding-left: 0;           /* avoids double-indentation */
+        }
+
+        .plan li {
+            margin: 0.5rem 0;          /* more natural spacing between items */
+        }
+
+        .plan a {
+            text-decoration: underline;
+        }
+
 
 
 

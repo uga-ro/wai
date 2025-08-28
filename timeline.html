@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RO‑WAI · Timeline</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <style>
+        :root{ --uga-red:#BA0C2F; --uga-black:#000; --uga-gray:#554F47; }
+        .nav-link.active{ background-image:linear-gradient(to bottom right,var(--uga-red),#ec4899); color:#fff; box-shadow:inset 0 2px 4px rgba(0,0,0,.4); }
+        .nav-link:hover{ background-image:linear-gradient(to bottom right,#e5e7eb,#9ca3af); color:#111; }
+
+        /* Gantt */
+        .gantt-row{ position:relative; }
+        .gantt-bar{ position:absolute; height:28px; border-radius:8px; display:flex; align-items:center; gap:.5rem; padding:0 .5rem; white-space:nowrap; }
+        .gantt-grid{ position:relative; }
+        .gantt-grid .tick{ position:absolute; top:0; bottom:0; width:1px; background:rgba(0,0,0,.06); }
+        .today-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            border-left: 2px dashed rgba(156, 163, 175, 0.6); /* gray-400 at 60% */
+        }
+
+        .phase-Plan {
+            background: rgba(186, 12, 47, 0.15);   /* UGA red with some transparency */
+            border: 2px solid var(--uga-red);
+        }
+
+        .phase-Build {
+            background: rgba(255, 221, 0, 0.2);    /* bright yellow background */
+            border: 2px solid #facc15;             /* Tailwind yellow-400 */
+        }
+
+        .phase-Test {
+            background: rgba(34, 197, 94, 0.2);    /* green background */
+            border: 2px solid #22c55e;             /* Tailwind green-500 */
+        }
+
+        .badge{ font-size:10px; padding:.15rem .45rem; border-radius:999px; }
+        .status-on{ background:#e0f2e9; color:#166534; }
+        .status-risk{ background:#fde2e7; color:var(--uga-red); }
+
+        body.dark-uga {
+
+            /* Background image with UGA brand gradient overlay */
+            background-image:
+                    linear-gradient(rgba(255,255,255,0.7), rgba(229,229,229,0.7), rgba(209,213,219,0.7), rgba(186,12,47,0.3)),
+                    url('https://www.uga.edu/img/prism-background.57f15081.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body class="dark-uga">
+
+<div class="max-w-[1620px] mx-auto p-10 sm:p-12 lg:p-14">
+
+<div id="site-header"></div>
+<!-- On every page, after <div id="site-header"></div> -->
+<script>
+    (async () => {
+        const target = document.getElementById('site-header');
+        if (!target) return;
+
+        try {
+            // 1) Fetch & inject the partial
+            const res = await fetch('partials/header.html', { cache: 'no-store' });
+            if (!res.ok) throw new Error('Failed to load header');
+            const html = await res.text();
+            target.innerHTML = html;
+
+            // 2) Execute any <script> tags in the injected HTML
+            const scripts = target.querySelectorAll('script');
+            for (const oldScript of scripts) {
+                const s = document.createElement('script');
+                if (oldScript.src) {
+                    s.src = oldScript.src;
+                    s.async = false;
+                } else {
+                    s.textContent = oldScript.textContent;
+                }
+                // Use head so it executes in document context
+                document.head.appendChild(s);
+                oldScript.remove();
+            }
+        } catch (err) {
+            console.error('Header load failed', err);
+        }
+    })();
+</script>
+
+
+<main class="mx-auto">
+    <section class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-6xl font-semibold mb-4 text-[#4a4a4a]">TIMELINE</h2>
+        <div class="flex items-center gap-2 text-sm">
+            <select id="phaseFilter" class="px-2 py-1 rounded border border-gray-300 bg-white">
+                <option value="">All phases</option>
+                <option>Plan</option>
+                <option>Build</option>
+                <option>Test</option>
+            </select>
+            <label class="inline-flex items-center gap-2 px-2 py-1 rounded border border-gray-300 bg-white">
+                <span>Zoom</span>
+                <input id="zoom" type="range" min="0.5" max="3" step="0.1" value="1" />
+            </label>
+        </div>
+    </section>
+
+    <!-- Legend (phases only) -->
+    <div class="flex items-center gap-4 text-sm mb-4">
+        <!-- Plan -->
+        <div class="flex items-center gap-2">
+            <span class="w-4 h-3 rounded border border-[var(--uga-red)] bg-[rgba(186,12,47,.15)]"></span>
+            <span>Plan</span>
+        </div>
+        <!-- Build -->
+        <div class="flex items-center gap-2">
+            <span class="w-4 h-3 rounded border border-yellow-400 bg-yellow-200"></span>
+            <span>Build</span>
+        </div>
+        <!-- Test -->
+        <div class="flex items-center gap-2">
+            <span class="w-4 h-3 rounded border border-green-500 bg-green-200"></span>
+            <span>Test</span>
+        </div>
+    </div>
+
+
+    <!-- Empty state -->
+    <div id="empty" class="hidden rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center">
+        <p class="text-gray-600">No timeline data yet. Add rows to the <strong>Timeline</strong> sheet with columns:<br>
+            <code>item, phase, start, end, status</code><br>
+            <span class="text-xs">status allowed: <strong>on track</strong> or <strong>at risk</strong></span>
+        </p>
+    </div>
+
+    <!-- Gantt wrapper -->
+    <div id="ganttWrap" class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+        <div id="ganttHeader" class="px-4 py-2 bg-gray-50 text-xs text-gray-600 sticky top-0 z-10"></div>
+        <div class="grid grid-cols-[220px_1fr]">
+            <!-- Item labels -->
+            <div id="taskCol" class="divide-y divide-gray-100"></div>
+            <!-- Chart area -->
+            <div class="relative" id="chartCol">
+                <div id="grid" class="gantt-grid"></div>
+                <div id="today" class="today-line hidden" aria-hidden="true"></div>
+                <div id="bars" class="relative"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table fallback -->
+    <details class="mt-6">
+        <summary class="cursor-pointer text-sm text-gray-600">Show as table</summary>
+        <div class="mt-3 overflow-auto rounded-lg border border-gray-200 bg-white">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50 text-gray-700">
+                <tr>
+                    <th class="text-left px-4 py-2">Item</th>
+                    <th class="text-left px-4 py-2">Phase</th>
+                    <th class="text-left px-4 py-2">Start</th>
+                    <th class="text-left px-4 py-2">End</th>
+                    <th class="text-left px-4 py-2">Status</th>
+                </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-gray-100"></tbody>
+            </table>
+        </div>
+    </details>
+</main>
+
+<script>
+    // ===== Google Sheets CONFIG =====
+    const SHEET_ID = '1naeWFQsNyjY3g0yNeZHcAg5VW-DTdOehH_Zjy3pCe7k';              // fill with your Google Sheet ID
+    const TIMELINE_GID = '1743844133';// gid of the Timeline tab
+    const TIMELINE_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${TIMELINE_GID}`;
+
+    // ===== Utility =====
+    const qs = (s, el=document) => el.querySelector(s);
+    const qsa = (s, el=document) => Array.from(el.querySelectorAll(s));
+    const parseDate = (v) => {
+        if(!v) return null;
+        if(v instanceof Date) return v;
+        const s = String(v).trim();
+        // Try ISO first
+        let d = new Date(s);
+        if(!isNaN(d)) return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        // Try mm/dd/yyyy
+        const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+        if(m){ const [_,mm,dd,yyyy] = m; return new Date(Number(yyyy.length===2?('20'+yyyy):yyyy), Number(mm)-1, Number(dd)); }
+        return null;
+    };
+    const fmt = (d) => d ? d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}) : '';
+
+    // State
+    let ALL = [];
+    let scale = 1; // zoom multiplier
+    let minDate = null, maxDate = null;
+
+    async function fetchTimeline(){
+        return new Promise((resolve,reject)=>{
+            Papa.parse(TIMELINE_CSV,{header:true,download:true,skipEmptyLines:true,complete:res=>resolve(res.data||[]),error:reject});
+        });
+    }
+
+    function normStatus(s){
+        const v = String(s||'').trim().toLowerCase();
+        if(v==='on track' || v==='ontrack' || v==='on-track') return 'on track';
+        if(v==='at risk' || v==='atrisk' || v==='at-risk') return 'at risk';
+        return ''; // unknown/empty → no badge
+    }
+
+    function normalizeRows(rows){
+        return rows.map(r=>({
+            item:   (r.item||r.title||'').trim(),
+            phase:  (r.phase||'').trim() || 'Other',
+            start:  parseDate(r.start_date||r.start),
+            end:    parseDate(r.end_date||r.end),
+            status: normStatus(r.status)
+        })).filter(r=> r.item && r.start && r.end);
+    }
+
+    function computeWindow(rows){
+        if(!rows.length){ minDate=maxDate=null; return; }
+        minDate = new Date(Math.min(...rows.map(r=>r.start.getTime())));
+        maxDate = new Date(Math.max(...rows.map(r=>r.end.getTime())));
+        // keep a small right pad for breathing room
+        maxDate = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate()+3);
+        // 🚩 Clamp to project end
+        const projectEnd = new Date(2026, 3, 30); // April 30, 2026 (month is 0-based)
+        if (maxDate > projectEnd) maxDate = projectEnd;
+    }
+
+    function daysBetween(a,b){ return Math.max(1, Math.round((b-a)/(1000*60*60*24))); }
+
+    function renderHeader(){
+        const header = qs('#ganttHeader');
+        if(!minDate||!maxDate){ header.textContent=''; return; }
+        // Month labels: skip a partial leading month to avoid cramped/overlapping labels
+        let startMonth = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+        if(minDate.getDate() > 15){ // window starts late in the month → start labels from next month
+            startMonth = new Date(minDate.getFullYear(), minDate.getMonth()+1, 1);
+        }
+        const months=[]; let d=new Date(startMonth);
+        while(d <= maxDate){ months.push(new Date(d)); d.setMonth(d.getMonth()+1); }
+        const fmtMon = (m)=>{
+            const mon = m.toLocaleString(undefined,{month:'short'});
+            const yr = String(m.getFullYear()).slice(-2);
+            return `${mon} ’${yr}`; // e.g., Aug ’25
+        };
+        header.innerHTML = '<div class="grid grid-cols-[220px_1fr]">\
+      <div class="px-2">&nbsp;</div>\
+      <div class="relative h-6">'+
+            months.map((m)=>`<span class="absolute text-[10px] text-gray-600" style="left:${posForDate(m)}px">${fmtMon(m)}</span>`).join('')+
+            '</div></div>';
+    }
+
+    function posForDate(d){
+        const chart = qs('#chartCol');
+        const width = chart.clientWidth; if(!width) return 0;
+        const totalDays = daysBetween(minDate, maxDate);
+        const dayPx = (width/totalDays) * scale;
+        const delta = daysBetween(minDate, d);
+        return Math.round(delta * dayPx);
+    }
+
+    function widthForSpan(start,end){
+        const chart = qs('#chartCol');
+        const width = chart.clientWidth; if(!width) return 0;
+        const totalDays = daysBetween(minDate, maxDate);
+        const dayPx = (width/totalDays) * scale;
+        const dur = daysBetween(start,end);
+        return Math.max(8, Math.round(dur * dayPx));
+    }
+
+    function renderGrid(){
+        const grid = qs('#grid');
+        grid.innerHTML='';
+        if(!minDate||!maxDate) return;
+        const totalDays = daysBetween(minDate, maxDate);
+        // verticals every 7 days
+        for(let i=0;i<=totalDays;i+=7){
+            const x = posForDate(new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate()+i));
+            const div = document.createElement('div');
+            div.className='tick'; div.style.left=x+'px';
+            grid.appendChild(div);
+        }
+        // today line
+        const today = qs('#today');
+        const now = new Date();
+        if(now>=minDate && now<=maxDate){ today.classList.remove('hidden'); today.style.left = posForDate(now)+'px'; }
+        else { today.classList.add('hidden'); }
+    }
+
+    function phaseClass(p){
+        if(/^plan/i.test(p)) return 'phase-Plan';
+        if(/^build/i.test(p)) return 'phase-Build';
+        if(/^test/i.test(p)) return 'phase-Test';
+        return 'phase-Other';
+    }
+    function phaseOrder(p){
+        if(/^plan/i.test(p)) return 0;
+        if(/^build/i.test(p)) return 1;
+        if(/^test/i.test(p)) return 2;
+        return 3;
+    }
+
+    function syncLanePositions(){
+        const taskCol = qs('#taskCol');
+        const chartCol = qs('#chartCol');
+        const bars = qsa('#bars .gantt-bar');
+        // Match chart height to labels so grid/today-line span all lanes
+        chartCol.style.height = taskCol.scrollHeight + 'px';
+
+        const taskTop = taskCol.getBoundingClientRect().top;
+        bars.forEach(bar => {
+            const key = bar.dataset.key;
+            const anchor = taskCol.querySelector(`.lane-anchor[data-key="${key}"]`);
+            if(!anchor) return;
+            const rect = anchor.getBoundingClientRect();
+            const y = rect.top - taskTop + (anchor.offsetHeight - 28)/2; // 28px bar height
+            bar.style.top = Math.max(0, Math.round(y)) + 'px';
+        });
+    }
+
+    function statusBadge(status){
+        if(status==='on track') return `<span class="badge status-on">on track</span>`;
+        if(status==='at risk')  return `<span class="badge status-risk">at risk</span>`;
+        return '';
+    }
+
+    function renderTable(rows){
+        const tb = qs('#tableBody'); tb.innerHTML='';
+        rows.forEach(r=>{
+            const tr=document.createElement('tr');
+            tr.innerHTML = `<td class="px-4 py-2">${r.item}</td>
+        <td class="px-4 py-2">${r.phase}</td>
+        <td class="px-4 py-2">${fmt(r.start)}</td>
+        <td class="px-4 py-2">${fmt(r.end)}</td>
+        <td class="px-4 py-2">${statusBadge(r.status)}</td>`;
+            tb.appendChild(tr);
+        });
+    }
+
+    function renderGantt(rows){
+        const taskCol = qs('#taskCol');
+        const barsWrap = qs('#bars');
+        taskCol.innerHTML='';
+        barsWrap.innerHTML='';
+
+        // Group by item so we show item once, with its Plan/Build/Test rows under it
+        const groups = rows.reduce((acc,r)=>{ (acc[r.item] ||= []).push(r); return acc; },{});
+        const items = Object.keys(groups).sort((a,b)=> a.localeCompare(b));
+
+        let laneId = 0; // unique key per visible sub-row
+
+        items.forEach(item => {
+            const array = groups[item].slice().sort((a,b)=> a.start-b.start || phaseOrder(a.phase)-phaseOrder(b.phase));
+
+            // Header row for the item name (no bar)
+            const header = document.createElement('div');
+            header.className = 'gantt-row border-t first:border-t-0 border-gray-100';
+            header.innerHTML = `<div class="px-4 py-2"><div class="font-medium">${item}</div></div>`;
+            taskCol.appendChild(header);
+
+            // Sub-rows for each phase span
+            array.forEach(r => {
+                const key = `lane-${++laneId}`;
+
+                // Left-side label lane (anchor we will measure)
+                const sub = document.createElement('div');
+                sub.className = 'gantt-row lane-anchor border-t-0';
+                sub.dataset.key = key;
+                sub.innerHTML = `<div class="px-4 py-1"><div class="text-xs text-gray-500">${r.phase} · ${fmt(r.start)} → ${fmt(r.end)} ${r.status?`· ${r.status}`:''}</div></div>`;
+                taskCol.appendChild(sub);
+
+                // Right-side bar (we set left/width now, top synced later)
+                const bar = document.createElement('div');
+                bar.className = `gantt-bar ${phaseClass(r.phase)}`;
+                bar.dataset.key = key;
+                bar.style.left  = posForDate(r.start)+'px';
+                bar.style.width = widthForSpan(r.start, r.end)+'px';
+                // temporary top; will be corrected by syncLanePositions()
+                bar.style.top = '0px';
+                bar.innerHTML  = `${statusBadge(r.status)}`;
+                barsWrap.appendChild(bar);
+            });
+        });
+    }
+
+    function applyFilter(){
+        // ensure chart height matches label column after we render
+        // (syncLanePositions will also set height)
+
+        const sel = qs('#phaseFilter').value;
+        const filtered = sel ? ALL.filter(r=> r.phase.toLowerCase() === sel.toLowerCase()) : ALL;
+        computeWindow(filtered);
+        if(!filtered.length){
+            qs('#empty').classList.remove('hidden');
+            qs('#ganttWrap').classList.add('hidden');
+            return;
+        }
+        qs('#empty').classList.add('hidden');
+        qs('#ganttWrap').classList.remove('hidden');
+        renderHeader();
+        renderGrid();
+        renderGantt(filtered);
+        renderTable(filtered);
+        // sync vertical positions of bars to measured label lanes after layout
+        requestAnimationFrame(syncLanePositions);
+    }
+
+    function handleResize(){
+        // Recompute positions on resize without refetching
+        renderHeader();
+        renderGrid();
+        requestAnimationFrame(syncLanePositions);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () =>{
+        try{
+            const raw = await fetchTimeline();
+            const rows = normalizeRows(raw);
+            ALL = rows.sort((a,b)=> a.start-b.start || a.end-b.end || a.item.localeCompare(b.item));
+            if(!ALL.length){
+                qs('#empty').classList.remove('hidden');
+                qs('#ganttWrap').classList.add('hidden');
+            } else {
+                computeWindow(ALL);
+                applyFilter();
+            }
+            qs('#phaseFilter').addEventListener('change', applyFilter);
+            qs('#zoom').addEventListener('input', (e)=>{ scale = Number(e.target.value)||1; applyFilter(); });
+            window.addEventListener('resize', handleResize);
+        }catch(err){
+            console.error(err);
+            qs('#empty').classList.remove('hidden');
+            qs('#empty').innerHTML = '<p class="text-gray-600">Error loading timeline data. Double-check SHEET_ID / gid and sharing.</p>';
+            qs('#ganttWrap').classList.add('hidden');
+        }
+    });
+</script>
+
+
+</body>
+</html>

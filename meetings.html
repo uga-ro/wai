@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RO‑WAI · Meetings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <style>
+        :root{ --uga-red:#BA0C2F; --uga-black:#000; --uga-gray:#554F47; }
+        .glass-effect { background: rgba(255, 255, 255, 0.4); box-shadow:0 5px 12px rgba(0,0,0,.25); }
+        /* Enhance the “glass” look; Safari needs the prefixed prop */
+        .glass-effect {
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        /* If you want cell grid lines with border-separate */
+        #meetingsBody tr > td { border-top: 1px solid var(--uga-border-gray); }
+
+
+        body.dark-uga {
+
+            /* Background image with UGA brand gradient overlay */
+            background-image:
+                    linear-gradient(rgba(255,255,255,0.7), rgba(229,229,229,0.7), rgba(209,213,219,0.7), rgba(186,12,47,0.3)),
+                    url('https://www.uga.edu/img/prism-background.57f15081.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+</style>
+</head>
+<body class="dark-uga">
+<div class="min-h-screen w-full relative overflow-hidden">
+    <div class="max-w-[1620px] mx-auto p-10 sm:p-12 lg:p-14">
+
+        <div id="site-header"></div>
+        <!-- On every page, after <div id="site-header"></div> -->
+        <script>
+            (async () => {
+                const target = document.getElementById('site-header');
+                if (!target) return;
+
+                try {
+                    // 1) Fetch & inject the partial
+                    const res = await fetch('partials/header.html', { cache: 'no-store' });
+                    if (!res.ok) throw new Error('Failed to load header');
+                    const html = await res.text();
+                    target.innerHTML = html;
+
+                    // 2) Execute any <script> tags in the injected HTML
+                    const scripts = target.querySelectorAll('script');
+                    for (const oldScript of scripts) {
+                        const s = document.createElement('script');
+                        if (oldScript.src) {
+                            s.src = oldScript.src;
+                            s.async = false;
+                        } else {
+                            s.textContent = oldScript.textContent;
+                        }
+                        // Use head so it executes in document context
+                        document.head.appendChild(s);
+                        oldScript.remove();
+                    }
+                } catch (err) {
+                    console.error('Header load failed', err);
+                }
+            })();
+        </script>
+
+        <!-- Meetings Section -->
+        <h2 class="text-6xl font-semibold mb-4 text-[#4a4a4a]">MEETINGS</h2>
+
+        <!-- Card wrapper gets the glass + radius + shadow -->
+        <div class="glass-effect rounded-lg shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <!-- Use border-separate so radius clips, and remove table bg -->
+                <table class="min-w-full border-separate border-spacing-0">
+                    <thead class="bg-white/40"> <!-- translucent so “glass” shows through -->
+                    <tr>
+                        <th class="px-4 py-2 border-b border-[var(--uga-border-gray)] text-left">Date</th>
+                        <th class="px-4 py-2 border-b border-[var(--uga-border-gray)] text-left">Time</th>
+                        <th class="px-4 py-2 border-b border-[var(--uga-border-gray)] text-left">Topic</th>
+                        <th class="px-4 py-2 border-b border-[var(--uga-border-gray)] text-left">Contact(s)</th>
+                        <th class="px-4 py-2 border-b border-[var(--uga-border-gray)] text-left">Agenda</th>
+                    </tr>
+                    </thead>
+                    <tbody id="meetingsBody" class="text-sm">
+                    <!-- your script fills rows here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script>
+    const SHEET_ID = '1naeWFQsNyjY3g0yNeZHcAg5VW-DTdOehH_Zjy3pCe7k';
+    const MEETINGS_GID = '1524394293';
+    const MEETINGS_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${MEETINGS_GID}`;
+
+    // Utility
+    const qs = (s, el=document) => el.querySelector(s);
+
+    async function fetchMeetings() {
+        return new Promise((resolve,reject)=>{
+            Papa.parse(MEETINGS_CSV,{
+                header:true,
+                download:true,
+                skipEmptyLines:true,
+                complete:res=>resolve(res.data||[]),
+                error:reject
+            });
+        });
+    }
+
+    // Helper: try to parse "Date" and optional "Time"
+    function parseDateTime(dateStr, timeStr) {
+        const d = (dateStr||'').trim();
+        if (!d) return null;
+        let s = d;
+        const t = (timeStr||'').trim();
+        if (t) s += ' ' + t; // let the browser parse common formats (e.g., "2025-09-10 2 PM" or "9/10/2025 14:00")
+        const dt = new Date(s);
+        if (!isNaN(dt)) return dt;
+
+        // Fallback: try mm/dd/yyyy + time
+        const m = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+        if (m) {
+            const [,mm,dd,yyyy] = m;
+            const year = yyyy.length === 2 ? Number('20'+yyyy) : Number(yyyy);
+            const base = new Date(year, Number(mm)-1, Number(dd));
+            if (t) {
+                const tt = new Date(`${year}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')} ${t}`);
+                if (!isNaN(tt)) return tt;
+            }
+            return base;
+        }
+        return null;
+    }
+
+    function startOfToday() {
+        const n = new Date();
+        return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    }
+
+
+    // Replace your renderMeetings with this one
+    function renderMeetings(rows){
+        const tbody = document.querySelector('#meetingsBody');
+        tbody.innerHTML = '';
+
+        const today0 = startOfToday();
+
+        // Normalize
+        const normalized = rows.map(r => {
+            const date = (r.Date||'').trim();
+            const time = (r.Time||'').trim();
+            const dt = parseDateTime(date, time); // null if unscheduled
+            return {
+                date,
+                time,
+                dt,
+                topic: (r.Topic||'').trim(),
+                contacts: (r.Contact||'').split(',').map(c=>c.trim()).filter(Boolean),
+                agenda: (r.Agenda||'').trim()
+            };
+        });
+
+        // Sort: by date asc, nulls last
+        normalized.sort((a,b) => {
+            if (a.dt && b.dt) return a.dt - b.dt;
+            if (a.dt && !b.dt) return -1;
+            if (!a.dt && b.dt) return 1;
+            return 0;
+        });
+
+        // Find the "next" = first with dt >= today
+        const nextIdx = normalized.findIndex(m => m.dt && m.dt >= today0);
+        const nextId = nextIdx >= 0 ? normalized[nextIdx].dt.getTime() : null;
+
+        // Render rows with coloring
+        normalized.forEach(m => {
+            const isUnscheduled = !m.dt;
+            const isPast = m.dt && m.dt < today0;
+            const isNext = m.dt && nextId !== null && m.dt.getTime() === nextId;
+
+            const rowClasses =
+                isNext ? 'bg-amber-50' :
+                    isPast ? 'bg-gray-50 text-gray-600' :
+                        ''; // future = default
+
+            const dateCell = m.date
+                ? m.date
+                : '<span class="italic text-gray-400">Unscheduled</span>';
+
+            const timeCell = m.date
+                ? (m.time || '<span class="italic text-gray-400">—</span>')
+                : '<span class="italic text-gray-400">—</span>';
+
+            const contactBadges = m.contacts.length
+                ? m.contacts.map(c=>`<span class="inline-block bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded-full mr-1">${c}</span>`).join('')
+                : '<span class="italic text-gray-400">None</span>';
+
+            const nextBadge = isNext
+                ? '<span class="ml-2 inline-block text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-black align-middle">Next</span>'
+                : '';
+
+            const tr = document.createElement('tr');
+            tr.className = rowClasses;
+            tr.innerHTML = `
+        <td class="px-4 py-2">${dateCell}</td>
+        <td class="px-4 py-2">${timeCell}</td>
+        <td class="px-4 py-2 font-medium">${m.topic || '<span class="italic text-gray-400">—</span>'}${nextBadge}</td>
+        <td class="px-4 py-2">${contactBadges}</td>
+        <td class="px-4 py-2">${m.agenda || '<span class="italic text-gray-400">—</span>'}</td>
+      `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', async ()=>{
+        try {
+            const rows = await fetchMeetings();
+            renderMeetings(rows);
+        } catch(err){
+            console.error(err);
+            qs('#meetingsWrap').innerHTML = '<p class="text-gray-600">Error loading meetings. Check Sheet ID / gid and sharing.</p>';
+        }
+    });
+</script>
+</body>
