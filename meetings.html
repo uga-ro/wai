@@ -30,7 +30,31 @@
             background-position: center;
             background-attachment: fixed;
         }
-</style>
+
+        /* Minimal, no boxes */
+        .agenda{ }
+        .agenda-head{
+            display:flex; align-items:center; width:100%;
+            background:transparent; border:0; padding:0; text-align:left; cursor:pointer;
+            font:inherit; color:inherit;
+        }
+        .agenda-title{ flex:1 1 auto; }
+        .agenda-chevron{ margin-left:.5rem; display:inline-flex; transition: transform .18s ease; }
+
+        /* IMPORTANT: hide body by default; show when wrapper is expanded */
+        .agenda-body{ display:none; margin-top:.5rem; font-size:.95rem; line-height:1.5; }
+        .agenda[aria-expanded="true"] .agenda-body{ display:block; }
+        .agenda[aria-expanded="true"] .agenda-chevron{ transform: rotate(90deg); }
+
+        .agenda-body a{ color: #ba0c2f; text-decoration:underline; }
+
+        /* Plain (no [title]) just renders text */
+        .agenda-plain{ font-size:.95rem; line-height:1.5; }
+
+
+
+
+    </style>
 </head>
 <body class="dark-uga">
 <div class="min-h-screen w-full relative overflow-hidden">
@@ -125,11 +149,10 @@
         if (!d) return null;
         let s = d;
         const t = (timeStr||'').trim();
-        if (t) s += ' ' + t; // let the browser parse common formats (e.g., "2025-09-10 2 PM" or "9/10/2025 14:00")
+        if (t) s += ' ' + t;
         const dt = new Date(s);
         if (!isNaN(dt)) return dt;
 
-        // Fallback: try mm/dd/yyyy + time
         const m = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
         if (m) {
             const [,mm,dd,yyyy] = m;
@@ -149,19 +172,100 @@
         return new Date(n.getFullYear(), n.getMonth(), n.getDate());
     }
 
+    // ===== Agenda (inline) helpers =====
+    function _autolinkPreserve(text='') {
+        // [text](url)
+        text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+            (m, label, url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`);
+        // bare http/https
+        text = text.replace(/(^|[\s(])((https?:\/\/[^\s)]+))/g,
+            (m, pre, url) => `${pre}<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+        // bare www.
+        text = text.replace(/(^|[\s(])(www\.[^\s)]+)/g,
+            (m, pre, url) => `${pre}<a href="https://${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+        return text;
+    }
 
-    // Replace your renderMeetings with this one
+    function _parseAgenda(raw='') {
+        const m = raw.match(/\[title\]([\s\S]*?)\[\/title\]/i);
+        const title = m ? m[1].trim() : '';
+        const body = (m ? raw.replace(/\[title\][\s\S]*?\[\/title\]/i, '') : raw).trim();
+        return { title, body };
+    }
+
+    // returns a DOM element (no borders/backgrounds)
+    function renderAgendaInline(raw='') {
+        const { title, body } = _parseAgenda(raw);
+
+        // No [title] → return plain formatted text, no chevron
+        if (!title) {
+            const plain = document.createElement('div');
+            plain.className = 'agenda-plain';
+            plain.innerHTML = _autolinkPreserve(raw)
+                .replace(/\n{2,}/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+            return plain;
+        }
+
+        // With [title] → wrapper controls state; body hidden by default via CSS
+        const wrap = document.createElement('div');
+        wrap.className = 'agenda';
+        wrap.setAttribute('aria-expanded', 'false');
+
+        const head = document.createElement('button');
+        head.type = 'button';
+        head.className = 'agenda-head';
+
+        const headText = document.createElement('span');
+        headText.className = 'agenda-title';
+        headText.textContent = title;
+
+        const chev = document.createElement('span');
+        chev.className = 'agenda-chevron';
+        chev.setAttribute('aria-hidden','true');
+        chev.innerHTML = `
+    <svg viewBox="0 0 20 20" width="18" height="18">
+      <path d="M7.3 14.7a1 1 0 0 1 0-1.4L10.6 10 7.3 6.7a1 1 0 1 1 1.4-1.4l4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 0 1-1.4 0z"/>
+    </svg>
+  `;
+
+        head.appendChild(headText);
+        head.appendChild(chev);
+
+        const bodyEl = document.createElement('div');
+        bodyEl.className = 'agenda-body';
+        bodyEl.innerHTML = _autolinkPreserve(body)
+            .replace(/\n{2,}/g, '<br><br>')
+            .replace(/\n/g, '<br>');
+
+        // Toggle on the WRAPPER so CSS can target .agenda[aria-expanded="true"] .agenda-body
+        const toggle = () => {
+            const open = wrap.getAttribute('aria-expanded') === 'true';
+            wrap.setAttribute('aria-expanded', open ? 'false' : 'true');
+        };
+        head.addEventListener('click', toggle);
+        head.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+        });
+
+        wrap.appendChild(head);
+        wrap.appendChild(bodyEl);
+        return wrap;
+    }
+
+
+
+    // ===== Render table =====
     function renderMeetings(rows){
         const tbody = document.querySelector('#meetingsBody');
         tbody.innerHTML = '';
 
         const today0 = startOfToday();
 
-        // Normalize
         const normalized = rows.map(r => {
             const date = (r.Date||'').trim();
             const time = (r.Time||'').trim();
-            const dt = parseDateTime(date, time); // null if unscheduled
+            const dt = parseDateTime(date, time);
             return {
                 date,
                 time,
@@ -172,7 +276,6 @@
             };
         });
 
-        // Sort: by date asc, nulls last
         normalized.sort((a,b) => {
             if (a.dt && b.dt) return a.dt - b.dt;
             if (a.dt && !b.dt) return -1;
@@ -180,46 +283,73 @@
             return 0;
         });
 
-        // Find the "next" = first with dt >= today
         const nextIdx = normalized.findIndex(m => m.dt && m.dt >= today0);
         const nextId = nextIdx >= 0 ? normalized[nextIdx].dt.getTime() : null;
 
-        // Render rows with coloring
         normalized.forEach(m => {
             const isUnscheduled = !m.dt;
             const isPast = m.dt && m.dt < today0;
             const isNext = m.dt && nextId !== null && m.dt.getTime() === nextId;
 
-            const rowClasses =
-                isNext ? 'bg-amber-50' :
-                    isPast ? 'bg-gray-50 text-gray-600' :
-                        ''; // future = default
-
-            const dateCell = m.date
-                ? m.date
-                : '<span class="italic text-gray-400">Unscheduled</span>';
-
-            const timeCell = m.date
-                ? (m.time || '<span class="italic text-gray-400">—</span>')
-                : '<span class="italic text-gray-400">—</span>';
-
-            const contactBadges = m.contacts.length
-                ? m.contacts.map(c=>`<span class="inline-block bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded-full mr-1">${c}</span>`).join('')
-                : '<span class="italic text-gray-400">None</span>';
-
-            const nextBadge = isNext
-                ? '<span class="ml-2 inline-block text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-black align-middle">Next</span>'
-                : '';
-
             const tr = document.createElement('tr');
-            tr.className = rowClasses;
-            tr.innerHTML = `
-        <td class="px-4 py-2">${dateCell}</td>
-        <td class="px-4 py-2">${timeCell}</td>
-        <td class="px-4 py-2 font-medium">${m.topic || '<span class="italic text-gray-400">—</span>'}${nextBadge}</td>
-        <td class="px-4 py-2">${contactBadges}</td>
-        <td class="px-4 py-2">${m.agenda || '<span class="italic text-gray-400">—</span>'}</td>
-      `;
+            tr.className = isNext ? 'bg-amber-50' : (isPast ? 'bg-gray-50 text-gray-600' : '');
+
+            // Date TD
+            const tdDate = document.createElement('td');
+            tdDate.className = 'px-4 py-2';
+            if (m.date) tdDate.textContent = m.date;
+            else tdDate.innerHTML = '<span class="italic text-gray-400">Unscheduled</span>';
+            tr.appendChild(tdDate);
+
+            // Time TD
+            const tdTime = document.createElement('td');
+            tdTime.className = 'px-4 py-2';
+            if (m.date) {
+                if (m.time) tdTime.textContent = m.time;
+                else tdTime.innerHTML = '<span class="italic text-gray-400">—</span>';
+            } else {
+                tdTime.innerHTML = '<span class="italic text-gray-400">—</span>';
+            }
+            tr.appendChild(tdTime);
+
+            // Topic TD
+            const tdTopic = document.createElement('td');
+            tdTopic.className = 'px-4 py-2 font-medium';
+            if (m.topic) tdTopic.textContent = m.topic;
+            else tdTopic.innerHTML = '<span class="italic text-gray-400">—</span>';
+            if (isNext) {
+                const badge = document.createElement('span');
+                badge.className = 'ml-2 inline-block text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-black align-middle';
+                badge.textContent = 'Next';
+                tdTopic.appendChild(badge);
+            }
+            tr.appendChild(tdTopic);
+
+            // Contacts TD
+            const tdContacts = document.createElement('td');
+            tdContacts.className = 'px-4 py-2';
+            if (m.contacts.length) {
+                m.contacts.forEach(c => {
+                    const chip = document.createElement('span');
+                    chip.className = 'inline-block bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded-full mr-1';
+                    chip.textContent = c;
+                    tdContacts.appendChild(chip);
+                });
+            } else {
+                tdContacts.innerHTML = '<span class="italic text-gray-400">None</span>';
+            }
+            tr.appendChild(tdContacts);
+
+            // Agenda TD (inline chevron, expandable)
+            const tdAgenda = document.createElement('td');
+            tdAgenda.className = 'px-4 py-2';
+            if (m.agenda && m.agenda.trim()) {
+                tdAgenda.appendChild(renderAgendaInline(m.agenda));
+            } else {
+                tdAgenda.innerHTML = '<span class="italic text-gray-400">—</span>';
+            }
+            tr.appendChild(tdAgenda);
+
             tbody.appendChild(tr);
         });
     }
@@ -234,4 +364,5 @@
         }
     });
 </script>
+
 </body>

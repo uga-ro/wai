@@ -51,7 +51,7 @@
         .kicker{
             text-transform:uppercase; letter-spacing:.12em; font-weight:700; font-size:.75rem; color:#9aa0a6; margin-bottom:.35rem;
         }
-        .hero-title{font-weight:800; font-size:1.6rem; line-height:1.2; margin:.1rem 0 .4rem}
+        .hero-title{font-weight:800; font-size:3rem; line-height:1.2; margin:.1rem 0 .4rem; color: #4a4a4a}
         .hero-desc{color:#4b5563; margin:0}
         .hero-links{display:flex; flex-direction:column; gap:10px}
         .pill-link{
@@ -64,7 +64,7 @@
             width:16px; height:16px; display:inline-block; background:no-repeat center/16px 16px
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23374151' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.5 5.5l-5 5'/%3E%3Cpath d='M8.5 3.5h4v4'/%3E%3Cpath d='M7.5 12.5h-4v-4'/%3E%3C/svg%3E");
         }
-        h2 {display:flex; align-items:center; gap:.5rem; font-weight:700; font-size: 1.5rem; color: #404040; margin:0 auto 0 10px}
+        h2 {display:flex; align-items:center; gap:.5rem; font-weight:700; font-size: 2.2rem; color: #404040; margin:0 auto 0 10px}
 
         /* ======= PROGRESS ======= */
         .section-head{display:flex; align-items:center; gap:.5rem; font-weight:700; color:#404040; margin-bottom:10px}
@@ -255,10 +255,7 @@
         /* Body */
         /* Body */
         .plan {
-            white-space: pre-wrap;     /* preserve Sheet line breaks */
-            color: #1f2937;            /* slate-800 */
-            font-size: 1rem;
-            line-height: 1.5;
+
             margin: 10px 20px;            /* match header side margin */
         }
 
@@ -286,6 +283,100 @@
   height: auto;
   display: block;
 }
+
+        /* ---------- Plan card base (optional but handy) ---------- */
+        .plan-body img { max-width: 100%; height: auto; display: block; }
+
+        /* ---------- Plan markup helpers ---------- */
+        .pc-note {
+            border-left: 4px solid #BA0C2F;
+            background: #fafafa;
+            padding: .75rem 1rem;
+            border-radius: .5rem;
+        }
+        .pc-img { margin: .5rem 0; }
+        .pc-img img { max-width: 100%; height: auto; display: block; border-radius: .5rem; }
+
+        /* Optional image size tokens from sheet: size=sm|md|lg|xl|full */
+        .pc-img--sm  img { max-width: 320px; }
+        .pc-img--md  img { max-width: 480px; }
+        .pc-img--lg  img { max-width: 640px; }
+        .pc-img--xl  img { max-width: 960px; }
+        .pc-img--full img { width: 100%; max-width: 100%; }
+
+        /* ---------- Decisions table ---------- */
+        .pc-decisions { margin-top: 1.25rem; }
+        .pc-decisions h3 { margin: .25rem 0 .5rem 0; }
+        .pc-table-wrap { overflow-x: auto; }
+        .pc-table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+        .pc-table thead th {
+            font-weight: 600; text-align: left;
+            border-bottom: 1px solid #e5e7eb; padding: .5rem .5rem;
+        }
+        .pc-table tbody td {
+            vertical-align: top; padding: .5rem .5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* ---------- Plan collapse/expand ---------- */
+        .pc-collapsible { position: relative; --pc-lines: 5; margin-top: .25rem; }
+        .pc-clamp { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+        .pc-collapsed .pc-clamp { -webkit-line-clamp: var(--pc-lines); max-height: calc(var(--pc-lines) * 1.5em); }
+        .pc-expanded  .pc-clamp { -webkit-line-clamp: unset; max-height: none; }
+
+        /* bottom fade; set --pc-fade-bg on .plan-card if your card bg isn’t white */
+        .pc-fade {
+            position: absolute; left: 0; right: 0; height: 3rem; bottom: 2.5rem;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), var(--pc-fade-bg, #fff));
+            pointer-events: none; opacity: 1; transition: opacity .2s ease;
+        }
+        .pc-expanded .pc-fade { opacity: 0; }
+
+        /* toggle button + chevron */
+        .pc-toggle {
+            background: transparent;
+            border: 0;
+            padding: .5rem .75rem;
+            font-weight: 600;
+            width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: .5rem;
+            cursor: pointer;
+        }
+        .pc-toggle:focus-visible { outline: 2px solid #BA0C2F; outline-offset: 2px; }
+        .plan-card .pc-toggle.u-divider{background:transparent;border:0;border-top:1px solid #e5e7eb;width:100%}
+        .plan-card .pc-toggle.u-divider:hover{background:#f9fafb}
+        .pc-chevron { width: 1rem; height: 1rem; transition: transform .2s ease; }
+        .pc-expanded .pc-chevron { transform: rotate(180deg); }
+
+        /* Hide the testing clamp completely when preview lines = 0 */
+        .pc-collapsible.pc-collapsed[data-lines="0"] .pc-clamp { display: none; }
+        .pc-collapsible.pc-collapsed[data-lines="0"] .pc-fade  { display: none; }
+
+        .plan-card .pc-clamp h3 { /* same base styles as above */
+            margin: 1rem 0 .5rem;
+            padding: .35rem .6rem;
+            border-radius: .4rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            line-height: 1.2;
+            color: #1f2937;
+        }
+        .plan-card .pc-clamp h3:nth-of-type(5n+1) { background:#FDE8EA; }
+        .plan-card .pc-clamp h3:nth-of-type(5n+2) { background:#E6F3FF;  }
+        .plan-card .pc-clamp h3:nth-of-type(5n+3) { background:#FFF5CC;  }
+        .plan-card .pc-clamp h3:nth-of-type(5n+4) { background:#E9F7EF;  }
+        .plan-card .pc-clamp h3:nth-of-type(5n+5) { background:#F3E8FF;  }
+        /* Set the card's horizontal padding once (adjust 20px to your header's left/right padding) */
+        .plan-card { --pc-card-pad-x: 20px; }
+
+       
+
+        /* Indent ALL content inside the collapsible (Plan + Decisions) to the same left as the title */
+        .plan-card .pc-clamp { padding-left: var(--pc-card-pad-x); padding-right: var(--pc-card-pad-x); }
+
+        /* Make sure Decisions doesn't add extra indent */
+        .plan-card .pc-decisions { margin-left: 0; }
+        .plan-card .pc-table-wrap { margin-left: 0; }
 
 
 
@@ -340,7 +431,7 @@
 
         <div class="test-setup">
             <p id="testHelp" class="hint">
-                Enter your assigned 4-digit code, then press <strong>Begin Testing</strong>.
+                Enter your 4-digit code, then press <strong>Begin Testing</strong>.
             </p>
 
             <div class="code-inputs" aria-describedby="testHelp">
@@ -643,6 +734,9 @@
                 if(elStatus){ elStatus.textContent = `Tester ID set to ${testerId}. You can answer and submit.`; elStatus.className='status ok'; }
                 const submit = document.getElementById('submitBtn');
                 if(submit) submit.disabled = false;
+
+                unlockTesting(); // 🔓 show the rest of the Testing card
+
             });
 
             // guard submit if tester not set
@@ -716,6 +810,7 @@
 
             // 3) questions (category from row or sheet)
             await renderQuestions(hit.row.category || hit.sheet);
+            setupTestingCollapsible();  // collapse Testing form until unlocked
 
             // 4) wire tester code entry + submit
             wireCodeEntry();
@@ -752,272 +847,346 @@
         })();
 /* ===== PLAN (single rich card with bracket-tags + Decisions) ===== */
 
-  // --- minimal utilities for the markup/decisions feature (scoped to this IIFE) ---
-  const PC = (() => {
-    const ALLOWED = new Set(['H3','P','UL','LI','A','IMG','FIGURE','FIGCAPTION','ASIDE','PRE','CODE','BR']);
-    const BRAND_RED = '#BA0C2F';
+        // --- minimal utilities for the markup/decisions feature (scoped to this IIFE) ---
+// --- minimal utilities for the markup/decisions feature (scoped to this IIFE) ---
+        const PC = (() => {
+            const ALLOWED = new Set(['H3','P','UL','LI','A','IMG','FIGURE','FIGCAPTION','ASIDE','PRE','CODE','BR']);
 
-    function injectStyles(){
-      if (document.getElementById('pc-styles')) return;
-      const css = `
-        .pc-note{border-left:4px solid ${BRAND_RED}; background:#fafafa; padding:.75rem 1rem; border-radius:.5rem}
-        .pc-img{margin:0.5rem 0}
-        .pc-img img{max-width:100%; height:auto; display:block; border-radius:.5rem}
-        .pc-decisions{margin-top:1.25rem}
-        .pc-decisions h3{margin:.25rem 0 .5rem 0}
-        .pc-decision{border:1px solid #e5e7eb; border-radius:.75rem; padding:.75rem 1rem; margin:.5rem 0}
-        .pc-decision .pc-key{font-weight:600}
-        .pc-muted{opacity:.85}
+            const escapeHTML = (s) => (s==null?'':String(s))
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+            const escapeAttr = (s) => (s==null?'':String(s))
+                .replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+            function parseAttrs(s){
+                const out = {};
+                if (!s) return out;
+                // decode quotes that were escaped earlier
+                s = s.replace(/&quot;|&#34;/g, '"').replace(/&#39;|&apos;/g, "'");
+                // support quoted OR unquoted values: src="..." | src='...' | src=https://...
+                const re = /(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'\\]]+))/g;
+                let m; while ((m = re.exec(s))) out[m[1].toLowerCase()] = m[2] ?? m[3] ?? m[4] ?? '';
+                return out;
+            }
+
+            function convertBracketTagsToHTML(escaped){
+                let s = escaped;
+
+                // shorthand image: [img]URL[/img] or [image]URL[/image]
+                s = s.replace(/\[(?:img|image)\]\s*([\s\S]*?)\s*\[\/(?:img|image)\]/gi, (_, url) => {
+                    const src = escapeAttr(String(url).trim());
+                    return `<figure class="pc-img"><img src="${src}" alt="" loading="lazy" decoding="async"></figure>`;
+                });
+
+                // protect [code]...[/code]
+                const codeMap = [];
+                s = s.replace(/\[code\]([\s\S]*?)\[\/code\]/gi, (_,inner)=>`@@CODE${codeMap.push(inner)-1}@@`);
+
+                // blocks
+                s = s.replace(/\[h3\]([\s\S]*?)\[\/h3\]/gi,'<h3>$1</h3>');
+                s = s.replace(/\[p\]([\s\S]*?)\[\/p\]/gi,'<p>$1</p>');
+                s = s.replace(/\[ul\]/gi,'<ul>').replace(/\[\/ul\]/gi,'</ul>');
+                s = s.replace(/\[li\]/gi,'<li>').replace(/\[\/li\]/gi,'</li>');
+
+                // [a url="..."]text[/a]
+                s = s.replace(/\[a\s+url=(?:"|')([^"']+)(?:"|')\]([\s\S]*?)\[\/a\]/gi,
+                    (_,url,text)=>`<a href="${escapeAttr(url)}">${text}</a>`);
+
+                // [img src="..." alt="..." size=md]  (also accepts [image ...] and unquoted values)
+                s = s.replace(/\[(?:img|image)([^\]]*)\]/gi, (_,attrs)=>{
+                    const { src, alt, size, w } = parseAttrs(attrs);
+                    const ssrc = escapeAttr(src||''); const salt = alt?escapeHTML(alt):'';
+                    const token = String(size || w || '').toLowerCase();
+                    const sizeClass = /^(sm|md|lg|xl|full)$/.test(token) ? ` pc-img--${token}` : '';
+                    const cap = salt ? `<figcaption class="pc-muted">${salt}</figcaption>` : '';
+                    return `<figure class="pc-img${sizeClass}"><img src="${ssrc}" alt="${salt}" loading="lazy" decoding="async">${cap}</figure>`;
+                });
+
+                // [note]...[/note]
+                s = s.replace(/\[note\]([\s\S]*?)\[\/note\]/gi,'<aside class="pc-note" role="note"><p>$1</p></aside>');
+
+                // restore code
+                s = s.replace(/@@CODE(\d+)@@/g,(_,i)=>`<pre class="pc-code"><code>${codeMap[+i]||''}</code></pre>`);
+
+                // normalize newlines
+                return s.replace(/\r\n?|\n/g,'\n');
+            }
+
+            function paragraphsFromBlankLines(html){
+                const parts = html.split(/\n{2,}/).map(x=>x.trim()).filter(Boolean);
+                if(!parts.length) return '';
+                return parts.map(p=>`<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+            }
+
+            function sanitizeTree(root){
+                const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, null);
+                const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
+                for(const el of nodes){
+                    if(!ALLOWED.has(el.tagName)){
+                        const frag=document.createDocumentFragment();
+                        while(el.firstChild) frag.appendChild(el.firstChild);
+                        el.replaceWith(frag); continue;
+                    }
+                    const keep=new Set();
+                    if(el.tagName==='A') keep.add('href');
+                    if(el.tagName==='IMG'){ keep.add('src'); keep.add('alt'); keep.add('loading'); keep.add('decoding'); }
+                    // keep class on safe tags so CSS hooks apply
+                    if (['FIGURE','ASIDE','PRE','CODE','FIGCAPTION'].includes(el.tagName)) keep.add('class');
+
+                    for(const a of [...el.attributes]) if(!keep.has(a.name)) el.removeAttribute(a.name);
+
+                    if(el.tagName==='A'){
+                        const href = el.getAttribute('href')||'';
+                        if(!/^https:\/\//i.test(href)){
+                            const t=el.textContent; el.replaceWith(document.createTextNode(t));
+                        }else{
+                            el.setAttribute('target','_blank'); el.setAttribute('rel','noopener noreferrer');
+                        }
+                    }
+                    if(el.tagName==='IMG'){
+                        const src = el.getAttribute('src')||'';
+                        if(!/^https:\/\//i.test(src)){
+                            const a=document.createElement('a');
+                            a.href = src||'#'; a.textContent='[image]'; a.target='_blank'; a.rel='noopener noreferrer';
+                            el.replaceWith(a);
+                        }else{
+                            el.setAttribute('loading','lazy'); el.setAttribute('decoding','async');
+                        }
+                    }
+                }
+            }
+
+            function autoLinkTextNodes(root){
+                const urlRe = /(https?:\/\/[^\s<>'"]+)/g;
+                const skip = new Set(['A','CODE','PRE']);
+                const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+                const targets=[];
+                while(walker.nextNode()){
+                    const n=walker.currentNode, p=n.parentElement;
+                    if(!p || skip.has(p.tagName)) continue;
+                    if(urlRe.test(n.nodeValue)) targets.push(n);
+                }
+                for(const n of targets){
+                    const text=n.nodeValue; const frag=document.createDocumentFragment(); let last=0;
+                    text.replace(urlRe,(m,url,off)=>{
+                        if(off>last) frag.appendChild(document.createTextNode(text.slice(last,off)));
+                        const a=document.createElement('a'); a.href=url; a.textContent=url; a.target='_blank'; a.rel='noopener noreferrer';
+                        frag.appendChild(a); last=off+m.length; return m;
+                    });
+                    if(last<text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+                    n.replaceWith(frag);
+                }
+            }
+
+            function parsePlanMarkup(text){
+                const escaped = escapeHTML(text||'');
+                let html = convertBracketTagsToHTML(escaped);
+                if(!/(<h3|<ul|<pre|<p|<figure|<aside)/i.test(html)){
+                    html = paragraphsFromBlankLines(html);
+                }
+                const tpl=document.createElement('template'); tpl.innerHTML=html;
+                const root=tpl.content;
+                sanitizeTree(root);
+                autoLinkTextNodes(root);
+                return root;
+            }
+
+            function normalizeSlug(s){ return String(s||'').trim().toLowerCase(); }
+            function splitSlugs(s){
+                const set=new Set();
+                String(s||'').split(/[;,]/).map(x=>x.trim().toLowerCase()).filter(Boolean).forEach(x=>set.add(x));
+                return set;
+            }
+
+            // Render Decisions as one table (Decision | Answer | Comment) — now appended INSIDE the collapsible content
+            function renderDecisionsInto(container, decisionsRows, itemSlug){
+                const slug = normalizeSlug(itemSlug||'');
+                const rows = Array.isArray(decisionsRows)?decisionsRows:[];
+                const matches = rows.filter(r => {
+                    const mark = (r.mark_complete || r.marked_complete || '').toString().trim().toLowerCase();
+                    if(!(mark==='yes' || mark==='true' || mark==='1')) return false;
+                    return splitSlugs(r.slug).has(slug);
+                });
+                if(!matches.length) return;
+
+                const section=document.createElement('section');
+                section.className='pc-decisions';
+                section.innerHTML = `
+      <h3>Relevant Decisions</h3>
+      <div class="pc-table-wrap" role="region" aria-label="Decisions related to this item">
+        <table class="pc-table">
+          <thead>
+            <tr><th scope="col">Decision</th><th scope="col">Answer</th><th scope="col">Comment</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    `;
+                const tbody = section.querySelector('tbody');
+                for(const r of matches){
+                    const tr = document.createElement('tr');
+                    const tdD = document.createElement('td'); tdD.textContent = r.decision_text || '';
+                    const tdA = document.createElement('td'); tdA.textContent = r.decision_answer || '';
+                    const tdC = document.createElement('td'); tdC.textContent = r.decision_comment || '';
+                    tr.appendChild(tdD); tr.appendChild(tdA); tr.appendChild(tdC);
+                    tbody.appendChild(tr);
+                }
+
+                // 🔑 Append into the collapsible content area (.pc-clamp), not after it
+                const clamp = container.querySelector('.pc-collapsible .pc-clamp') ||
+                    container.querySelector('.plan-body') || container;
+                clamp.appendChild(section);
+            }
+
+            return { parsePlanMarkup, renderDecisionsInto };
+        })();
+// Wrap #testForm in the same clamp/fade used by Plan (no toggle button)
+        function setupTestingCollapsible() {
+            if (!elForm) return;
+            if (document.getElementById('testing-collapsible')) return; // already wrapped
+
+            const wrap  = document.createElement('div');
+            wrap.className = 'pc-collapsible pc-collapsed';
+            wrap.id = 'testing-collapsible';
+            wrap.setAttribute('data-lines', '0'); // preview lines; change to taste (or '0' to hide fully)
+
+            const clamp = document.createElement('div');
+            clamp.className = 'pc-clamp';
+            clamp.id = 'test-body';
+
+            const fade = document.createElement('div');
+            fade.className = 'pc-fade';
+            fade.setAttribute('aria-hidden', 'true');
+
+            // Wrap the existing form
+            elForm.parentNode.insertBefore(wrap, elForm);
+            wrap.appendChild(clamp);
+            clamp.appendChild(elForm);
+            wrap.appendChild(fade);
+        }
+
+// Unlock / expand Testing content after tester code is accepted
+        function unlockTesting() {
+            const wrap = document.getElementById('testing-collapsible');
+            if (!wrap) return;
+            wrap.classList.add('pc-expanded');
+            wrap.classList.remove('pc-collapsed');
+        }
+
+// Pull "Plan" from a parsed CSV row (headers were normalized by parseCSV -> lower_snake)
+        function _getPlanFromRow(row){
+            if (!row) return '';
+            if (typeof row.plan === 'string') return row.plan;
+            const k = Object.keys(row).find(k => String(k).trim().toLowerCase() === 'plan');
+            return k ? String(row[k] || '') : '';
+        }
+
+        async function renderPlanCard(){
+            const mount = document.getElementById('plan-cards');
+            if (!mount) return;
+
+            const currentSlug =
+                (typeof SLUG !== 'undefined' && SLUG) ? SLUG :
+                    new URLSearchParams(location.search).get('slug') || '';
+
+            if (!currentSlug) { mount.innerHTML = ''; return; }
+
+            // Look through your category sheets until we find the row for this slug
+            for (const sheet of CATEGORY_SHEETS) {
+                try {
+                    const rows = await fetchSheet(sheet);                  // your CSV fetch
+                    const hit  = rows.find(r => nCmp(r.slug) === nCmp(currentSlug));
+                    if (!hit) continue;
+
+                    const plan = _getPlanFromRow(hit);
+                    if (!String(plan).trim()) break;
+
+                    // Build the card skeleton with collapsible wrapper covering EVERYTHING (Plan + Decisions)
+                    const id = `plan-body-${(hit.slug || currentSlug).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`;
+                    mount.innerHTML = `
+        <article class="card plan-card" data-slug="${hit.slug || currentSlug}">
+          <header class="plan-header">
+            <div><h2 class="plan-title">Plan</h2></div>
+          </header>
+
+          <div class="pc-collapsible pc-collapsed" data-lines="5">
+            <div class="pc-clamp" id="${id}">
+              <div class="plan-body"></div>
+              <!-- Decisions will be appended here -->
+            </div>
+            <div class="pc-fade" aria-hidden="true"></div>
+            <button class="pc-toggle u-divider" type="button" aria-expanded="false" aria-controls="${id}">
+              <span>Show more</span>
+              <svg class="pc-chevron" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z"/>
+              </svg>
+            </button>
+          </div>
+        </article>
       `;
-      const s = document.createElement('style');
-      s.id = 'pc-styles'; s.textContent = css; document.head.appendChild(s);
-    }
-    const escapeHTML = (s) => (s==null?'':String(s))
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    const escapeAttr = (s) => (s==null?'':String(s))
-      .replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    function parseAttrs(s){
-  const out = {};
-  if (!s) return out;
+                    const article = mount.querySelector('article');
+                    const planBody = article.querySelector('.plan-body');
 
-  // decode quotes that got escaped earlier by escapeHTML
-  s = s.replace(/&quot;|&#34;/g, '"').replace(/&#39;|&apos;/g, "'");
+                    // 1) Render the plan markup (bracket-tags -> safe HTML)
+                    const frag = PC.parsePlanMarkup(plan);
+                    planBody.innerHTML = '';
+                    planBody.appendChild(frag);
 
-  // support quoted OR unquoted values: src="..." | src='...' | src=https://...
-  const re = /(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'\\]]+))/g;
-  let m;
-  while ((m = re.exec(s))) out[m[1].toLowerCase()] = m[2] ?? m[3] ?? m[4] ?? '';
-  return out;
-}
+                    // 2) Fetch & render Decisions table INTO the collapsible content
+                    try{
+                        const decisionsSheetName = (typeof SHEET_DECISIONS !== 'undefined') ? SHEET_DECISIONS : 'Decisions';
+                        const decisionsRows = await fetchSheet(decisionsSheetName);
+                        PC.renderDecisionsInto(article, decisionsRows, currentSlug);
+                    }catch(e){
+                        console.warn('Decisions fetch failed:', e);
+                    }
 
-    function convertBracketTagsToHTML(escaped){
-      let s = escaped;
+                    // 3) Enable collapse/expand (covers Plan + Decisions)
+                    wireCollapsible(article);
 
-      // protect [code]...[/code]
-      const codeMap = [];
-      s = s.replace(/\[code\]([\s\S]*?)\[\/code\]/gi, (_,inner)=>`@@CODE${codeMap.push(inner)-1}@@`);
+                    return; // stop after first matching sheet
+                } catch (_) {
+                    // ignore and try the next sheet
+                }
+            }
 
-      // blocks
-      s = s.replace(/\[h3\]([\s\S]*?)\[\/h3\]/gi,'<h3>$1</h3>');
-      s = s.replace(/\[p\]([\s\S]*?)\[\/p\]/gi,'<p>$1</p>');
-      s = s.replace(/\[ul\]/gi,'<ul>').replace(/\[\/ul\]/gi,'</ul>');
-      s = s.replace(/\[li\]/gi,'<li>').replace(/\[\/li\]/gi,'</li>');
-
-      // [a url="..."]text[/a]
-      s = s.replace(/\[a\s+url=(?:"|')([^"']+)(?:"|')\]([\s\S]*?)\[\/a\]/gi,
-        (_,url,text)=>`<a href="${escapeAttr(url)}">${text}</a>`);
-
-      // [img src="..." alt="..."]
-      s = s.replace(/\[img([^\]]*)\]/gi, (_,attrs)=>{
-        const {src,alt} = parseAttrs(attrs);
-        const ssrc = escapeAttr(src||''); const salt = alt?escapeHTML(alt):'';
-        const cap = salt ? `<figcaption class="pc-muted">${salt}</figcaption>` : '';
-        return `<figure class="pc-img"><img src="${ssrc}" alt="${salt}" loading="lazy" decoding="async">${cap}</figure>`;
-      });
-
-      // [note]...[/note]
-      s = s.replace(/\[note\]([\s\S]*?)\[\/note\]/gi,'<aside class="pc-note" role="note"><p>$1</p></aside>');
-
-      // restore code
-      s = s.replace(/@@CODE(\d+)@@/g,(_,i)=>`<pre class="pc-code"><code>${codeMap[+i]||''}</code></pre>`);
-
-      // normalize newlines
-      return s.replace(/\r\n?|\n/g,'\n');
-    }
-    function paragraphsFromBlankLines(html){
-      const parts = html.split(/\n{2,}/).map(x=>x.trim()).filter(Boolean);
-      if(!parts.length) return '';
-      return parts.map(p=>`<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
-    }
-    function sanitizeTree(root){
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, null);
-      const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
-      for(const el of nodes){
-        if(!ALLOWED.has(el.tagName)){
-          const frag=document.createDocumentFragment();
-          while(el.firstChild) frag.appendChild(el.firstChild);
-          el.replaceWith(frag); continue;
-        }
-        const keep=new Set();
-        if(el.tagName==='A') keep.add('href');
-        if(el.tagName==='IMG'){ keep.add('src'); keep.add('alt'); keep.add('loading'); keep.add('decoding'); }
-        for(const a of [...el.attributes]) if(!keep.has(a.name)) el.removeAttribute(a.name);
-
-        if(el.tagName==='A'){
-          const href = el.getAttribute('href')||'';
-          if(!/^https:\/\//i.test(href)){
-            const t=el.textContent; el.replaceWith(document.createTextNode(t));
-          }else{
-            el.setAttribute('target','_blank'); el.setAttribute('rel','noopener noreferrer');
-          }
-        }
-        if(el.tagName==='IMG'){
-          const src = el.getAttribute('src')||'';
-          if(!/^https:\/\//i.test(src)){
-            const a=document.createElement('a');
-            a.href = src||'#'; a.textContent='[image]'; a.target='_blank'; a.rel='noopener noreferrer';
-            el.replaceWith(a);
-          }else{
-            el.setAttribute('loading','lazy'); el.setAttribute('decoding','async');
-          }
-        }
-      }
-    }
-    function autoLinkTextNodes(root){
-      const urlRe = /(https?:\/\/[^\s<>'"]+)/g;
-      const skip = new Set(['A','CODE','PRE']);
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
-      const targets=[];
-      while(walker.nextNode()){
-        const n=walker.currentNode, p=n.parentElement;
-        if(!p || skip.has(p.tagName)) continue;
-        if(urlRe.test(n.nodeValue)) targets.push(n);
-      }
-      for(const n of targets){
-        const text=n.nodeValue; const frag=document.createDocumentFragment(); let last=0;
-        text.replace(urlRe,(m,url,off)=>{
-          if(off>last) frag.appendChild(document.createTextNode(text.slice(last,off)));
-          const a=document.createElement('a'); a.href=url; a.textContent=url; a.target='_blank'; a.rel='noopener noreferrer';
-          frag.appendChild(a); last=off+m.length; return m;
-        });
-        if(last<text.length) frag.appendChild(document.createTextNode(text.slice(last)));
-        n.replaceWith(frag);
-      }
-    }
-    function parsePlanMarkup(text){
-      const escaped = escapeHTML(text||'');
-      let html = convertBracketTagsToHTML(escaped);
-      if(!/(<h3|<ul|<pre|<p|<figure|<aside)/i.test(html)){
-        html = paragraphsFromBlankLines(html);
-      }
-      const tpl=document.createElement('template'); tpl.innerHTML=html;
-      const root=tpl.content;
-      sanitizeTree(root);
-      autoLinkTextNodes(root);
-      return root;
-    }
-
-    function normalizeSlug(s){ return String(s||'').trim().toLowerCase(); }
-    function splitSlugs(s){
-      const set=new Set();
-      String(s||'').split(/[;,]/).map(x=>x.trim().toLowerCase()).filter(Boolean).forEach(x=>set.add(x));
-      return set;
-    }
-
-    function renderDecisionsInto(container, decisionsRows, itemSlug){
-      const slug = normalizeSlug(itemSlug||'');
-      const rows = Array.isArray(decisionsRows)?decisionsRows:[];
-      const matches = rows.filter(r => {
-        const mark = (r.mark_complete || r.marked_complete || '').toString().trim().toLowerCase();
-        if(!(mark==='yes' || mark==='true' || mark==='1')) return false;
-        return splitSlugs(r.slug).has(slug);
-      });
-      if(!matches.length) return;
-
-      const section=document.createElement('section');
-      section.className='pc-decisions';
-      const h=document.createElement('h3'); h.textContent='Decisions';
-      section.appendChild(h);
-
-      for(const r of matches){
-        const wrap=document.createElement('div'); wrap.className='pc-decision';
-        if(r.decision_text){
-          const p=document.createElement('p'); p.innerHTML = escapeHTML(r.decision_text); wrap.appendChild(p);
-        }
-        if(r.decision_answer){
-          const p=document.createElement('p'); p.innerHTML = `<span class="pc-key">Answer:</span> ${escapeHTML(r.decision_answer)}`; wrap.appendChild(p);
-        }
-        if(r.decision_comment){
-          const p=document.createElement('p'); p.innerHTML = `<span class="pc-key">Comment:</span> ${escapeHTML(r.decision_comment)}`; wrap.appendChild(p);
-        }
-        section.appendChild(wrap);
-      }
-
-      // append after plan body if present; else at end of card
-      (container.querySelector('.plan-body') || container).appendChild(section);
-    }
-
-    return { injectStyles, parsePlanMarkup, renderDecisionsInto };
-  })();
-
-  // Pull "Plan" from a parsed CSV row (headers were normalized by parseCSV -> lower_snake)
-  function _getPlanFromRow(row){
-    if (!row) return '';
-    if (typeof row.plan === 'string') return row.plan;
-    const k = Object.keys(row).find(k => String(k).trim().toLowerCase() === 'plan');
-    return k ? String(row[k] || '') : '';
-  }
-
-  async function renderPlanCard(){
-    const mount = document.getElementById('plan-cards');
-    if (!mount) return;
-
-    PC.injectStyles();
-
-    const currentSlug =
-      (typeof SLUG !== 'undefined' && SLUG) ? SLUG :
-      new URLSearchParams(location.search).get('slug') || '';
-
-    if (!currentSlug) { mount.innerHTML = ''; return; }
-
-    // Look through your category sheets until we find the row for this slug
-    for (const sheet of CATEGORY_SHEETS) {
-      try {
-        const rows = await fetchSheet(sheet);                  // your CSV fetch
-        const hit  = rows.find(r => nCmp(r.slug) === nCmp(currentSlug));
-        if (!hit) continue;
-
-        const plan = _getPlanFromRow(hit);
-        if (!String(plan).trim()) break;
-
-        // Build the card skeleton first
-        mount.innerHTML = `
-          <article class="card plan-card" data-slug="${hit.slug || currentSlug}">
-            <header class="plan-header">
-              <div><h2 class="plan-title">Plan</h2></div>
-            </header>
-            <div class="plan-body"></div>
-          </article>
-        `;
-        const article = mount.querySelector('article');
-        const planBody = article.querySelector('.plan-body');
-
-        // 1) Render the plan markup (bracket-tags -> safe HTML)
-        const frag = PC.parsePlanMarkup(plan);
-        planBody.innerHTML = '';
-        planBody.appendChild(frag);
-
-        // 2) Fetch & render Decisions that match this slug (mark_complete == yes)
-        try{
-          const decisionsRows = await fetchSheet(SHEET_DECISIONS);
-          PC.renderDecisionsInto(article, decisionsRows, currentSlug);
-        }catch(e){
-          console.warn('Decisions fetch failed:', e);
+            // Nothing found — clear or show nothing
+            mount.innerHTML = '';
         }
 
-        return; // stop after first matching sheet
-      } catch (_) {
-        // ignore and try the next sheet
-      }
-    }
+// collapse/expand behavior (button at bottom of the card)
+        function wireCollapsible(article){
+            const wrap = article.querySelector('.pc-collapsible');
+            if(!wrap) return;
+            const btn  = wrap.querySelector('.pc-toggle');
+            const linesAttr = Number(wrap.getAttribute('data-lines'));
+            if(linesAttr > 0) wrap.style.setProperty('--pc-lines', String(linesAttr));
 
-    // Nothing found — clear or show nothing
-    mount.innerHTML = '';
-  }
+            const set = (expanded) => {
+                wrap.classList.toggle('pc-expanded', expanded);
+                wrap.classList.toggle('pc-collapsed', !expanded);
+                btn.setAttribute('aria-expanded', String(expanded));
+                btn.querySelector('span').textContent = expanded ? 'Show less' : 'Show more';
+            };
+            set(false); // default collapsed
 
-  // Run after DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderPlanCard, { once:true });
-  } else {
-    renderPlanCard();
-  }
+            btn.addEventListener('click', () => set(!wrap.classList.contains('pc-expanded')));
+        }
 
-
+// Run after DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderPlanCard, { once:true });
+        } else {
+            renderPlanCard();
+        }
 
         /* ===== END PLAN ===== */
 
     })();
 </script>
+
+
 <!--slug to breadcrumb script-->
 <script>
     const qs = new URLSearchParams(window.location.search);
