@@ -771,11 +771,19 @@
     const escapeAttr = (s) => (s==null?'':String(s))
       .replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     function parseAttrs(s){
-      const out={}; if(!s) return out;
-      const re = /(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g; let m;
-      while((m=re.exec(s))) out[m[1].toLowerCase()] = m[2] ?? m[3] ?? '';
-      return out;
-    }
+  const out = {};
+  if (!s) return out;
+
+  // decode quotes that got escaped earlier by escapeHTML
+  s = s.replace(/&quot;|&#34;/g, '"').replace(/&#39;|&apos;/g, "'");
+
+  // support quoted OR unquoted values: src="..." | src='...' | src=https://...
+  const re = /(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'\\]]+))/g;
+  let m;
+  while ((m = re.exec(s))) out[m[1].toLowerCase()] = m[2] ?? m[3] ?? m[4] ?? '';
+  return out;
+}
+
     function convertBracketTagsToHTML(escaped){
       let s = escaped;
 
