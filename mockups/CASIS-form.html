@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Merriweather:wght@300;400;700&family=Merriweather+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <title>UGA Access Request – Options Only (WCAG Overhaul)</title>
+    <style>
+        /* --------------------------------------------------
+           UGA design tokens + accessibility-minded defaults
+           -------------------------------------------------- */
+        :root{
+            /* Brand */
+            --uga-red:#BA0C2F; --uga-red-700:#8D0A24; --uga-black:#111111; --uga-white:#ffffff;
+            /* Neutrals */
+            --gray-25:#FCFCFD; --gray-50:#F7F7F8; --gray-75:#F3F4F6; --gray-100:#ECEEF1; --gray-200:#E2E8F0; --gray-300:#CBD5E1; --gray-500:#64748B; --gray-700:#334155;
+            /* State */
+            --ok-bg:#ecfdf5; --ok-fg:#065f46; --warn-bg:#fff7ed; --warn-fg:#9a3412; --err-bg:#FEF2F2; --err-fg:#991B1B;
+            /* UI */
+            --radius:14px; --radius-sm:10px; --shadow:0px 2px 2px rgba(0,0,0,.12) , 0 -1px 3px rgba(0,0,0,0.10);
+
+
+            --ring:3px solid #e13d5f; /* Accessible blue focus */
+            --tile-border:#D5DAE1;
+            --tile-selected: #ba0c2f;
+        );
+            --tile-selected-text:#ffffff;
+            --tile-selected-span:#ffffff;
+            --btn-h:44px; --container:1100px; --content-pad:1rem;
+        }
+        *{box-sizing:border-box}
+        html{color-scheme:light}
+        body{margin:0;font:400 16px/1.55 Merriweather Sans, system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--uga-black);
+            background-image:
+                    linear-gradient(to bottom,
+                    rgba(0,0,0,0.45) 0%,
+                    rgba(0,0,0,0.28) 15%,
+                    rgba(0,0,0,0.16) 45%,
+                    rgba(0,0,0,0.10) 100%
+                    ),
+                    url('https://www.uga.edu/img/prism-background.57f15081.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        h2 {
+            font-family: Oswald, sans-serif;
+            text-transform: uppercase;
+            font-size: 2.25rem;
+            color: #BA0C2F;
+        }
+
+        /* Skip link */
+        .skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+        .skip-link:focus{left:1rem;top:1rem;width:auto;height:auto;background:#111;color:#fff;padding:.5rem .75rem;border-radius:8px;z-index:999}
+
+        /* Header */
+        header{background:var(--uga-red);color:white; font-size: 2.5rem; font-family: Oswald; text-transform: uppercase; position: sticky; top: 0; z-index: 999;box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);}
+        .bar{max-width:var(--container);margin:0 auto;padding:1rem var(--content-pad);display:flex;gap:.75rem;align-items:center;}
+        .brand{font-weight:900;letter-spacing:.3px}
+        .sub{opacity:.95;font-weight:600}
+
+        /* Main */
+        main{max-width:var(--container);margin:1.25rem auto;padding:0 var(--content-pad)}
+
+        /* Cards */
+        .card{background:var(--uga-white);border: none;border-radius:var(--radius);margin:0 0 1rem 0;overflow:hidden;box-shadow:var(--shadow)}
+        .card h2{margin:0;padding:1rem 1rem;border-bottom:1px solid var(--gray-200);font-size:1.125rem;display:flex;justify-content:space-between;align-items:center}
+        .eyebrow{font-weight:700;color:var(--gray-700);font-size:2.5rem}
+        .status-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .6rem;border-radius:999px;border:1px solid transparent;font-weight:700;white-space:nowrap}
+        .status-ok{background:var(--ok-bg);color:var(--ok-fg);border-color:#10b98166}
+        .status-warn{background:var(--warn-bg);color:var(--warn-fg);border-color:#f59e0b66}
+        .status-err{background:var(--err-bg);color:var(--err-fg);border-color:#ef444466}
+        .card .body{padding:1.5rem}
+
+        fieldset{border:0;margin:0;padding:0}
+        legend{position:absolute;left:-9999px}
+
+        /* Grid tiles */
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.8rem}
+        .tile{display:flex;gap:.7rem;align-items:flex-start;border:1px solid var(--tile-border);border-radius:var(--radius-sm);background:#fff;padding:.9rem;min-height:3.25rem;transition:transform .05s ease, box-shadow .15s ease, background .15s ease}
+        .tile:hover{background:var(--gray-50)}
+        .tile:focus-within{outline:var(--ring);outline-offset:2px}
+        .tile.selected label{color:var(--tile-selected-text)}
+
+        label{font-weight:700;}
+        input[type="checkbox"]{inline-size:1.15rem;block-size:1.15rem;margin-top:.15rem}
+        input[type="checkbox"]:focus-visible, button:focus-visible, textarea:focus-visible{outline:var(--ring);outline-offset:3px;border-radius:8px}
+
+        /* Actions */
+        .actions{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin:1.25rem 0}
+        .btn{appearance:none;border:1px solid var(--gray-300);background:var(--gray-100);color:#111827;border-radius:999px;padding:0 1rem;height:var(--btn-h);line-height:calc(var(--btn-h) - 2px);font-weight:800;cursor:pointer}
+        .btn:hover{filter:brightness(.98)}
+        .btn.primary{background:var(--uga-red);border-color:var(--uga-red-700);color:#fff}
+        .btn.primary:hover{filter:brightness(.96)}
+        .btn.ghost{background:transparent}
+
+        .toolbar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin:.75rem 0;}
+        .toolbar .meta{color:var(--gray-700);font-weight:700}
+
+        .note{margin-top:.75rem;color:var(--gray-700);font-size:.96rem}
+
+        /* Form controls */
+        textarea{width:100%;min-height:120px;resize:vertical;border-radius:10px;border:1px solid var(--gray-300);padding:.75rem;font:inherit}
+        textarea[aria-invalid="true"]{border-color:var(--err-fg);box-shadow:0 0 0 2px rgba(153,27,27,.12) inset}
+        .field{display:grid;gap:.4rem;margin:.75rem 0}
+        .help{color:var(--gray-700)}
+
+        /* Live regions & alerts */
+        .visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+        .alert{border-radius:12px;padding:.8rem 1rem;border:1px solid;display:flex;gap:.6rem;align-items:flex-start}
+        .alert.err{background:var(--err-bg);color:var(--err-fg);border-color:#fecaca}
+
+        /* Footer */
+        footer{max-width:var(--container);margin:2rem auto;padding:0 var(--content-pad) 2rem;color:var(--gray-700)}
+
+        @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+        /* Clickable label-tiles for Colleges */
+        label.tile{
+            position:relative; display:flex; gap:.7rem; align-items:flex-start;
+            border:1px solid var(--tile-border); border-radius:var(--radius-sm);
+            background:#fff; padding:.9rem; min-height:3.25rem;
+            transition:transform .05s ease, box-shadow .15s ease, background .15s ease;
+            cursor:pointer;
+        }
+        label.tile:hover{ background:var(--gray-50); }
+        /* Focus ring when keyboarding into the checkbox */
+        label.tile:has(input[type="checkbox"]:focus-visible),
+        label.tile.kbd-focus { outline:var(--ring); outline-offset:2px; }
+
+        label.tile.selected{
+            background:var(--tile-selected); color:var(--tile-selected-text);
+
+        }
+        /* Only hide the checkbox inside the grid tiles */
+        #colleges label.tile > input[type="checkbox"],
+        #roles    label.tile > input[type="checkbox"]{
+            position:absolute; inset:0; opacity:0; pointer-events:auto;
+        }
+
+        .tile-text{ display:flex; flex-direction:column; line-height:1.25; }
+        .tile-text .code{ font-family: Oswald; font-weight:900; letter-spacing:.4px; font-size:2rem; }
+        .tile-text .full{ font-weight:700; }
+
+    </style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header role="banner">
+    <div class="bar" aria-label="Site header">
+        <div class="brand" aria-label="UGA Registrar">CASIS</div>
+        <div class="sub" aria-hidden="true"></div>
+    </div>
+</header>
+
+<main id="main" role="main" aria-describedby="page-help">
+    <p id="page-help" class="visually-hidden">Choose the colleges and roles that need access. If SSN access is required, provide justification. Status chips announce your progress.</p>
+
+    <form id="options-form" novalidate>
+        <!-- Colleges -->
+        <section class="card" aria-labelledby="colleges-h2">
+            <h2 id="colleges-h2">
+                <span class="eyebrow">Requested Colleges</span>
+                <span class="status-pill status-warn" id="collegeStatus" role="status" aria-live="polite">None selected</span>
+            </h2>
+            <div class="body">
+                <fieldset>
+                    <legend>Requested Colleges</legend>
+
+                    <div class="toolbar" aria-label="Colleges tools">
+                        <button class="btn ghost" type="button" id="colleges-select-all">Select all</button>
+                        <button class="btn ghost" type="button" id="colleges-clear">Clear</button>
+                        <span class="meta" id="collegeCount" aria-live="polite"></span>
+                    </div>
+
+
+                    <!-- Each tile keeps native checkbox semantics for screen readers -->
+                    <div class="grid" id="colleges" role="group" aria-label="Colleges">
+                        <!-- Entire tile is a label: click anywhere inside to toggle -->
+                        <label class="tile">
+                            <input type="checkbox" id="AE" value="AE">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">AE</span>
+      <span class="full">Agriculture and Environmental Sciences</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="AS" value="AS">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">AS</span>
+      <span class="full">Arts and Sciences</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="BT" value="BT">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">BT</span>
+      <span class="full">Biomedical &amp; Translational Sciences</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="BI" value="BI">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">BI</span>
+      <span class="full">Bioinformatics</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="BU" value="BU">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">BU</span>
+      <span class="full">Business</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="EC" value="EC">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">EC</span>
+      <span class="full">Ecology</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="ED" value="ED">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">ED</span>
+      <span class="full">Education</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="EN" value="EN">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">EN</span>
+      <span class="full">Engineering</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="EV" value="EV">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">EV</span>
+      <span class="full">Environment and Design</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="FC" value="FC">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">FC</span>
+      <span class="full">Family and Consumer Sciences</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="FR" value="FR">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">FR</span>
+      <span class="full">Forestry and Natural Resources</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="JO" value="JO">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">JO</span>
+      <span class="full">Journalism and Mass Communication</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="LW" value="LW">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">LW</span>
+      <span class="full">Law</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="PB" value="PB">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">PB</span>
+      <span class="full">Public Health</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="PH" value="PH">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">PH</span>
+      <span class="full">Pharmacy</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="PI" value="PI">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">PI</span>
+      <span class="full">Public &amp; International Affairs</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="SW" value="SW">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">SW</span>
+      <span class="full">Social Work</span>
+    </span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="VM" value="VM">
+                            <span class="tile-text">
+      <span class="code" aria-hidden="true">VM</span>
+      <span class="full">Veterinary Medicine</span>
+    </span>
+                        </label>
+                    </div>
+
+
+                    <p class="note" id="collegeNote">Tip: You can select multiple colleges. Use Tab/Shift+Tab to navigate; Space toggles a checkbox.</p>
+                </fieldset>
+            </div>
+        </section>
+
+        <!-- Roles -->
+        <section class="card" aria-labelledby="roles-h2">
+            <h2 id="roles-h2">
+                <span class="eyebrow">Requested Roles</span>
+                <span class="status-pill status-warn" id="roleStatus" role="status" aria-live="polite">None selected</span>
+            </h2>
+            <div class="body">
+                <fieldset>
+                    <legend>Requested Roles</legend>
+
+                    <div class="toolbar" aria-label="Roles tools">
+                        <button class="btn ghost" type="button" id="roles-select-all">Select all</button>
+                        <button class="btn ghost" type="button" id="roles-clear">Clear</button>
+                        <span class="meta" id="roleCount" aria-live="polite"></span>
+                    </div>
+
+                    <div class="grid" id="roles" role="group" aria-label="Roles">
+                        <label class="tile">
+                            <input type="checkbox" id="acct_budgets" value="Accounting & Budgets Offices">
+                            <span class="tile-text"><span class="full">Accounting &amp; Budgets Offices</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="accreditation" value="Accreditation & Institutional Effectiveness">
+                            <span class="tile-text"><span class="full">Accreditation &amp; Institutional Effectiveness</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="advisors" value="Advisors">
+                            <span class="tile-text"><span class="full">Advisors</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="athletic_compliance" value="Athletic Compliance">
+                            <span class="tile-text"><span class="full">Athletic Compliance</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="aux_services" value="Auxiliary Services Offices">
+                            <span class="tile-text"><span class="full">Auxiliary Services Offices</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="aux_student_data" value="Auxiliary Student Data">
+                            <span class="tile-text"><span class="full">Auxiliary Student Data</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="bursar" value="Bursar & Treasury Services">
+                            <span class="tile-text"><span class="full">Bursar &amp; Treasury Services</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="bus_mgrs" value="Business Managers & Accountants">
+                            <span class="tile-text"><span class="full">Business Managers &amp; Accountants</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="course_sched" value="Course Scheduling">
+                            <span class="tile-text"><span class="full">Course Scheduling</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="deans" value="Deans Offices">
+                            <span class="tile-text"><span class="full">Deans Offices</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="dae" value="Department of Academic Enhancement">
+                            <span class="tile-text"><span class="full">Department of Academic Enhancement</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="drc" value="Disability Resource Center">
+                            <span class="tile-text"><span class="full">Disability Resource Center</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="eits" value="EITS Administration">
+                            <span class="tile-text"><span class="full">EITS Administration</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="ed_abroad" value="Education Abroad">
+                            <span class="tile-text"><span class="full">Education Abroad</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="enrollment" value="Enrollment Management Units">
+                            <span class="tile-text"><span class="full">Enrollment Management Units</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="finaid" value="Financial Aid Office">
+                            <span class="tile-text"><span class="full">Financial Aid Office</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="gca" value="Graduate Coordinator Assistants">
+                            <span class="tile-text"><span class="full">Graduate Coordinator Assistants</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="gsbo" value="Graduate School Business Office">
+                            <span class="tile-text"><span class="full">Graduate School Business Office</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="uhc" value="Health Center">
+                            <span class="tile-text"><span class="full">Health Center</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="honor_soc" value="Honor Societies">
+                            <span class="tile-text"><span class="full">Honor Societies</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="honors_prog" value="Honors Program">
+                            <span class="tile-text"><span class="full">Honors Program</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="housing" value="Housing">
+                            <span class="tile-text"><span class="full">Housing</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="hr" value="Human Resources Office">
+                            <span class="tile-text"><span class="full">Human Resources Office</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="diversity" value="Institutional Diversity">
+                            <span class="tile-text"><span class="full">Institutional Diversity</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="intl_imm" value="International Education Immigration">
+                            <span class="tile-text"><span class="full">International Education Immigration</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="ovpi" value="OVPI Leadership">
+                            <span class="tile-text"><span class="full">OVPI Leadership</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="stud_affairs" value="Student Affairs">
+                            <span class="tile-text"><span class="full">Student Affairs</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="stud_affairs_office" value="Student Affairs Office">
+                            <span class="tile-text"><span class="full">Student Affairs Office</span></span>
+                        </label>
+
+                        <label class="tile">
+                            <input type="checkbox" id="ugrad_recruit" value="Undergrad Admissions Recruitment">
+                            <span class="tile-text"><span class="full">Undergrad Admissions Recruitment</span></span>
+                        </label>
+                    </div>
+
+                    <p class="note" id="roleNote">Tip: Select every role that applies.</p>
+                </fieldset>
+            </div>
+        </section>
+
+        <!-- SSN -->
+        <section class="card" aria-labelledby="ssn-h2">
+            <h2 id="ssn-h2">
+                <span class="eyebrow">SSN Access</span>
+                <span class="status-pill status-ok" id="ssnStatus" role="status" aria-live="polite">Optional</span>
+            </h2>
+            <div class="body">
+                <fieldset>
+                    <legend>SSN Access</legend>
+                    <label class="tile">
+                        <input type="checkbox" id="ssn-access">
+                        <span class="tile-text"><span class="full">This access request requires ARGOS SSN access</span></span>
+                    </label>
+
+                    <div id="just-wrap" class="field" hidden>
+                        <label for="ssn-just">Business need for requested SSN access</label>
+                        <textarea id="ssn-just" rows="4" aria-describedby="just-help just-count" aria-required="true" aria-invalid="false"></textarea>
+                        <div class="help" id="just-help">Provide a short justification. Do not paste sensitive data.</div>
+                        <div class="help" id="just-count">0 / 600 characters</div>
+                    </div>
+                    <div id="ssn-error" class="alert err" role="alert" hidden>
+                        <strong>Missing justification.</strong> Please describe the business need for SSN access.
+                    </div>
+                </fieldset>
+            </div>
+        </section>
+
+        <!-- Actions (no extra copy) -->
+        <div class="actions" aria-label="Actions">
+            <button class="btn" type="button" id="clear">Clear selections</button>
+            <div style="flex:1"></div>
+            <button class="btn primary" type="submit" id="submit">Submit</button>
+        </div>
+    </form>
+</main>
+
+<footer aria-label="Footnotes">
+    <p><strong>Accessibility notes:</strong> Interactive tiles retain native checkbox semantics; status chips use <code>role="status"</code> with polite live updates; focus rings meet WCAG 2.1 AA visibility; minimum target size ≥44×44px; reduced motion respected.</p>
+</footer>
+
+<script>
+    const $ = (sel, root=document)=>root.querySelector(sel);
+    const $$ = (sel, root=document)=>Array.from(root.querySelectorAll(sel));
+
+    const collegeStatus = $('#collegeStatus');
+    const roleStatus = $('#roleStatus');
+    const ssnStatus = $('#ssnStatus');
+    const ssnError = $('#ssn-error');
+    const justWrap = $('#just-wrap');
+    const justArea = $('#ssn-just');
+    const justCount = $('#just-count');
+
+    function syncTiles(container){
+        $$('.tile', container).forEach(tile=>{
+            const input = $('input[type="checkbox"]', tile);
+            tile.classList.toggle('selected', input.checked);
+        });
+    }
+
+    function countChecked(container){
+        return $$('#'+container+' input[type="checkbox"]:checked').length;
+    }
+
+    function updateStatus(){
+        const colleges = countChecked('colleges');
+        const roles = countChecked('roles');
+        const cMsg = colleges ? `${colleges} selected` : 'None selected';
+        const rMsg = roles ? `${roles} selected` : 'None selected';
+        collegeStatus.textContent = cMsg; roleStatus.textContent = rMsg;
+        collegeStatus.className = 'status-pill ' + (colleges ? 'status-ok' : 'status-warn');
+        roleStatus.className = 'status-pill ' + (roles ? 'status-ok' : 'status-warn');
+        const collegeCount = $('#collegeCount');
+        const roleCount = $('#roleCount');
+        if (collegeCount) collegeCount.textContent = `Selected: ${colleges}`;
+        if (roleCount) roleCount.textContent = `Selected: ${roles}`;
+    }
+
+    function bindGroup(id){
+        const container = $(id);
+        container.addEventListener('change', ()=>{ syncTiles(container); updateStatus(); });
+        syncTiles(container);
+    }
+
+    function toggleAll(containerId, checked){
+        $$('#'+containerId+' input[type="checkbox"]').forEach(cb => { cb.checked = checked; });
+        syncTiles($('#'+containerId));
+        updateStatus();
+    }
+
+    function bindSSN(){
+        const cb = $('#ssn-access');
+        cb.addEventListener('change', ()=>{
+            if(cb.checked){
+                justWrap.hidden = false; ssnStatus.textContent = 'Required'; ssnStatus.className = 'status-pill status-warn';
+                justArea.setAttribute('aria-required','true');
+                justArea.focus();
+            } else {
+                justWrap.hidden = true; ssnStatus.textContent = 'Optional'; ssnStatus.className = 'status-pill status-ok';
+                justArea.value=''; justCount.textContent = '0 / 600 characters';
+                justArea.setAttribute('aria-invalid','false');
+                ssnError.hidden = true;
+            }
+        });
+        justArea.addEventListener('input', ()=>{
+            const max=600; const len = justArea.value.length; if(len>max){ justArea.value = justArea.value.slice(0,max); }
+            justCount.textContent = `${justArea.value.length} / ${max} characters`;
+        });
+    }
+
+    function clearAll(){
+        $$('.grid input[type="checkbox"]').forEach(cb=>cb.checked=false);
+        $('#ssn-access').checked=false; justWrap.hidden=true; justArea.value=''; justArea.setAttribute('aria-invalid','false'); ssnError.hidden = true;
+        syncTiles($('#colleges')); syncTiles($('#roles')); updateStatus(); ssnStatus.textContent='Optional'; ssnStatus.className='status-pill status-ok';
+    }
+
+    function validate(){
+        if(!$('#ssn-access').checked) return true;
+        const ok = justArea.value.trim().length>0;
+        justArea.setAttribute('aria-invalid', ok? 'false':'true');
+        ssnError.hidden = ok;
+        return ok;
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+        bindGroup('#colleges');
+        bindGroup('#roles');
+        bindSSN();
+        updateStatus();
+
+        $('#clear').addEventListener('click', clearAll);
+
+        // Toolbar bindings
+        $('#colleges-select-all').addEventListener('click', ()=>toggleAll('colleges', true));
+        $('#colleges-clear').addEventListener('click', ()=>toggleAll('colleges', false));
+        $('#roles-select-all').addEventListener('click', ()=>toggleAll('roles', true));
+        $('#roles-clear').addEventListener('click', ()=>toggleAll('roles', false));
+
+        // Submit
+        $('#options-form').addEventListener('submit', (e)=>{
+            e.preventDefault();
+            if(!validate()){
+                $('#ssn-just').focus();
+                return;
+            }
+            // Preview only — replace with real submit in your app
+            const colleges = $$('#colleges input:checked').map(i=>i.value);
+            const roles = $$('#roles input:checked').map(i=>i.value);
+            const payload = { colleges, roles, ssn: $('#ssn-access').checked, justification: justArea.value.trim() };
+            alert('Preview only: selections captured.\n\n'+JSON.stringify(payload,null,2));
+        });
+    });
+</script>
+</body>
+</html>
