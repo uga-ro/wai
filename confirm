@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Confirm Decision</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#111; --muted:#6b7280; --ok:#16a34a; --err:#b91c1c; --accent:#0ea5e9; }
+  body { margin:0; background:var(--bg); font:16px/1.5 system-ui,Segoe UI,Arial; color:var(--text); }
+  .wrap { max-width:760px; margin:6vh auto; padding:24px; }
+  .card { background:var(--card); border-radius:16px; box-shadow:0 12px 30px rgba(0,0,0,.08); padding:24px; }
+  h1 { margin:0 0 8px; font-size:22px; }
+  .muted { color:var(--muted); font-size:14px; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; margin:18px 0; }
+  button { border:0; border-radius:12px; padding:12px 16px; font-weight:600; cursor:pointer; }
+  .primary { background:var(--accent); color:#fff; }
+  .danger  { background:#ba0c2f; color:#fff; }
+  .ghost   { background:#e5e7eb; color:#111; }
+  .ok { color:var(--ok); font-weight:700; }
+  .err { color:var(--err); font-weight:700; }
+  textarea { width:100%; min-height:88px; padding:10px; border-radius:10px; border:1px solid #d1d5db; font:inherit; }
+  .spinner { display:inline-block; width:16px; height:16px; border:2px solid #fff; border-right-color:transparent; border-radius:50%; animation:spin .7s linear infinite; vertical-align:-3px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:#eef2ff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1 id="title">Confirm decision</h1>
+    <div class="muted" id="subtitle">Loading request…</div>
+
+    <div class="row" id="statusRow" style="display:none;">
+      <span class="pill"><strong>Item:</strong> <span id="itemId"></span></span>
+      <span class="pill"><strong>Proposed:</strong> <span id="proposed"></span></span>
+    </div>
+
+    <div id="notesBlock" style="display:none; margin-top:12px;">
+      <label class="muted" for="note">Optional note / reason</label>
+      <textarea id="note" placeholder="Add a note (optional for approve, recommended for deny)"></textarea>
+    </div>
+
+    <div class="row" id="actions" style="margin-top:12px; display:none;">
+      <button id="btnApprove" class="primary">Confirm Approve</button>
+      <button id="btnDeny" class="danger">Confirm Deny</button>
+      <button id="btnCancel" class="ghost" onclick="history.back()">Cancel</button>
+    </div>
+
+    <div id="feedback" style="margin-top:16px;"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  const item   = qs.get('item');
+  const token  = qs.get('token');
+  const prop   = (qs.get('proposed')||'').toLowerCase();
+  const FLOW_URL = "https://prod-00-00.logic.azure.com:443/workflows/XXXX/triggers/manual/paths/invoke?api-version=2016-10-01&sp=..."; // <-- your Flow HTTP trigger URL
+
+  const el = (id)=>document.getElementById(id);
+  const title=el('title'), sub=el('subtitle'), row=el('statusRow'), iid=el('itemId'), propEl=el('proposed'),
+        actions=el('actions'), fb=el('feedback'), notes=el('notesBlock'),
+        btnApprove=el('btnApprove'), btnDeny=el('btnDeny'), note=el('note');
+
+  function showError(msg){
+    fb.innerHTML = `<div class="err">✖ ${msg}</div>`;
+  }
+  function showInfo(msg){
+    fb.innerHTML = `<div class="muted">${msg}</div>`;
+  }
+  function showOK(msg){
+    fb.innerHTML = `<div class="ok">✔ ${msg}</div>`;
+  }
+
+  if(!item || !token){
+    title.textContent = "Invalid link";
+    sub.textContent = "Missing item or token.";
+    return;
+  }
+
+  // Prefill UI
+  title.textContent = "Confirm decision";
+  sub.textContent = "Review and confirm below.";
+  row.style.display = "flex";
+  actions.style.display = "flex";
+  notes.style.display = "block";
+  iid.textContent = item;
+  propEl.textContent = prop || "none";
+
+  // Preselect style
+  if(prop === "approve"){ btnApprove.classList.add("primary"); }
+  if(prop === "deny"){ btnDeny.classList.add("danger"); }
+
+  async function sendDecision(action){
+    // Optimistic UI
+    const btn = action==="approve"?btnApprove:btnDeny;
+    const btnText = btn.textContent;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Saving…`;
+    showInfo("Capturing your decision now. This will only take a moment…");
+
+    try{
+      const payload = { item:String(item), token:String(token), action, note: note.value||"" };
+      const res = await fetch(FLOW_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json().catch(()=>({}));
+      if(res.ok && data.ok){
+        showOK(`${data.newStatus || (action==="approve"?"Approved":"Denied")} saved.`);
+        sub.textContent = `Updated at ${new Date().toLocaleString()}`;
+      }else{
+        if(data.code==="invalid_or_used"){
+          showError("This link was already used or is invalid. If you believe this is an error, contact the Registrar.");
+        }else{
+          showError("We couldn’t save your decision. Please retry or contact the Registrar.");
+        }
+      }
+    }catch(e){
+      showError("Network or service error. Please try again.");
+    }finally{
+      btn.disabled = false;
+      btn.textContent = btnText;
+    }
+  }
+
+  btnApprove.onclick = ()=>sendDecision("approve");
+  btnDeny.onclick    = ()=>sendDecision("deny");
+})();
+</script>
+</body>
+</html>
