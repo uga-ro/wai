@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick Links to Forms</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --uga-red: #BA0C2F;
+            --uga-black: #000000;
+            --uga-gray: #4a4a4a;
+            --uga-white: #ffffff;
+            --uga-bg: #f2f3ee;
+            --uga-teal: #00A3AD;
+            --uga-gold: #B4BD00;
+            --uga-charcoal: #333333;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: 'Merriweather', serif;
+            background: var(--uga-bg);
+            color: var(--uga-gray);
+        }
+
+        .wrap {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px 60px;
+        }
+
+        header h1 {
+            margin: 0 0 32px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            text-align: center;
+            color: var(--uga-black);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--uga-white);
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            padding: 30px;
+            border-radius: 12px;
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 14px rgba(0,0,0,.15);
+        }
+
+        .card.red { background: var(--uga-red); }
+        .card.teal { background: var(--uga-teal); }
+        .card.gold { background: var(--uga-gold); color: var(--uga-black); }
+        .card.charcoal { background: var(--uga-charcoal); }
+    </style>
+</head>
+<body>
+<main class="wrap" aria-labelledby="page-title">
+    <header>
+        <h1 id="page-title">Links to New Forms</h1>
+    </header>
+
+    <section class="grid" aria-label="Form links">
+        <a class="card red" href="/mockups/25LiveAccess.html">25Live Access Request</a>
+        <a class="card teal" href="/mockups/25LivePreferenceForm.html">25Live Preference Request</a>
+        <a class="card gold" href="/mockups/HHAB-207.html">HHAB 207 Request</a>
+        <a class="card charcoal" href="/mockups/HHAB-Courtyard.html">HHAB Courtyard Request</a>
+    </section>
+</main>
+</body>
+</html>
