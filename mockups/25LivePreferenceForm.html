@@ -1,0 +1,460 @@
+<style>
+    /* Base */
+    .uga-form, .uga-form * { box-sizing: border-box; }
+    .uga-form { padding: 16px; }
+
+    /* Card */
+    .uga-form form#form-25live {
+        max-width: 640px;
+        margin: 2rem auto;
+        background: #fff;
+        padding: 24px 28px;
+        border-radius: 14px;
+        border-top: 6px solid #ba0c2f;
+        box-shadow: 0 6px 22px rgba(0,0,0,.1);
+    }
+
+    /* Heading */
+    .uga-form h2 {
+        font-weight: 800;
+        font-size: 1.6rem;
+        color: #ba0c2f;
+        text-align: center;
+        margin: 0 0 1.25rem;
+    }
+
+    /* Field group */
+    .uga-form .field { margin-bottom: 18px; }
+
+    /* Labels */
+    .uga-form label {
+        display: block;
+        font-weight: 700;
+        margin: 0 0 8px;
+        color: #4a4a4a;
+    }
+
+    /* Inputs */
+    .uga-form .styled-input {
+        display: block;
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 10px;
+        border: 1.5px solid #c7c7c7;
+        background: linear-gradient(180deg, #ffffff 0%, #f6f6f6 100%);
+        font-size: 18px;
+        line-height: 1.35;
+        color: #222;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+        transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    .uga-form .styled-input:hover {
+        border-color: #a8a8a8;
+        background: #ffffff;
+    }
+
+    .uga-form .styled-input:focus-visible {
+        border-color: #00a3ad;
+        background: #ffffff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0,163,173,.25), inset 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    /* Autofill fix (WebKit) */
+    .uga-form input.styled-input:-webkit-autofill {
+        -webkit-box-shadow: 0 0 0px 1000px #fff inset !important;
+        -webkit-text-fill-color: #222 !important;
+        caret-color: #222;
+    }
+
+    /* Help text */
+    .uga-form .hint {
+        margin-top: 6px;
+        font-size: 0.925rem;
+        color: #606060;
+    }
+
+    /* Checkbox card */
+    .uga-form .checkbox-card {
+        margin-top: 12px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #fafafa;
+        padding: 12px 14px;
+    }
+
+    .uga-form .checkbox-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 0;
+        cursor: pointer;
+        user-select: none;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .uga-form .checkbox-row input[type="checkbox"] {
+        margin-top: 2px; /* aligns with first line of text */
+        width: 20px;
+        height: 20px;
+        accent-color: #ba0c2f;
+        flex: 0 0 auto;
+        cursor: pointer;
+    }
+
+    /* Button */
+    .uga-form button {
+        margin-top: 22px;
+        width: 100%;
+        padding: 16px 20px;
+        background: linear-gradient(90deg, #ba0c2f, #a00a28);
+        color: #fff;
+        border: 0;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: .2px;
+        cursor: pointer;
+        box-shadow: 0 3px 8px rgba(0,0,0,.15);
+        transition: transform .08s ease, filter .2s ease, box-shadow .2s ease;
+    }
+
+    .uga-form button:hover { filter: brightness(1.06); }
+    .uga-form button:active { transform: scale(.985); }
+    .uga-form button:disabled {
+        filter: grayscale(.25) brightness(.95);
+        cursor: not-allowed;
+        box-shadow: 0 0 0 rgba(0,0,0,0);
+    }
+
+    /* Live status */
+    .uga-form #status {
+        text-align: center;
+        margin-top: 16px;
+        font-weight: 700;
+        font-size: 1.25rem;
+        transition: all 0.25s ease;
+    }
+
+    /* Success / thank-you message */
+    .uga-form #status.success {
+        color: #007d85;
+        background: rgba(0,163,173,0.08);
+        border: 2px solid #00a3ad;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(0,163,173,0.15);
+        animation: fadeInScale 0.4s ease;
+    }
+
+    /* Error message */
+    .uga-form #status.error {
+        color: #ba0c2f;
+        background: rgba(186,12,47,0.08);
+        border: 2px solid #ba0c2f;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(186,12,47,0.12);
+        animation: fadeInScale 0.4s ease;
+    }
+
+    /* Subtle entrance animation */
+    @keyframes fadeInScale {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Validation hooks (use via JS if you're custom-validating with novalidate) */
+    .uga-form .styled-input.is-invalid {
+        border-color: #ba0c2f;
+        box-shadow: 0 0 0 3px rgba(186,12,47,.18);
+    }
+    .uga-form .styled-input.is-valid {
+        border-color: #00a3ad;
+        box-shadow: 0 0 0 3px rgba(0,163,173,.18);
+    }
+
+    /* Motion respect */
+    @media (prefers-reduced-motion: reduce) {
+        .uga-form .styled-input,
+        .uga-form button { transition: none; }
+    }
+</style>
+<div class="uga-form">
+    <form id="form-25live" novalidate>
+        <h2>Campus Location Preference Form</h2>
+
+        <div class="field">
+            <label for="submittedBy">Submitted By</label>
+            <input id="submittedBy" name="submittedBy" class="styled-input" type="text" required />
+            <div class="hint">Enter the last and first names of the person submitting this request.</div>
+        </div>
+
+        <div class="field">
+            <label for="submitterEmail">Submitter Email</label>
+            <input id="submitterEmail" name="submitterEmail" class="styled-input" type="email" required />
+            <div class="hint">Enter the email address of the person submitting this request.</div>
+        </div>
+
+        <div class="field">
+            <label for="semester">Semester</label>
+            <input id="semester" name="semester" class="styled-input" type="text" required />
+            <div class="hint">Enter the term the course is being offered.</div>
+        </div>
+
+        <div class="field">
+            <label for="subject">Subject</label>
+            <select id="subject" name="subject" class="styled-input" required>
+                <option value="">Select a Subject...</option>
+                <!-- Subjects injected by JS -->
+            </select>
+            <div class="hint">Please select a Subject code.</div>
+        </div>
+
+        <div class="field">
+            <label for="course">Course</label>
+            <input id="course" name="course" class="styled-input" type="text" required />
+            <div class="hint">Enter the course number for this request.</div>
+        </div>
+
+        <div class="field">
+            <label for="crn">CRN</label>
+            <input id="crn" name="crn" class="styled-input" type="text" required />
+            <div class="hint">Enter the CRN for this request. (If cross-listed, only one CRN is necessary).</div>
+        </div>
+
+        <div class="field">
+            <label>CRN Cross-list</label>
+            <label class="checkbox-row" style="font-weight:600;">
+                <input type="radio" name="crnCrosslist" value="Cross-listed course" required />
+                Cross-listed course
+            </label>
+            <label class="checkbox-row" style="font-weight:600;">
+                <input type="radio" name="crnCrosslist" value="Not a cross-listed course" required />
+                Not a cross-listed course
+            </label>
+            <div class="hint">Please indicate if the CRN listed is part of a cross-list group.</div>
+        </div>
+
+        <div class="field">
+            <label>Building Preference #1</label>
+            <select id="building1" class="styled-input">
+                <option value="">Select a Building...</option>
+                <!-- Buildings injected by JS -->
+            </select>
+            <div class="hint">Enter the first preference for building.</div>
+        </div>
+
+        <div class="field">
+            <label>Building Preference #2</label>
+            <select id="building2" class="styled-input">
+                <option value="">Select a Building...</option>
+                <!-- Buildings injected by JS -->
+            </select>
+            <div class="hint">Enter the second preference for building.</div>
+        </div>
+
+        <div class="field">
+            <label>Building Preference #3</label>
+            <select id="building3" class="styled-input">
+                <option value="">Select a Building...</option>
+                <!-- Buildings injected by JS -->
+            </select>
+            <div class="hint">Enter the third preference for building.</div>
+        </div>
+
+        <div class="field">
+            <label for="specificRoom">Single Specific Room Preference (please include building number)</label>
+            <input id="specificRoom" class="styled-input" type="text" />
+            <div class="hint">Only one room is allowed (if one is preferred)</div>
+        </div>
+
+        <div class="checkbox-card" id="req-box">
+            <label><b>Room Feature Requirements</b></label>
+            <!-- Requirement checkboxes injected by JS -->
+            <div class="hint" style="margin-top:10px;">Check any room features that are required for this course. If a classroom with these features is not available, no room will be assigned.</div>
+        </div>
+
+        <div class="checkbox-card" id="pref-box">
+            <label><b>Room Feature Preferences</b></label>
+            <!-- Preference checkboxes injected by JS -->
+            <div class="hint" style="margin-top:10px;">Check any room features that are preferred, but not required for this course.</div>
+        </div>
+
+        <div class="field">
+            <label for="notes">Notes and Special Requests</label>
+            <textarea id="notes" class="styled-input" rows="3"></textarea>
+            <div class="hint">Enter any notes or special requests regarding the scheduling of a classroom for this course.</div>
+        </div>
+
+        <button type="submit">Submit</button>
+        <div id="status"></div>
+    </form>
+</div>
+
+<script>
+    /* ===== 1) YOUR DATA (unchanged) ===== */
+    const SUBJECTS = [
+        "AAEC","ACCT","ADPR","ADSC","AENG","AERO","AESC","AFAM","AFST","AGCM","AGED","AIRS","ALDR","AMHA","AMSL","ANNU","ANTH","APTC","ARAB","ARED","ARGD","ARHI","ARID","ARST","ARTI","ARTS","ASTR","ATSC","ATTR","BCHE","BCMB","BENG","BHSI","BINF","BIOE","BIOL","BIOS","BMSC","BTEC","BUSN","CBIO","CHEM","CHFD","CHNS","CLAS","CMLT","CMSD","COFA","COMM","CRSS","CSCI","CSEE","CVLE","DANC","DESD","DIGI","DMAN","EBUS","ECHD","ECOL","ECON","ECSE","EDAP","EDEC","EDEL","EDES","EDHI","EDIT","EDLP","EDMG","EDSE","EDUC","EETH","EFND","EHSC","ELEE","EMAT","EMBA","EMKT","EMST","EMUS","ENED","ENGG","ENGL","ENGR","ENTO","ENTR","ENVE","ENVM","EPID","EPSY","ERSH","ESCI","ESOC","ETAP","ETES","FACS","FANR","FCID","FDNS","FDST","FHCE","FILM","FINA","FISH","FORS","FREN","FRES","GENE","GEOG","GEOL","GISC","GLOB","GREK","GRMN","GRNT","GRSC","HAUS","HDFS","HEBR","HFIM","HIPR","HIST","HNDI","HONS","HORT","HPAM","HPRB","ICON","IDEA","IDIS","IHDD","ILAD","INDO","INFO","INTB","INTL","ITAL","JOUR","JPNS","JRLC","JRMC","JURI","KINS","KREN","LACS","LAMS","LAND","LATN","LEAP","LEGL","LING","LLED","LLOD","MARK","MARS","MATH","MBUS","MCHE","MGMT","MIBO","MILS","MIST","MNML","MNPO","MSIT","MUSI","NAMS","NEUR","NMIX","NUTR","PADP","PASH","PATH","PBGG","PBHL","PBIO","PEDB","PERS","PHAR","PHIL","PHRM","PHYS","PLAN","PMCY","POLS","POPH","PORT","POUL","PRTM","PSYC","PTSP","QUAL","QUEC","RBIO","REAL","RELI","RMIN","ROML","RUSS","SAMS","SEMI","SLAV","SOCI","SOWK","SPAN","SPED","SPTM","STAT","SUST","SWAH","THEA","TURK","TXMI","UNIV","URDU","VBDI","VETM","VIET","VPAT","VPHY","WASH","WASR","WFED","WILD","WIPP","WMST","YORB","ZULU","ZZZZ"
+    ];
+
+    const BUILDINGS = [
+        "105 Bowstrom Road (1922)","Aderhold Hall (1060)","Amos Hall - BLC (0736)","Animal Science Center B (1503)","Animal Science Center C (1502)","Art Building (1694)","Baldwin Hall (0050)","Barrow Hall (1021)","Benson Hall - BLC (0735)","Boyd Graduate Research Center (1023)","Broad Street Studio 2 (0767)","Brooks Hall (0055)","Caldwell Hall (0046)","Candler Hall (0031)","Cedar Street Building B (1000)","Cedar Street Building C (1001)","Conner Hall (1011)","Correll Hall - BLC (0739)","Dawson Hall (1010)","Denmark Hall (0044)","Ecology Building (1033)","Environmental Health Sciences Bldg (1050)","Fine Arts Building (0060)","Food Science Building (1020)","Forest Resources Building 1 (1040)","Forest Resources Building 2 (1140)","Forest Resources Building 4 (1046)","Four Towers (2835)","Geography/Geology Building (1002)","George Hall (1910)","Gilbert Hall (0640)","Hardman Hall (1031)","Instructional Plaza - PJ Auditoria (0066)","Ivester Hall - BLC (0734)","Jackson Street Building (0040)","Joe Brown Hall (0250)","Journalism Building (0062)","LeConte Hall (0053)","Life Sciences Building (1057)","Main Library (0054)","Marine Science/Dance Building (1030)","Meigs Hall (0024)","Military Building (0061)","Miller Learning Center (0081)","Miller Plant Sciences Building (1061)","Moore-Rooker Hall - BLC (0738)","Music Building (1691)","New College (0030)","Old College (0130)","Orkin Hall - BLC (0737)","Park Hall (0056)","Peabody Hall (0042)","Pharmacy South Building (1038)","Physics Building (1003)","Poultry Science Building (1025)","Pound Hall (1906)","Psychology Building (0064)","Ramsey Center (1690)","Rhodes Hall (1905)","Rivers Crossing (2639)","Russell Hall HSC (1909)","Sanford Hall (0058)","Science Learning Center (1035)","Social Work Building (0033)","Tanner Building (0123)","Veterinary Medicine 1 (1070)","Wilson Pharmacy Building (1041)"
+    ];
+
+    const FEATURES_REQ = [
+        "Active Learning Criteria - moveable furniture",
+        "Active Learning Criteria - student collaboration support tools",
+        "Active Learning Criteria - 25 sq. ft. per student",
+        "AV - Blu-ray/DVD Player","AV - Document Camera","AV - Instructor Computer Station - MAC","AV - Instructor Computer Station - PC","AV - Interactive Monitor","AV - Projector","AV - Room Microphone","AV - Touch Control Panel","AV - Wall-mount Display","AV - Wall-mount Interactive Display",
+        "AV - Zoom/Web-Based Video Conferencing Equipment, Full room interaction",
+        "AV - Zoom/Web-Based Video Conferencing Equipment, Instructor only interaction",
+        "Board - Chalk","Board - White","Floor - Level","Floor - Tiered",
+        "Seating - Fixed Desk/Chair Units","Seating - Fixed Tables/Fixed Seats","Seating - Fixed Tables/Movable Seats","Seating - Fixed Tablet Arm","Seating - Movable Desk/Chair Units","Seating - Movable Tables/Movable Seats",
+        "Student Computer Stations - MAC","Student Computer Stations - PC","Student Power Outlets","Wheelchair Accessible"
+    ];
+    const FEATURES_PREF = [...FEATURES_REQ];
+
+    /* ===== 2) POPULATE UI (unchanged) ===== */
+    function populateSelect(selectEl, options) {
+        options.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v;
+            opt.textContent = v;
+            selectEl.appendChild(opt);
+        });
+    }
+    function populateCheckboxes(containerId, values) {
+        const container = document.getElementById(containerId);
+        const hint = container.querySelector('.hint');
+        values.forEach(v => {
+            const label = document.createElement('label');
+            label.className = 'checkbox-row';
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.value = v;
+            label.appendChild(input);
+            label.appendChild(document.createTextNode(' ' + v));
+            container.insertBefore(label, hint);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        populateSelect(document.getElementById('subject'), SUBJECTS);
+        populateSelect(document.getElementById('building1'), BUILDINGS);
+        populateSelect(document.getElementById('building2'), BUILDINGS);
+        populateSelect(document.getElementById('building3'), BUILDINGS);
+        populateCheckboxes('req-box', FEATURES_REQ);
+        populateCheckboxes('pref-box', FEATURES_PREF);
+    });
+
+    /* ===== 3) VALIDATION (new) ===== */
+    const form = document.getElementById('form-25live');
+    const statusBox = document.getElementById('status');
+
+    function markInvalid(el) { el.classList.add('is-invalid'); }
+    function clearInvalid(el) { el.classList.remove('is-invalid'); }
+
+    function validateForm() {
+        let valid = true;
+        statusBox.textContent = '';
+        statusBox.className = '';
+
+        const reqFields = [
+            form.submittedBy,          // text
+            form.submitterEmail,       // email
+            form.semester,             // text
+            form.subject,              // select
+            form.course,               // text
+            form.crn                   // text
+        ];
+
+        // clear old state
+        reqFields.forEach(clearInvalid);
+
+        // required values
+        reqFields.forEach(f => {
+            if (!f || !f.value || !f.value.trim()) { markInvalid(f); valid = false; }
+        });
+
+        // email format
+        const email = form.submitterEmail.value.trim();
+        if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { markInvalid(form.submitterEmail); valid = false; }
+
+        // radio required
+        const hasCRNChoice = Array.from(form.querySelectorAll('input[name="crnCrosslist"]')).some(r => r.checked);
+        if (!hasCRNChoice) valid = false;
+
+        if (!valid) {
+            statusBox.className = 'error';
+            statusBox.textContent = 'Please complete all required fields before submitting.';
+            // scroll to first invalid
+            const firstBad = document.querySelector('.is-invalid');
+            if (firstBad) firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return valid;
+    }
+
+    // optional: live-clear invalid state on input/change
+    form.addEventListener('input', (e) => { if (e.target.classList) clearInvalid(e.target); });
+    form.addEventListener('change', (e) => { if (e.target.classList) clearInvalid(e.target); });
+
+    /* ===== 4) SUBMIT (same endpoint) ===== */
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
+
+        const submitBtn = form.querySelector('button');
+        submitBtn.disabled = true;
+
+        const getChecked = (containerId) =>
+            Array.from(document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`)).map(cb => cb.value);
+
+        const crnCrosslist = (Array.from(form.querySelectorAll('input[name="crnCrosslist"]')).find(r => r.checked) || {}).value || '';
+
+        const body = {
+            secret: "uga-forms-25live-SECRET-7uU2Fr9p4XcQhB3L",
+            submittedBy: form.submittedBy.value.trim(),
+            submitterEmail: form.submitterEmail.value.trim(),
+            semester: form.semester.value.trim(),
+            subject: form.subject.value.trim().toUpperCase(),
+            course: form.course.value.trim(),
+            crn: form.crn.value.trim(),
+            crnCrosslist,
+            buildingPrefs: [form.building1.value, form.building2.value, form.building3.value].filter(Boolean),
+            specificRoom: form.specificRoom.value.trim(),
+            featureRequirements: getChecked('req-box'),
+            featurePreferences: getChecked('pref-box'),
+            notes: form.notes.value.trim()
+        };
+
+        try {
+            const res = await fetch(
+                "https://defaulta8216c1e4d6343528c3b50fa1f1475.b1.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/341b8622f08947f4a6a247bccbaa6673/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=FfWl4y2v8r_FlWiU_tEtNXLbTBmgsfQgHmx8RESRnnU",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body)
+                }
+            );
+
+            if (res.ok) {
+                statusBox.className = "success";
+                statusBox.textContent = "Thank you! Your location preferences have been submitted.";
+                form.reset();
+            } else {
+                const err = await res.text();
+                throw new Error(err || res.statusText);
+            }
+        } catch (err) {
+            statusBox.className = "error";
+            statusBox.textContent = "Error submitting form: " + err.message;
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+</script>

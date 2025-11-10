@@ -1,0 +1,274 @@
+<div class="uga-form">
+    <form id="form-25live" aria-labelledby="form-title" novalidate>
+        <h2 id="form-title">25Live Access Request</h2>
+
+        <div class="field">
+            <label for="name">Name of person needing access</label>
+            <input class="styled-input" type="text" id="name" name="nameofpersonneedingaccess" required aria-describedby="name-help" />
+            <div id="name-help" class="hint">Enter the name of the person needing access to 25Live.</div>
+        </div>
+
+        <div class="field">
+            <label for="myid">MyID of person needing access</label>
+            <input class="styled-input" type="text" id="myid" name="myidofpersonneedingaccesst" required aria-describedby="myid-help" inputmode="email" />
+            <div id="myid-help" class="hint">Enter the MyID of the person needing access to 25Live.</div>
+        </div>
+
+        <div class="field">
+            <label for="dept">Department of person needing access to 25Live</label>
+            <input class="styled-input" type="text" id="dept" name="departmentofpersonneedingaccesst" required aria-describedby="dept-help" />
+            <div id="dept-help" class="hint">Please enter the department of the person needing access to 25Live.</div>
+        </div>
+
+        <div class="checkbox-card">
+            <label class="checkbox-row">
+                <input type="checkbox" id="tutorial" name="tutorialcompleted" value="I certify that I have completed the 25Live Tutorial." required />
+                <span>I certify that I have completed the 25Live Tutorial.</span>
+            </label>
+        </div>
+
+        <button type="submit">Submit Request</button>
+        <p id="status" role="status" aria-live="polite"></p>
+    </form>
+</div>
+
+<style>
+    /* Base */
+    .uga-form, .uga-form * { box-sizing: border-box; }
+    .uga-form { padding: 16px; }
+
+    /* Card */
+    .uga-form form#form-25live {
+        max-width: 640px;
+        margin: 2rem auto;
+        background: #fff;
+        padding: 24px 28px;
+        border-radius: 14px;
+        border-top: 6px solid #ba0c2f;
+        box-shadow: 0 6px 22px rgba(0,0,0,.1);
+    }
+
+    /* Heading */
+    .uga-form h2 {
+        font-weight: 800;
+        font-size: 1.6rem;
+        color: #ba0c2f;
+        text-align: center;
+        margin: 0 0 1.25rem;
+    }
+
+    /* Field group */
+    .uga-form .field { margin-bottom: 18px; }
+
+    /* Labels */
+    .uga-form label {
+        display: block;
+        font-weight: 700;
+        margin: 0 0 8px;
+        color: #4a4a4a;
+    }
+
+    /* Inputs */
+    .uga-form .styled-input {
+        display: block;
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 10px;
+        border: 1.5px solid #c7c7c7;
+        background: linear-gradient(180deg, #ffffff 0%, #f6f6f6 100%);
+        font-size: 18px;
+        line-height: 1.35;
+        color: #222;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+        transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    .uga-form .styled-input:hover {
+        border-color: #a8a8a8;
+        background: #ffffff;
+    }
+
+    .uga-form .styled-input:focus-visible {
+        border-color: #00a3ad;
+        background: #ffffff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0,163,173,.25), inset 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    /* Autofill fix (WebKit) */
+    .uga-form input.styled-input:-webkit-autofill {
+        -webkit-box-shadow: 0 0 0px 1000px #fff inset !important;
+        -webkit-text-fill-color: #222 !important;
+        caret-color: #222;
+    }
+
+    /* Help text */
+    .uga-form .hint {
+        margin-top: 6px;
+        font-size: 0.925rem;
+        color: #606060;
+    }
+
+    /* Checkbox card */
+    .uga-form .checkbox-card {
+        margin-top: 12px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #fafafa;
+        padding: 12px 14px;
+    }
+
+    .uga-form .checkbox-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 0;
+        cursor: pointer;
+        user-select: none;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .uga-form .checkbox-row input[type="checkbox"] {
+        margin-top: 2px; /* aligns with first line of text */
+        width: 20px;
+        height: 20px;
+        accent-color: #ba0c2f;
+        flex: 0 0 auto;
+        cursor: pointer;
+    }
+
+    /* Button */
+    .uga-form button {
+        margin-top: 22px;
+        width: 100%;
+        padding: 16px 20px;
+        background: linear-gradient(90deg, #ba0c2f, #a00a28);
+        color: #fff;
+        border: 0;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: .2px;
+        cursor: pointer;
+        box-shadow: 0 3px 8px rgba(0,0,0,.15);
+        transition: transform .08s ease, filter .2s ease, box-shadow .2s ease;
+    }
+
+    .uga-form button:hover { filter: brightness(1.06); }
+    .uga-form button:active { transform: scale(.985); }
+    .uga-form button:disabled {
+        filter: grayscale(.25) brightness(.95);
+        cursor: not-allowed;
+        box-shadow: 0 0 0 rgba(0,0,0,0);
+    }
+
+    /* Live status */
+    .uga-form #status {
+        text-align: center;
+        margin-top: 16px;
+        font-weight: 700;
+        font-size: 1.25rem;
+        transition: all 0.25s ease;
+    }
+
+    /* Success / thank-you message */
+    .uga-form #status.success {
+        color: #007d85;
+        background: rgba(0,163,173,0.08);
+        border: 2px solid #00a3ad;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(0,163,173,0.15);
+        animation: fadeInScale 0.4s ease;
+    }
+
+    /* Error message */
+    .uga-form #status.error {
+        color: #ba0c2f;
+        background: rgba(186,12,47,0.08);
+        border: 2px solid #ba0c2f;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(186,12,47,0.12);
+        animation: fadeInScale 0.4s ease;
+    }
+
+    /* Subtle entrance animation */
+    @keyframes fadeInScale {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Validation hooks (use via JS if you're custom-validating with novalidate) */
+    .uga-form .styled-input.is-invalid {
+        border-color: #ba0c2f;
+        box-shadow: 0 0 0 3px rgba(186,12,47,.18);
+    }
+    .uga-form .styled-input.is-valid {
+        border-color: #00a3ad;
+        box-shadow: 0 0 0 3px rgba(0,163,173,.18);
+    }
+
+    /* Motion respect */
+    @media (prefers-reduced-motion: reduce) {
+        .uga-form .styled-input,
+        .uga-form button { transition: none; }
+    }
+</style>
+
+<script>
+    const FLOW_URL = "https://defaulta8216c1e4d6343528c3b50fa1f1475.b1.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/75e3e67dd1914b60b0b53356ad2b24ee/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=EFxBnw4J1ZFLCR-9EOb4iJaEIb-fC2Ud5LKqk4RD_9w"; // replace with your Power Automate URL
+    const SECRET   = "uga-forms-25live-SECRET-7uU2Fr9p4XcQhB3L";
+
+    // === Wire up the form ===
+    (function () {
+        const form = document.querySelector('.uga-form #form-25live');
+        const statusEl = document.querySelector('.uga-form #status');
+        if (!form) return;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            statusEl.textContent = "";
+            statusEl.className = "";
+
+            if (!form.reportValidity()) return;
+
+            const fd = new FormData(form);
+
+            // Build payload using your exact field names from the canvas
+            const payload = {
+                secret: SECRET,
+                formId: "25live-access",
+                nameofpersonneedingaccess: (fd.get("nameofpersonneedingaccess") || "").trim(),
+                myidofpersonneedingaccesst: (fd.get("myidofpersonneedingaccesst") || "").trim(),
+                departmentofpersonneedingaccesst: (fd.get("departmentofpersonneedingaccesst") || "").trim(),
+                tutorialcompleted: !!fd.get("tutorialcompleted"),
+                tutorialcompleted_text: fd.get("tutorialcompleted") || null
+            };
+
+            try {
+                const res = await fetch(FLOW_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    statusEl.textContent = "Your request has been submitted.";
+                    statusEl.className = "success";
+                    form.reset();
+                } else {
+                    statusEl.textContent = "Request not sent. Please re-enter.";
+                    statusEl.className = "error";
+                }
+            } catch (err) {
+                console.error(err);
+                statusEl.textContent = "Request not sent. Please re-enter.";
+                statusEl.className = "error";
+            }
+        });
+    })();
+</script>

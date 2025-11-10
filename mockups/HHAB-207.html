@@ -1,0 +1,359 @@
+<!-- === UGA Form Styles (same as your other form) === -->
+<style>
+    /* Base */
+    .uga-form, .uga-form * { box-sizing: border-box; }
+    .uga-form { padding: 16px; }
+
+    /* Card */
+    .uga-form form#form-hhab207 {
+        max-width: 700px;
+        margin: 2rem auto;
+        background: #fff;
+        padding: 24px 28px;
+        border-radius: 14px;
+        border-top: 6px solid #ba0c2f;
+        box-shadow: 0 6px 22px rgba(0,0,0,.1);
+    }
+
+    /* Heading */
+    .uga-form h2 {
+        font-weight: 800;
+        font-size: 1.6rem;
+        color: #ba0c2f;
+        text-align: center;
+        margin: 0 0 1.25rem;
+    }
+
+    /* Field group */
+    .uga-form .field { margin-bottom: 18px; }
+
+    /* Labels */
+    .uga-form label {
+        display: block;
+        font-weight: 700;
+        margin: 0 0 8px;
+        color: #4a4a4a;
+    }
+
+    /* Inputs */
+    .uga-form .styled-input {
+        display: block;
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 10px;
+        border: 1.5px solid #c7c7c7;
+        background: linear-gradient(180deg, #ffffff 0%, #f6f6f6 100%);
+        font-size: 18px;
+        line-height: 1.35;
+        color: #222;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+        transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .uga-form .styled-input:hover { border-color: #a8a8a8; background: #ffffff; }
+    .uga-form .styled-input:focus-visible {
+        border-color: #00a3ad; background: #ffffff; outline: none;
+        box-shadow: 0 0 0 3px rgba(0,163,173,.25), inset 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    /* Autofill fix (WebKit) */
+    .uga-form input.styled-input:-webkit-autofill {
+        -webkit-box-shadow: 0 0 0px 1000px #fff inset !important;
+        -webkit-text-fill-color: #222 !important;
+        caret-color: #222;
+    }
+
+    /* Help text */
+    .uga-form .hint { margin-top: 6px; font-size: 0.925rem; color: #606060; }
+
+    /* Button */
+    .uga-form button {
+        margin-top: 22px; width: 100%; padding: 16px 20px;
+        background: linear-gradient(90deg, #ba0c2f, #a00a28);
+        color: #fff; border: 0; border-radius: 10px;
+        font-size: 18px; font-weight: 800; letter-spacing: .2px; cursor: pointer;
+        box-shadow: 0 3px 8px rgba(0,0,0,.15);
+        transition: transform .08s ease, filter .2s ease, box-shadow .2s ease;
+    }
+    .uga-form button:hover { filter: brightness(1.06); }
+    .uga-form button:active { transform: scale(.985); }
+    .uga-form button:disabled { filter: grayscale(.25) brightness(.95); cursor: not-allowed; box-shadow: none; }
+
+    /* Live status */
+    .uga-form #status { text-align: center; margin-top: 16px; font-weight: 700; font-size: 1.1rem; transition: all .25s; }
+    .uga-form #status.success {
+        color: #007d85; background: rgba(0,163,173,0.08); border: 2px solid #00a3ad;
+        border-radius: 10px; padding: 14px 18px; margin-top: 20px; box-shadow: 0 4px 12px rgba(0,163,173,0.15);
+    }
+    .uga-form #status.error {
+        color: #ba0c2f; background: rgba(186,12,47,0.08); border: 2px solid #ba0c2f;
+        border-radius: 10px; padding: 14px 18px; margin-top: 20px; box-shadow: 0 4px 12px rgba(186,12,47,0.12);
+    }
+
+    /* Validation hooks */
+    .uga-form .styled-input.is-invalid {
+        border-color: #ba0c2f; box-shadow: 0 0 0 3px rgba(186,12,47,.18);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .uga-form .styled-input, .uga-form button { transition: none; }
+    }
+</style>
+
+<div class="uga-form">
+    <form id="form-hhab207" novalidate>
+        <h2>HHAB Classroom 0120-0207 Request</h2>
+
+        <!-- Instructional text (insttext2) -->
+        <div class="field" aria-live="polite">
+            <div class="hint" style="line-height:1.4">
+                <div style="text-align:center;"><strong>Holmes Hunter Academic Building</strong></div>
+                <div style="text-align:center;"><strong>Classroom 0120-0207</strong></div>
+                <div style="text-align:center;"><strong>Default Capacity: 24</strong></div>
+                <br><strong>Only specified UGA departments are eligible to reserve classroom 0120-0207 upon approval.</strong><br><br>
+                <ul>
+                    <li>These departments and organizations are fully responsible for the coordination of the event, compliance with building policies and procedures, and damage to facilities and equipment during their event.</li>
+                </ul>
+                <ul><li>Should the event require catering and/or chairs &amp; tables:</li></ul>
+                <ul><li style="list-style-type:none;">
+                    <ul style="list-style-type:circle;">
+                        <li>A representative from your department must be on site to receive and coordinate delivery of these items.</li>
+                    </ul>
+                </li></ul>
+                <ul><li style="list-style-type:none;">
+                    <ul style="list-style-type:circle;">
+                        <li>The Registrar's Office does not provide additional furniture beyond what is available in the classroom. You must submit a work order to the Facilities Management Division for custodial and furniture fees and setup. <a href="https://readyfmd.fmd.uga.edu/ready/">https://readyfmd.fmd.uga.edu/ready/</a></li>
+                    </ul>
+                </li></ul>
+                <ul><li style="list-style-type:none;">
+                    <ul style="list-style-type:circle;">
+                        <li>The classroom must be restored to its original state, including removal of all trash.</li>
+                    </ul>
+                </li></ul>
+                <br><span style="text-decoration:underline;">The classroom is not available for events after 5pm, during weekends, or on dates the University is closed.</span>
+                <br><br><span style="text-decoration:underline;"><strong>Please provide the following contact and event information:</strong></span>
+            </div>
+        </div>
+
+        <!-- Fields -->
+        <div class="field">
+            <label for="ugaDepartment">UGA Department</label>
+            <input id="ugaDepartment" name="ugaDepartment" class="styled-input" type="text" required>
+            <div class="hint">Enter the UGA department or unit associated with this request.</div>
+        </div>
+
+        <div class="field">
+            <label for="primaryContactName">Primary Contact Name</label>
+            <input id="primaryContactName" name="primaryContactName" class="styled-input" type="text" required>
+            <div class="hint">Enter the name of the person primarily responsible for this request.</div>
+        </div>
+
+        <div class="field">
+            <label for="title">Title</label>
+            <input id="title" name="title" class="styled-input" type="text" required>
+            <div class="hint">Enter the title of the primary contact.</div>
+        </div>
+
+        <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" class="styled-input" type="email" required>
+            <div class="hint">Enter the email address of the primary contact.</div>
+        </div>
+
+        <div class="field">
+            <label for="departmentPhoneNumber">Department Phone Number</label>
+            <input id="departmentPhoneNumber" name="departmentPhoneNumber" class="styled-input" type="tel" required>
+            <div class="hint">Enter the phone number of the UGA department submitting this request.</div>
+        </div>
+
+        <div class="field">
+            <label for="primaryContactCellPhoneNumber">Primary Contact Cell Phone Number</label>
+            <input id="primaryContactCellPhoneNumber" name="primaryContactCellPhoneNumber" class="styled-input" type="tel" required>
+            <div class="hint">Enter the cell phone number of the primary contact.</div>
+        </div>
+
+        <div class="field">
+            <label for="additionalContactName">Additional Contact Name (optional)</label>
+            <input id="additionalContactName" name="additionalContactName" class="styled-input" type="text">
+            <div class="hint">Enter the name of an additional contact person for this request.</div>
+        </div>
+
+        <div class="field">
+            <label for="additionalContactEmail">Additional Contact Email (optional)</label>
+            <input id="additionalContactEmail" name="additionalContactEmail" class="styled-input" type="email">
+            <div class="hint">Enter the email address of the additional contact.</div>
+        </div>
+
+        <div class="field">
+            <label for="additionalContactPhoneNumber">Additional Contact Phone Number (optional)</label>
+            <input id="additionalContactPhoneNumber" name="additionalContactPhoneNumber" class="styled-input" type="tel">
+            <div class="hint">Enter the phone number of the additional contact.</div>
+        </div>
+
+        <div class="field">
+            <label for="dateOfTheEvent">Date of the Event</label>
+            <input id="dateOfTheEvent" name="dateOfTheEvent" class="styled-input" type="text" placeholder="MM/DD/YYYY" required>
+            <div class="hint">Enter the date the event will take place.</div>
+        </div>
+
+        <div class="field">
+            <label for="eventStartAndEndTime">Event Start and End Time</label>
+            <input id="eventStartAndEndTime" name="eventStartAndEndTime" class="styled-input" type="text" placeholder="e.g., 1:00 PM - 3:30 PM (include setup/teardown)" required>
+            <div class="hint">Enter the start and end times for the event. Please include setup and teardown times. Same-day and next-day reservations cannot be honored. Please allow five (5) business days for your reservation to be processed.</div>
+        </div>
+
+        <div class="field">
+            <label for="eventNameAndDescription">Event Name and Description</label>
+            <textarea id="eventNameAndDescription" name="eventNameAndDescription" class="styled-input" rows="3" required></textarea>
+            <div class="hint">Enter a name for the event as well as a brief description.</div>
+        </div>
+
+        <div class="field">
+            <label for="numberOfAttendees">Number of Attendees</label>
+            <input id="numberOfAttendees" name="numberOfAttendees" class="styled-input" type="number" min="1" step="1" required>
+            <div class="hint">Enter the number of expected attendees.</div>
+        </div>
+
+        <div class="field">
+            <label>Will you serve food at your event?</label>
+            <label style="display:flex; gap:10px; align-items:center; font-weight:600;">
+                <input type="radio" name="willServeFood" value="Yes, food will be served." required> Yes, food will be served.
+            </label>
+            <label style="display:flex; gap:10px; align-items:center; font-weight:600; margin-top:6px;">
+                <input type="radio" name="willServeFood" value="No, food will not be served." required> No, food will not be served.
+            </label>
+        </div>
+
+        <div class="field">
+            <label for="chartStringOrSpeedTypeAccountNum">Chart String or Speed Type Account Number</label>
+            <input id="chartStringOrSpeedTypeAccountNum" name="chartStringOrSpeedTypeAccountNum" class="styled-input" type="text" required>
+            <div class="hint">The Registrar's Office will submit a work order to the Facilities Management Division for the opening and closing of the Holmes Hunter Academic Building classroom and building access. Please provide the billable Chart String or Speed Type account number.</div>
+        </div>
+
+        <!-- Closing instructional text (insttext17) -->
+        <div class="field" aria-live="polite">
+            <div class="hint" style="line-height:1.5">
+                Once the reservation request has been processed, you will receive a confirmation email from
+                <a href="mailto:classrooms@uga.edu">classrooms@uga.edu</a>.<br><br>
+                The Holmes Hunter Academic Building is managed by the Office of the Registrar. If you have any questions, please contact Crystal Oliver at
+                <a href="mailto:crystal.graham25@uga.edu">Crystal.Oliver@uga.edu</a>.
+            </div>
+        </div>
+
+        <button type="submit">Submit Request</button>
+        <div id="status"></div>
+    </form>
+</div>
+
+<script>
+    /* ====== 0) Configure these for this form ====== */
+    const FLOW_URL = "https://defaulta8216c1e4d6343528c3b50fa1f1475.b1.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ee798422f515470cb32aec0619b4f5dd/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=RL7xpB4f5tUjQSFyFOFRmWKHAidEo0sRUN-ExDu4XAQ";
+    const SECRET   = "uga-forms-25live-SECRET-7uU2Fr9p4XcQhB3L";
+
+    /* ====== 1) Validation helpers ====== */
+    const form = document.getElementById('form-hhab207');
+    const statusBox = document.getElementById('status');
+
+    function markInvalid(el){ el.classList.add('is-invalid'); }
+    function clearInvalid(el){ el.classList.remove('is-invalid'); }
+    function validateEmail(v){ return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v); }
+    function validatePhone(v){ return v.replace(/[^\d]/g,'').length >= 10; } // US-ish
+    function validate() {
+        statusBox.textContent = ''; statusBox.className = '';
+        let ok = true;
+
+        const req = [
+            form.ugaDepartment,
+            form.primaryContactName,
+            form.title,
+            form.email,
+            form.departmentPhoneNumber,
+            form.primaryContactCellPhoneNumber,
+            form.dateOfTheEvent,
+            form.eventStartAndEndTime,
+            form.eventNameAndDescription,
+            form.numberOfAttendees,
+            form.chartStringOrSpeedTypeAccountNum
+        ];
+        req.forEach(clearInvalid);
+        req.forEach(f => { if(!f.value.trim()){ markInvalid(f); ok = false; } });
+
+        // email format
+        if (form.email.value && !validateEmail(form.email.value.trim())) { markInvalid(form.email); ok = false; }
+        if (form.additionalContactEmail.value && !validateEmail(form.additionalContactEmail.value.trim())) { markInvalid(form.additionalContactEmail); ok = false; }
+
+        // phones (basic)
+        if (form.departmentPhoneNumber.value && !validatePhone(form.departmentPhoneNumber.value)) { markInvalid(form.departmentPhoneNumber); ok = false; }
+        if (form.primaryContactCellPhoneNumber.value && !validatePhone(form.primaryContactCellPhoneNumber.value)) { markInvalid(form.primaryContactCellPhoneNumber); ok = false; }
+        if (form.additionalContactPhoneNumber.value && form.additionalContactPhoneNumber.value.trim() && !validatePhone(form.additionalContactPhoneNumber.value)) { markInvalid(form.additionalContactPhoneNumber); ok = false; }
+
+        // number of attendees > 0
+        if (Number(form.numberOfAttendees.value) < 1) { markInvalid(form.numberOfAttendees); ok = false; }
+
+        // radio required
+        const hasFoodChoice = Array.from(form.querySelectorAll('input[name="willServeFood"]')).some(r => r.checked);
+        if (!hasFoodChoice) ok = false;
+
+        if (!ok) {
+            statusBox.className = 'error';
+            statusBox.textContent = 'Please complete all required fields (and fix highlights) before submitting.';
+            const first = document.querySelector('.is-invalid');
+            if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return ok;
+    }
+    form.addEventListener('input', e => clearInvalid(e.target));
+    form.addEventListener('change', e => clearInvalid(e.target));
+
+    /* ====== 2) Submit ====== */
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!validate()) return;
+
+        const submitBtn = form.querySelector('button');
+        submitBtn.disabled = true;
+
+        const willServeFood = (Array.from(form.querySelectorAll('input[name="willServeFood"]')).find(r => r.checked) || {}).value || '';
+
+        const body = {
+            secret: SECRET,
+            ugaDepartment: form.ugaDepartment.value.trim(),
+            primaryContactName: form.primaryContactName.value.trim(),
+            title: form.title.value.trim(),
+            email: form.email.value.trim(),
+            departmentPhoneNumber: form.departmentPhoneNumber.value.trim(),
+            primaryContactCellPhoneNumber: form.primaryContactCellPhoneNumber.value.trim(),
+            additionalContactName: form.additionalContactName.value.trim(),
+            additionalContactEmail: form.additionalContactEmail.value.trim(),
+            additionalContactPhoneNumber: form.additionalContactPhoneNumber.value.trim(),
+            dateOfTheEvent: form.dateOfTheEvent.value.trim(),
+            eventStartAndEndTime: form.eventStartAndEndTime.value.trim(),
+            eventNameAndDescription: form.eventNameAndDescription.value.trim(),
+            numberOfAttendees: form.numberOfAttendees.value.trim(),
+            willServeFood,
+            chartStringOrSpeedTypeAccountNum: form.chartStringOrSpeedTypeAccountNum.value.trim()
+        };
+
+        try {
+            const res = await fetch(FLOW_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                statusBox.className = "success";
+                statusBox.textContent = "Thank you! Your HHAB 207 request has been submitted.";
+                form.reset();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                const err = await res.text();
+                throw new Error(err || res.statusText);
+            }
+        } catch (err) {
+            statusBox.className = "error";
+            statusBox.textContent = "Error submitting form: " + err.message;
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+</script>

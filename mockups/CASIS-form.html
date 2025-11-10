@@ -24,21 +24,30 @@
             --ring:3px solid #e13d5f; /* Accessible blue focus */
             --tile-border:#D5DAE1;
             --tile-selected: #ba0c2f;
-        );
+
             --tile-selected-text:#ffffff;
             --tile-selected-span:#ffffff;
             --btn-h:44px; --container:1100px; --content-pad:1rem;
+
+            --header-bg: #BA0C2F;   /* UGA red; change as needed */
+            --header-fg: #FFFFFF;
+            --panel-bg: #F2F3EE;    /* light neutral */
+            --panel-fg: #111;
+            --header-width: 1100px; /* desired header width */
+            --gap: 18px;            /* visual margin around the whole block */
+
+
+
         }
         *{box-sizing:border-box}
         html{color-scheme:light}
         body{margin:0;font:400 16px/1.55 Merriweather Sans, system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--uga-black);
             background-image:
                     linear-gradient(to bottom,
-                    rgba(0,0,0,0.45) 0%,
-                    rgba(0,0,0,0.28) 15%,
-                    rgba(0,0,0,0.16) 45%,
-                    rgba(0,0,0,0.10) 100%
-                    ),
+                    rgba(158, 162, 162, 0.4) 0%,
+                    rgba(158, 162, 162, 0.4)  15%,
+                    rgba(158, 162, 162, 0.4) 45%,
+                    rgba(158, 162, 162, 0.4)  100%),
                     url('https://www.uga.edu/img/prism-background.57f15081.png');
             background-size: cover;
             background-position: center;
@@ -47,7 +56,7 @@
         h2 {
             font-family: Oswald, sans-serif;
             text-transform: uppercase;
-            font-size: 2.25rem;
+            font-size: 2.0rem;
             color: #BA0C2F;
         }
 
@@ -56,18 +65,18 @@
         .skip-link:focus{left:1rem;top:1rem;width:auto;height:auto;background:#111;color:#fff;padding:.5rem .75rem;border-radius:8px;z-index:999}
 
         /* Header */
-        header{background:var(--uga-red);color:white; font-size: 2.5rem; font-family: Oswald; text-transform: uppercase; position: sticky; top: 0; z-index: 999;box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);}
+        header{background:#4a4a4a;color:var(--uga-white); font-size: 2.5rem; font-family: Oswald; text-transform: uppercase; position: sticky; top: 0; z-index: 999;box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);}
         .bar{max-width:var(--container);margin:0 auto;padding:1rem var(--content-pad);display:flex;gap:.75rem;align-items:center;}
         .brand{font-weight:900;letter-spacing:.3px}
         .sub{opacity:.95;font-weight:600}
 
         /* Main */
-        main{max-width:var(--container);margin:1.25rem auto;padding:0 var(--content-pad)}
+        main{max-width:var(--container);margin:1.25rem auto;padding:0 var(--content-pad); }
 
         /* Cards */
         .card{background:var(--uga-white);border: none;border-radius:var(--radius);margin:0 0 1rem 0;overflow:hidden;box-shadow:var(--shadow)}
-        .card h2{margin:0;padding:1rem 1rem;border-bottom:1px solid var(--gray-200);font-size:1.125rem;display:flex;justify-content:space-between;align-items:center}
-        .eyebrow{font-weight:700;color:var(--gray-700);font-size:2.5rem}
+        .card h2{margin:0;padding:1rem 1rem;border-bottom:1px solid var(--gray-200);font-size:1.1250rem;display:flex;justify-content:space-between;align-items:center}
+        .eyebrow{font-weight:500;color:var(--gray-700);font-size:2.0rem}
         .status-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .6rem;border-radius:999px;border:1px solid transparent;font-weight:700;white-space:nowrap}
         .status-ok{background:var(--ok-bg);color:var(--ok-fg);border-color:#10b98166}
         .status-warn{background:var(--warn-bg);color:var(--warn-fg);border-color:#f59e0b66}
@@ -96,7 +105,7 @@
         .btn.primary:hover{filter:brightness(.96)}
         .btn.ghost{background:transparent}
 
-        .toolbar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin:.75rem 0;}
+        .toolbar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin:0 0 .75rem 0;}
         .toolbar .meta{color:var(--gray-700);font-weight:700}
 
         .note{margin-top:.75rem;color:var(--gray-700);font-size:.96rem}
@@ -141,8 +150,92 @@
         }
 
         .tile-text{ display:flex; flex-direction:column; line-height:1.25; }
-        .tile-text .code{ font-family: Oswald; font-weight:900; letter-spacing:.4px; font-size:2rem; }
+        .tile-text .code{ font-family: Oswald; font-weight:900; letter-spacing:.4px; font-size:1.4rem; }
         .tile-text .full{ font-weight:700; }
+
+
+        <!-- CASIS: Accordion Section -->
+
+        /* Outer wrapper centers the accordion horizontally */
+        .accordion-wrapper {
+            display: flex;
+            justify-content: center;   /* center horizontally */
+            width: 100%;
+        }
+        .accordion {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;   /* space between each accordion section */
+        }
+
+        /* Header bar (summary) */
+        .accordion details {
+            border: 0;
+            padding: 0;
+            margin: 0;
+            width:  1100px;
+        }
+
+        .accordion summary {
+            display: inline-flex;                /* shrink-wrap to content width */
+            align-items: center;
+            gap: 12px;
+            width: min(var(--header-width), 1100px);
+            background: #4a4a4a;
+            color: var(--header-fg);
+            font: 400 2.25rem/1.2 "Merriweather", serif;
+            padding: 16px 22px;
+            border-radius: 2px;
+            cursor: pointer;
+            outline: none;
+            list-style: none;                    /* remove default marker */
+            user-select: none;
+            box-shadow: 0 4px 14px rgba(0,0,0,.15);
+        }
+        /* Hide native marker in WebKit */
+        .accordion summary::-webkit-details-marker { display:none; }
+
+        /* Chevron */
+        .accordion summary .chev {
+            inline-size: 1em;
+            block-size: 1em;
+            flex: 0 0 auto;
+            transform-origin: 50% 50%;
+            transition: transform .2s ease;
+        }
+        .accordion details[open] summary .chev { transform: rotate(90deg); }
+
+        /* Focus-visible ring */
+        .accordion summary:focus-visible {
+            box-shadow:
+                    0 0 0 3px #fff,
+                    0 0 0 6px rgba(186,12,47,.55);
+        }
+
+        /* Make only the OPEN accordion header sticky */
+        .accordion details[open] > summary {
+            position: sticky;
+            /* if you have a fixed site header, bump this down to clear it */
+            top: var(--sticky-offset, 8px);
+            z-index: 5;                  /* sit above the panel content */
+            box-shadow: 0 4px 14px rgba(0,0,0,.15);
+        }
+
+        /* Content panel (slightly narrower than header) */
+        .accordion .panel {
+            padding: 0px 2px;
+            margin-top: 10px;
+            /* make it a bit narrower so the header looks “wider than the child” */
+            max-width: 100%;
+        }
+
+        /* Optional: respect reduced motion */
+        @media (prefers-reduced-motion: reduce){
+            .accordion summary .chev { transition: none; }
+        }
+
+
 
     </style>
 </head>
@@ -150,7 +243,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <header role="banner">
     <div class="bar" aria-label="Site header">
-        <div class="brand" aria-label="UGA Registrar">CASIS</div>
+        <div class="brand" aria-label="UGA Registrar"><img style="width: 250px;" src="https://iapps.reg.uga.edu/CASIS/assets/casis-logo-c1e6dcc6328d68c439ff383578e3f1a9.png"></div>
         <div class="sub" aria-hidden="true"></div>
     </div>
 </header>
@@ -158,381 +251,724 @@
 <main id="main" role="main" aria-describedby="page-help">
     <p id="page-help" class="visually-hidden">Choose the colleges and roles that need access. If SSN access is required, provide justification. Status chips announce your progress.</p>
 
-    <form id="options-form" novalidate>
-        <!-- Colleges -->
-        <section class="card" aria-labelledby="colleges-h2">
-            <h2 id="colleges-h2">
-                <span class="eyebrow">Requested Colleges</span>
-                <span class="status-pill status-warn" id="collegeStatus" role="status" aria-live="polite">None selected</span>
-            </h2>
-            <div class="body">
-                <fieldset>
-                    <legend>Requested Colleges</legend>
 
-                    <div class="toolbar" aria-label="Colleges tools">
-                        <button class="btn ghost" type="button" id="colleges-select-all">Select all</button>
-                        <button class="btn ghost" type="button" id="colleges-clear">Clear</button>
-                        <span class="meta" id="collegeCount" aria-live="polite"></span>
-                    </div>
+</main>
+<div class="accordion-wrapper">
+<div class="accordion">
+    <!-- Section 1 -->
+    <details>
+        <summary>
+            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            USER DETAILS
+        </summary>
+        <div class="panel" role="region" aria-label="USER DETAILS">
+            <!-- Your lengthy options / form fields go here -->
+            <p><strong>Select roles:</strong></p>
+            <label><input type="checkbox" name="argos_roles" value="viewer"> Viewer</label><br>
+            <label><input type="checkbox" name="argos_roles" value="author"> Author</label><br>
+            <label><input type="checkbox" name="argos_roles" value="admin"> Admin</label><br>
+            <!-- ...long list, grouped fieldsets, etc. -->
+        </div>
+    </details>
+
+    <!-- Section 2 -->
+    <details>
+        <summary>
+            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            ARGOS ROLES
+        </summary>
+        <div class="panel" role="region" aria-label="ARGOS ROLES">
+            <form id="options-form" novalidate>
+                <!-- Colleges -->
+                <section class="card" aria-labelledby="colleges-h2">
+                    <h2 id="colleges-h2">
+                        <span class="eyebrow">Requested Colleges</span>
+                        <span class="status-pill status-warn" id="collegeStatus" role="status" aria-live="polite">None selected</span>
+                    </h2>
+                    <div class="body">
+                        <fieldset>
+                            <legend>Requested Colleges</legend>
+
+                            <div class="toolbar" aria-label="Colleges tools">
+                                <button class="btn ghost" type="button" id="colleges-select-all">Select all</button>
+                                <button class="btn ghost" type="button" id="colleges-clear">Clear</button>
+                                <span class="meta" id="collegeCount" aria-live="polite"></span>
+                            </div>
 
 
-                    <!-- Each tile keeps native checkbox semantics for screen readers -->
-                    <div class="grid" id="colleges" role="group" aria-label="Colleges">
-                        <!-- Entire tile is a label: click anywhere inside to toggle -->
-                        <label class="tile">
-                            <input type="checkbox" id="AE" value="AE">
-                            <span class="tile-text">
+                            <!-- Each tile keeps native checkbox semantics for screen readers -->
+                            <div class="grid" id="colleges" role="group" aria-label="Colleges">
+                                <!-- Entire tile is a label: click anywhere inside to toggle -->
+                                <label class="tile">
+                                    <input type="checkbox" id="AE" value="AE">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">AE</span>
       <span class="full">Agriculture and Environmental Sciences</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="AS" value="AS">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="AS" value="AS">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">AS</span>
       <span class="full">Arts and Sciences</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="BT" value="BT">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="BT" value="BT">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">BT</span>
       <span class="full">Biomedical &amp; Translational Sciences</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="BI" value="BI">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="BI" value="BI">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">BI</span>
       <span class="full">Bioinformatics</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="BU" value="BU">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="BU" value="BU">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">BU</span>
       <span class="full">Business</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="EC" value="EC">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="EC" value="EC">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">EC</span>
       <span class="full">Ecology</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="ED" value="ED">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="ED" value="ED">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">ED</span>
       <span class="full">Education</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="EN" value="EN">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="EN" value="EN">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">EN</span>
       <span class="full">Engineering</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="EV" value="EV">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="EV" value="EV">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">EV</span>
       <span class="full">Environment and Design</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="FC" value="FC">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="FC" value="FC">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">FC</span>
       <span class="full">Family and Consumer Sciences</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="FR" value="FR">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="FR" value="FR">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">FR</span>
       <span class="full">Forestry and Natural Resources</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="JO" value="JO">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="JO" value="JO">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">JO</span>
       <span class="full">Journalism and Mass Communication</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="LW" value="LW">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="LW" value="LW">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">LW</span>
       <span class="full">Law</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="PB" value="PB">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="PB" value="PB">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">PB</span>
       <span class="full">Public Health</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="PH" value="PH">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="PH" value="PH">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">PH</span>
       <span class="full">Pharmacy</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="PI" value="PI">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="PI" value="PI">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">PI</span>
       <span class="full">Public &amp; International Affairs</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="SW" value="SW">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="SW" value="SW">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">SW</span>
       <span class="full">Social Work</span>
     </span>
-                        </label>
+                                </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="VM" value="VM">
-                            <span class="tile-text">
+                                <label class="tile">
+                                    <input type="checkbox" id="VM" value="VM">
+                                    <span class="tile-text">
       <span class="code" aria-hidden="true">VM</span>
       <span class="full">Veterinary Medicine</span>
     </span>
-                        </label>
+                                </label>
+                            </div>
+
+
+                            <p class="note" id="collegeNote">Tip: You can select multiple colleges. Use Tab/Shift+Tab to navigate; Space toggles a checkbox.</p>
+                        </fieldset>
                     </div>
+                </section>
 
+                <!-- Roles -->
+                <section class="card" aria-labelledby="roles-h2">
+                    <h2 id="roles-h2">
+                        <span class="eyebrow">Requested Roles</span>
+                        <span class="status-pill status-warn" id="roleStatus" role="status" aria-live="polite">None selected</span>
+                    </h2>
+                    <div class="body">
+                        <fieldset>
+                            <legend>Requested Roles</legend>
 
-                    <p class="note" id="collegeNote">Tip: You can select multiple colleges. Use Tab/Shift+Tab to navigate; Space toggles a checkbox.</p>
-                </fieldset>
-            </div>
-        </section>
+                            <div class="toolbar" aria-label="Roles tools">
+                                <button class="btn ghost" type="button" id="roles-select-all">Select all</button>
+                                <button class="btn ghost" type="button" id="roles-clear">Clear</button>
+                                <span class="meta" id="roleCount" aria-live="polite"></span>
+                            </div>
 
-        <!-- Roles -->
-        <section class="card" aria-labelledby="roles-h2">
-            <h2 id="roles-h2">
-                <span class="eyebrow">Requested Roles</span>
-                <span class="status-pill status-warn" id="roleStatus" role="status" aria-live="polite">None selected</span>
-            </h2>
-            <div class="body">
-                <fieldset>
-                    <legend>Requested Roles</legend>
+                            <div class="grid" id="roles" role="group" aria-label="Roles">
+                                <label class="tile">
+                                    <input type="checkbox" id="acct_budgets" value="Accounting & Budgets Offices">
+                                    <span class="tile-text"><span class="full">Accounting &amp; Budgets Offices</span></span>
+                                </label>
 
-                    <div class="toolbar" aria-label="Roles tools">
-                        <button class="btn ghost" type="button" id="roles-select-all">Select all</button>
-                        <button class="btn ghost" type="button" id="roles-clear">Clear</button>
-                        <span class="meta" id="roleCount" aria-live="polite"></span>
+                                <label class="tile">
+                                    <input type="checkbox" id="accreditation" value="Accreditation & Institutional Effectiveness">
+                                    <span class="tile-text"><span class="full">Accreditation &amp; Institutional Effectiveness</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="advisors" value="Advisors">
+                                    <span class="tile-text"><span class="full">Advisors</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="athletic_compliance" value="Athletic Compliance">
+                                    <span class="tile-text"><span class="full">Athletic Compliance</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="aux_services" value="Auxiliary Services Offices">
+                                    <span class="tile-text"><span class="full">Auxiliary Services Offices</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="aux_student_data" value="Auxiliary Student Data">
+                                    <span class="tile-text"><span class="full">Auxiliary Student Data</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="bursar" value="Bursar & Treasury Services">
+                                    <span class="tile-text"><span class="full">Bursar &amp; Treasury Services</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="bus_mgrs" value="Business Managers & Accountants">
+                                    <span class="tile-text"><span class="full">Business Managers &amp; Accountants</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="course_sched" value="Course Scheduling">
+                                    <span class="tile-text"><span class="full">Course Scheduling</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="deans" value="Deans Offices">
+                                    <span class="tile-text"><span class="full">Deans Offices</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="dae" value="Department of Academic Enhancement">
+                                    <span class="tile-text"><span class="full">Department of Academic Enhancement</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="drc" value="Disability Resource Center">
+                                    <span class="tile-text"><span class="full">Disability Resource Center</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="eits" value="EITS Administration">
+                                    <span class="tile-text"><span class="full">EITS Administration</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="ed_abroad" value="Education Abroad">
+                                    <span class="tile-text"><span class="full">Education Abroad</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="enrollment" value="Enrollment Management Units">
+                                    <span class="tile-text"><span class="full">Enrollment Management Units</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="finaid" value="Financial Aid Office">
+                                    <span class="tile-text"><span class="full">Financial Aid Office</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="gca" value="Graduate Coordinator Assistants">
+                                    <span class="tile-text"><span class="full">Graduate Coordinator Assistants</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="gsbo" value="Graduate School Business Office">
+                                    <span class="tile-text"><span class="full">Graduate School Business Office</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="uhc" value="Health Center">
+                                    <span class="tile-text"><span class="full">Health Center</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="honor_soc" value="Honor Societies">
+                                    <span class="tile-text"><span class="full">Honor Societies</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="honors_prog" value="Honors Program">
+                                    <span class="tile-text"><span class="full">Honors Program</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="housing" value="Housing">
+                                    <span class="tile-text"><span class="full">Housing</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="hr" value="Human Resources Office">
+                                    <span class="tile-text"><span class="full">Human Resources Office</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="diversity" value="Institutional Diversity">
+                                    <span class="tile-text"><span class="full">Institutional Diversity</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="intl_imm" value="International Education Immigration">
+                                    <span class="tile-text"><span class="full">International Education Immigration</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="ovpi" value="OVPI Leadership">
+                                    <span class="tile-text"><span class="full">OVPI Leadership</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="stud_affairs" value="Student Affairs">
+                                    <span class="tile-text"><span class="full">Student Affairs</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="stud_affairs_office" value="Student Affairs Office">
+                                    <span class="tile-text"><span class="full">Student Affairs Office</span></span>
+                                </label>
+
+                                <label class="tile">
+                                    <input type="checkbox" id="ugrad_recruit" value="Undergrad Admissions Recruitment">
+                                    <span class="tile-text"><span class="full">Undergrad Admissions Recruitment</span></span>
+                                </label>
+                            </div>
+
+                            <p class="note" id="roleNote">Tip: Select every role that applies.</p>
+                        </fieldset>
                     </div>
+                </section>
 
-                    <div class="grid" id="roles" role="group" aria-label="Roles">
-                        <label class="tile">
-                            <input type="checkbox" id="acct_budgets" value="Accounting & Budgets Offices">
-                            <span class="tile-text"><span class="full">Accounting &amp; Budgets Offices</span></span>
-                        </label>
+                <!-- SSN -->
+                <section class="card" aria-labelledby="ssn-h2">
+                    <h2 id="ssn-h2">
+                        <span class="eyebrow">SSN Access</span>
+                        <span class="status-pill status-ok" id="ssnStatus" role="status" aria-live="polite">Optional</span>
+                    </h2>
+                    <div class="body">
+                        <fieldset>
+                            <legend>SSN Access</legend>
+                            <label class="tile">
+                                <input type="checkbox" id="ssn-access">
+                                <span class="tile-text"><span class="full">This access request requires ARGOS SSN access</span></span>
+                            </label>
 
-                        <label class="tile">
-                            <input type="checkbox" id="accreditation" value="Accreditation & Institutional Effectiveness">
-                            <span class="tile-text"><span class="full">Accreditation &amp; Institutional Effectiveness</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="advisors" value="Advisors">
-                            <span class="tile-text"><span class="full">Advisors</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="athletic_compliance" value="Athletic Compliance">
-                            <span class="tile-text"><span class="full">Athletic Compliance</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="aux_services" value="Auxiliary Services Offices">
-                            <span class="tile-text"><span class="full">Auxiliary Services Offices</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="aux_student_data" value="Auxiliary Student Data">
-                            <span class="tile-text"><span class="full">Auxiliary Student Data</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="bursar" value="Bursar & Treasury Services">
-                            <span class="tile-text"><span class="full">Bursar &amp; Treasury Services</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="bus_mgrs" value="Business Managers & Accountants">
-                            <span class="tile-text"><span class="full">Business Managers &amp; Accountants</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="course_sched" value="Course Scheduling">
-                            <span class="tile-text"><span class="full">Course Scheduling</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="deans" value="Deans Offices">
-                            <span class="tile-text"><span class="full">Deans Offices</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="dae" value="Department of Academic Enhancement">
-                            <span class="tile-text"><span class="full">Department of Academic Enhancement</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="drc" value="Disability Resource Center">
-                            <span class="tile-text"><span class="full">Disability Resource Center</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="eits" value="EITS Administration">
-                            <span class="tile-text"><span class="full">EITS Administration</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="ed_abroad" value="Education Abroad">
-                            <span class="tile-text"><span class="full">Education Abroad</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="enrollment" value="Enrollment Management Units">
-                            <span class="tile-text"><span class="full">Enrollment Management Units</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="finaid" value="Financial Aid Office">
-                            <span class="tile-text"><span class="full">Financial Aid Office</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="gca" value="Graduate Coordinator Assistants">
-                            <span class="tile-text"><span class="full">Graduate Coordinator Assistants</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="gsbo" value="Graduate School Business Office">
-                            <span class="tile-text"><span class="full">Graduate School Business Office</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="uhc" value="Health Center">
-                            <span class="tile-text"><span class="full">Health Center</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="honor_soc" value="Honor Societies">
-                            <span class="tile-text"><span class="full">Honor Societies</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="honors_prog" value="Honors Program">
-                            <span class="tile-text"><span class="full">Honors Program</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="housing" value="Housing">
-                            <span class="tile-text"><span class="full">Housing</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="hr" value="Human Resources Office">
-                            <span class="tile-text"><span class="full">Human Resources Office</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="diversity" value="Institutional Diversity">
-                            <span class="tile-text"><span class="full">Institutional Diversity</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="intl_imm" value="International Education Immigration">
-                            <span class="tile-text"><span class="full">International Education Immigration</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="ovpi" value="OVPI Leadership">
-                            <span class="tile-text"><span class="full">OVPI Leadership</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="stud_affairs" value="Student Affairs">
-                            <span class="tile-text"><span class="full">Student Affairs</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="stud_affairs_office" value="Student Affairs Office">
-                            <span class="tile-text"><span class="full">Student Affairs Office</span></span>
-                        </label>
-
-                        <label class="tile">
-                            <input type="checkbox" id="ugrad_recruit" value="Undergrad Admissions Recruitment">
-                            <span class="tile-text"><span class="full">Undergrad Admissions Recruitment</span></span>
-                        </label>
+                            <div id="just-wrap" class="field" hidden>
+                                <label for="ssn-just">Business need for requested SSN access</label>
+                                <textarea id="ssn-just" rows="4" aria-describedby="just-help just-count" aria-required="true" aria-invalid="false"></textarea>
+                                <div class="help" id="just-help">Provide a short justification. Do not paste sensitive data.</div>
+                                <div class="help" id="just-count">0 / 600 characters</div>
+                            </div>
+                            <div id="ssn-error" class="alert err" role="alert" hidden>
+                                <strong>Missing justification.</strong> Please describe the business need for SSN access.
+                            </div>
+                        </fieldset>
                     </div>
+                </section>
 
-                    <p class="note" id="roleNote">Tip: Select every role that applies.</p>
-                </fieldset>
-            </div>
-        </section>
-
-        <!-- SSN -->
-        <section class="card" aria-labelledby="ssn-h2">
-            <h2 id="ssn-h2">
-                <span class="eyebrow">SSN Access</span>
-                <span class="status-pill status-ok" id="ssnStatus" role="status" aria-live="polite">Optional</span>
-            </h2>
-            <div class="body">
-                <fieldset>
-                    <legend>SSN Access</legend>
-                    <label class="tile">
-                        <input type="checkbox" id="ssn-access">
-                        <span class="tile-text"><span class="full">This access request requires ARGOS SSN access</span></span>
-                    </label>
-
-                    <div id="just-wrap" class="field" hidden>
-                        <label for="ssn-just">Business need for requested SSN access</label>
-                        <textarea id="ssn-just" rows="4" aria-describedby="just-help just-count" aria-required="true" aria-invalid="false"></textarea>
-                        <div class="help" id="just-help">Provide a short justification. Do not paste sensitive data.</div>
-                        <div class="help" id="just-count">0 / 600 characters</div>
-                    </div>
-                    <div id="ssn-error" class="alert err" role="alert" hidden>
-                        <strong>Missing justification.</strong> Please describe the business need for SSN access.
-                    </div>
-                </fieldset>
-            </div>
-        </section>
-
-        <!-- Actions (no extra copy) -->
-        <div class="actions" aria-label="Actions">
-            <button class="btn" type="button" id="clear">Clear selections</button>
-            <div style="flex:1"></div>
-            <button class="btn primary" type="submit" id="submit">Submit</button>
+                <!-- Actions (no extra copy) -->
+                <div class="actions" aria-label="Actions">
+                    <button class="btn" type="button" id="clear">Clear selections</button>
+                    <div style="flex:1"></div>
+                    <button class="btn primary" type="submit" id="submit">Submit</button>
+                </div>
+            </form>
         </div>
-    </form>
-</main>
+    </details>
+
+    <!-- Section 3 -->
+    <details>
+        <summary>
+            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            BANNER ROLES
+        </summary>
+        <div class="panel" role="region" aria-label="BANNER ROLES">
+            <!-- Section: BANNER ROLES -->
+
+
+
+                <div class="panel" role="region" aria-label="BANNER ROLES">
+                    <section class="card" aria-labelledby="banner-h2">
+                        <h2 id="banner-h2">
+                            <span class="eyebrow">SELECT ROLES BY AREA</span>
+                            <span class="status-pill" role="status" aria-live="polite">text</span>
+                        </h2>
+
+                        <!-- Tabs -->
+                        <div class="tabs" role="tablist" aria-label="Banner areas">
+                            <button role="tab" id="tab-adm" aria-controls="panel-adm" aria-selected="false" tabindex="-1">Admissions</button>
+                            <button role="tab" id="tab-reg" aria-controls="panel-reg" aria-selected="false" tabindex="-1">Registrar</button>
+                            <button role="tab" id="tab-fin" aria-controls="panel-fin" aria-selected="false" tabindex="-1">Financial Aid</button>
+                            <button role="tab" id="tab-bur" aria-controls="panel-bur" aria-selected="false" tabindex="-1">Bursar</button>
+                            <button role="tab" id="tab-cur" aria-controls="panel-cur" aria-selected="true"  tabindex="0">Curriculum</button>
+                            <button role="tab" id="tab-eits" aria-controls="panel-eits" aria-selected="false" tabindex="-1">EITS</button>
+                        </div>
+
+                        <!-- Panels (only Curriculum populated per your request) -->
+                        <div id="panel-adm" role="tabpanel" aria-labelledby="tab-adm" hidden></div>
+                        <div id="panel-reg" role="tabpanel" aria-labelledby="tab-reg" hidden></div>
+                        <div id="panel-fin" role="tabpanel" aria-labelledby="tab-fin" hidden></div>
+                        <div id="panel-bur" role="tabpanel" aria-labelledby="tab-bur" hidden></div>
+
+                        <!-- REPLACE ONLY the inside of #panel-cur with this -->
+                        <div id="panel-cur" role="tabpanel" aria-labelledby="tab-cur">
+                            <!-- Attached content slab under tabs -->
+                            <div class="tab-body attached">
+                                <div class="pane">
+
+                                    <!-- Optional tiny header inside the pane -->
+                                    <div class="pane-head">
+                                        <h3 class="pane-title">Curriculum</h3>
+                                        <div class="pane-status" role="status" aria-live="polite">Select access per function</div>
+                                    </div>
+
+                                    <!-- Table-like list -->
+                                    <div class="func-table" role="table" aria-label="Curriculum functions">
+                                        <div class="func-row func-head" role="row">
+                                            <div role="columnheader" aria-sort="none">Function</div>
+                                            <div role="columnheader" class="col-center">View Only</div>
+                                            <div role="columnheader" class="col-center">Modify</div>
+                                        </div>
+
+                                        <!-- Function row 1 -->
+                                        <div class="func-row" role="row" data-row="curr-approver">
+                                            <div role="cell" class="func-text">Athena Curriculum Change Approver</div>
+
+                                            <div role="cell" class="col-center">
+                                                <label class="checklike" aria-label="Athena Curriculum Change Approver — View Only">
+                                                    <input type="checkbox"
+                                                           class="mx"
+                                                           data-peer="#mx-modify-curr-approver"
+                                                           data-extra="#extra-curr-approver"
+                                                           id="mx-view-curr-approver"
+                                                           value="view">
+                                                    <span>View</span>
+                                                </label>
+                                            </div>
+
+                                            <div role="cell" class="col-center">
+                                                <label class="checklike" aria-label="Athena Curriculum Change Approver — Modify">
+                                                    <input type="checkbox"
+                                                           class="mx"
+                                                           data-peer="#mx-view-curr-approver"
+                                                           data-extra="#extra-curr-approver"
+                                                           id="mx-modify-curr-approver"
+                                                           value="modify"
+                                                           aria-controls="extra-curr-approver"
+                                                           aria-expanded="false">
+                                                    <span>Modify</span>
+                                                </label>
+                                            </div>
+
+                                            <!-- Dynamic panel for this row (appears below; spans all columns) -->
+                                            <div class="func-extra" id="extra-curr-approver" role="region"
+                                                 aria-label="Athena Curriculum Change Approver details" hidden>
+                                                <div class="pair">
+                                                    <div class="group">
+                                                        <label class="lbl" for="major-select-0">Major(s)</label>
+                                                        <div id="major-list" class="stack">
+                                                            <div class="row">
+                                                                <select id="major-select-0" name="curriculum_majors[]">
+                                                                    <option value="" selected disabled>Select a major…</option>
+                                                                    <!-- Replace with your real list -->
+                                                                    <option value="ACCT">Accounting (ACCT)</option>
+                                                                    <option value="BIOL">Biology (BIOL)</option>
+                                                                    <option value="CSCI">Computer Science (CSCI)</option>
+                                                                </select>
+                                                                <button class="btn ghost add" type="button" data-target="major-list">Add another major</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="group">
+                                                        <label class="lbl" for="cert-select-0">Certificate(s)</label>
+                                                        <div id="cert-list" class="stack">
+                                                            <div class="row">
+                                                                <select id="cert-select-0" name="curriculum_certificates[]">
+                                                                    <option value="" selected disabled>Select a certificate…</option>
+                                                                    <!-- Replace with your real list -->
+                                                                    <option value="DATA">Data Analytics</option>
+                                                                    <option value="GIS">GIS</option>
+                                                                    <option value="ENTR">Entrepreneurship</option>
+                                                                </select>
+                                                                <button class="btn ghost add" type="button" data-target="cert-list">Add another certificate</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p class="note">Select specific Major(s)/Certificate(s) for Modify access. Use ✕ to remove rows.</p>
+                                            </div>
+                                        </div>
+                                        <!-- /Function row 1 -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Styles scoped to #panel-cur -->
+                            <style>
+                                /* Make the pane look like it's attached to the tabs above */
+                                #panel-cur .tab-body.attached{
+                                    margin-top: -4px;              /* tuck pane up under the tab strip */
+                                }
+                                #panel-cur .pane{
+                                    background:#fff;
+                                    border-top: none;              /* seamless join with tabs */
+                                    padding:25px;
+
+                                }
+
+
+                                /* Optional small header in the pane */
+                                #panel-cur .pane-head{
+                                    display:flex; align-items:center; justify-content:space-between;
+                                    gap:12px; margin-bottom:12px;
+                                }
+                                #panel-cur .pane-title{ margin:0; font: 700 1.05rem/1.2 "Segoe UI", system-ui, Arial, sans-serif; }
+                                #panel-cur .pane-status{ color:#4a4a4a; font-size:.92rem; }
+
+                                /* Table-like layout */
+                                #panel-cur .func-table{
+                                    display:grid;
+                                    grid-template-columns: 1fr 140px 140px; /* Function | View | Modify */
+                                    border:1px solid #eee; border-radius:10px; overflow:clip; background:#fff;
+                                }
+                                #panel-cur .func-row{ display:contents; }
+                                #panel-cur .func-head > [role="columnheader"]{
+                                    background:#F2F3EE; font-weight:700; padding:12px 14px; border-bottom:1px solid #e6e6e6;
+                                }
+                                #panel-cur .func-row > [role="cell"],
+                                #panel-cur .func-row > [role="columnheader"]{
+                                    padding:12px 14px; border-bottom:1px solid #f3f3f3;
+                                }
+                                #panel-cur .func-row:last-of-type > [role="cell"]{ border-bottom:0; }
+
+                                #panel-cur .func-text{ display:flex; align-items:center; }
+                                #panel-cur .col-center{ display:flex; align-items:center; justify-content:center; }
+
+                                #panel-cur .checklike{ display:inline-flex; gap:8px; align-items:center; background:#F2F3EE; padding:6px 10px; border-radius:10px; }
+                                #panel-cur .checklike input{ inline-size:1.05rem; block-size:1.05rem; }
+
+                                #panel-cur .func-extra{
+                                    grid-column:1 / -1; padding:14px; background:#fff; border-top:1px dashed #e0e0e0;
+                                }
+
+                                #panel-cur .pair{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+                                #panel-cur .group .lbl{ display:block; font-weight:600; margin-bottom:6px; }
+                                #panel-cur .stack{ display:flex; flex-direction:column; gap:8px; }
+                                #panel-cur .row{ display:flex; gap:8px; align-items:center; }
+                                #panel-cur .row select{ min-width:18rem; padding:8px; border:1px solid #ccc; border-radius:8px; }
+                                #panel-cur .btn.ghost{ background:transparent; border:1px dashed #aaa; padding:6px 10px; border-radius:8px; cursor:pointer; }
+                                #panel-cur .btn.ghost:hover{ border-color:#777; }
+                                #panel-cur .remove{ border:0; background:transparent; font-size:1rem; cursor:pointer; color:#BA0C2F; }
+                                #panel-cur .note{ color:#4a4a4a; font-size:.9rem; margin-top:8px; }
+
+                                @media (max-width: 900px){
+                                    #panel-cur .func-table{ grid-template-columns: 1fr 100px 100px; }
+                                    #panel-cur .pair{ grid-template-columns: 1fr; }
+                                }
+                            </style>
+
+                            <!-- JS scoped to #panel-cur -->
+                            <script>
+                                (function(container){
+                                    if(!container) return;
+
+                                    // Mutually exclusive per-row + toggle extras when Modify is checked
+                                    container.addEventListener('change', (e)=>{
+                                        const box = e.target.closest('input.mx');
+                                        if(!box) return;
+
+                                        const peerSel = box.dataset.peer;
+                                        if(peerSel){
+                                            const peer = container.querySelector(peerSel);
+                                            if(peer) peer.checked = false;
+                                        }
+
+                                        const extraSel = box.dataset.extra;
+                                        if(extraSel){
+                                            const extra = container.querySelector(extraSel);
+                                            const modify = container.querySelector('#mx-modify-curr-approver');
+                                            const show = !!(modify && modify.checked);
+                                            if(extra){
+                                                extra.hidden = !show;
+                                                if(modify) modify.setAttribute('aria-expanded', String(show));
+                                            }
+                                        }
+                                    });
+
+                                    // Add/remove rows for Majors/Certificates
+                                    function makeRow(name, optionsHTML){
+                                        const row = document.createElement('div');
+                                        row.className = 'row';
+                                        const sel = document.createElement('select');
+                                        sel.name = name;
+                                        sel.innerHTML = optionsHTML;
+                                        const remove = document.createElement('button');
+                                        remove.type = 'button';
+                                        remove.className = 'remove';
+                                        remove.setAttribute('aria-label','Remove');
+                                        remove.textContent = '✕';
+                                        remove.addEventListener('click', ()=> row.remove());
+                                        row.appendChild(sel);
+                                        row.appendChild(remove);
+                                        return row;
+                                    }
+
+                                    const majorOptions = container.querySelector('#major-select-0').innerHTML;
+                                    const certOptions  = container.querySelector('#cert-select-0').innerHTML;
+
+                                    container.querySelectorAll('.func-extra .add').forEach(btn=>{
+                                        btn.addEventListener('click', ()=>{
+                                            const targetId = btn.dataset.target;
+                                            const listEl = container.querySelector('#'+targetId);
+                                            const isMajor = targetId === 'major-list';
+                                            if(listEl){
+                                                listEl.appendChild(makeRow(
+                                                    isMajor ? 'curriculum_majors[]' : 'curriculum_certificates[]',
+                                                    isMajor ? majorOptions : certOptions
+                                                ));
+                                            }
+                                        });
+                                    });
+                                })(document.getElementById('panel-cur'));
+                            </script>
+                        </div>
+
+                </div>
+
+
+            <style>
+                /* Tabs look & feel */
+                .tabs {
+                    display: flex; flex-wrap: wrap; gap: 8px;
+                    margin: 12px 25px 0px 25px;
+                }
+                .tabs [role="tab"]{
+                    border: 1px solid #ddd; border-radius: 2px;
+                    padding: 8px 14px; background: #fff; cursor: pointer;
+                    font: 600 0.95rem/1.2 "Segoe UI", system-ui, Arial, sans-serif;
+                }
+                .tabs [role="tab"][aria-selected="true"]{
+                    background:#BA0C2F; color:#fff; border-color:#BA0C2F;
+                }
+                /* Panels */
+                [role="tabpanel"]{ padding: 6px 0; }
+                /* Function card bits */
+                .function { border:0; padding:0; margin:0; }
+                .function legend{
+                    font-weight:700; margin-bottom:8px;
+                    font-size:1.05rem;
+                }
+                .muted{ font-weight:400; color:#555; margin-left:.4rem; }
+                .two-checks{ display:flex; gap:14px; align-items:center; margin: 8px 0 12px; }
+                .checklike{ display:inline-flex; gap:8px; align-items:center; background:#F2F3EE; padding:8px 12px; border-radius:10px; }
+                .checklike input{ inline-size:1.05rem; block-size:1.05rem; }
+                .extra{ background:#fff; border:1px solid #e6e6e6; border-radius:10px; padding:14px; box-shadow:0 1px 4px rgba(0,0,0,.05); }
+                .pair{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+                .group .lbl{ display:block; font-weight:600; margin-bottom:6px; }
+                .stack{ display:flex; flex-direction:column; gap:8px; }
+                .row{ display:flex; gap:8px; align-items:center; }
+                .row select{ min-width:18rem; padding:8px; border:1px solid #ccc; border-radius:8px; }
+                .remove{
+                    border:0; background:transparent; font-size:1rem; cursor:pointer; color:#BA0C2F;
+                }
+                .note{ color:#4a4a4a; font-size:.9rem; margin-top:8px; }
+                @media (max-width: 900px){
+                    .pair{ grid-template-columns:1fr; }
+                }
+            </style>
+
+
+
+        </div>
+    </details>
+</div>
+</div>
 
 <footer aria-label="Footnotes">
     <p><strong>Accessibility notes:</strong> Interactive tiles retain native checkbox semantics; status chips use <code>role="status"</code> with polite live updates; focus rings meet WCAG 2.1 AA visibility; minimum target size ≥44×44px; reduced motion respected.</p>
