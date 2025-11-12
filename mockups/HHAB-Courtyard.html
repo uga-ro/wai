@@ -226,22 +226,58 @@
     const isPhone10 = v => v.replace(/[^\d]/g,'').length >= 10;
 
     /* === Phone formatting === */
+    const phoneLastValues = new Map();
+
     function formatPhoneInput(e) {
         let input = e.target;
-        let value = input.value.replace(/[^\d]/g, '');
-        let formatted = '';
+        let cursorPos = input.selectionStart;
+        let value = input.value;
+        let lastValue = phoneLastValues.get(input) || '';
 
-        if (value.length > 0) {
-            formatted = '(' + value.substring(0, 3);
-            if (value.length > 3) {
-                formatted += ') ' + value.substring(3, 6);
-            }
-            if (value.length > 6) {
-                formatted += '-' + value.substring(6, 10);
+        // Remove all non-digit and non-formatting characters
+        let cleaned = value.replace(/[^\d()\s\-]/g, '');
+
+        // Extract just the digits
+        let digits = cleaned.replace(/[^\d]/g, '');
+        let lastDigits = lastValue.replace(/[^\d]/g, '');
+
+        // Detect if user deleted a formatting character (length decreased but digit count stayed same)
+        let deletedFormatChar = value.length < lastValue.length && digits.length === lastDigits.length;
+
+        // Limit to 10 digits
+        digits = digits.substring(0, 10);
+
+        // If user deleted a format character, just show the cleaned digits without auto-formatting
+        let formatted = '';
+        if (deletedFormatChar) {
+            // Don't auto-format, just use cleaned input
+            formatted = cleaned;
+        } else {
+            // Normal formatting
+            if (digits.length > 0) {
+                formatted = '(' + digits.substring(0, 3);
+                if (digits.length > 3) {
+                    formatted += ') ' + digits.substring(3, 6);
+                }
+                if (digits.length > 6) {
+                    formatted += '-' + digits.substring(6, 10);
+                }
             }
         }
 
+        // Calculate new cursor position
+        let newCursorPos = cursorPos;
+        if (!deletedFormatChar && formatted.length > value.length) {
+            // Auto-formatting added characters, move cursor forward
+            newCursorPos = cursorPos + (formatted.length - value.length);
+        }
+
+        // Update value and store for next time
         input.value = formatted;
+        phoneLastValues.set(input, formatted);
+
+        // Set cursor position
+        input.setSelectionRange(newCursorPos, newCursorPos);
     }
 
     function formatPhoneForSubmit(value) {
@@ -253,22 +289,64 @@
     }
 
     /* === Date formatting === */
+    let lastDateValue = '';
+
     function formatDateInput(e) {
         let input = e.target;
-        let value = input.value.replace(/[^\d]/g, '');
-        let formatted = '';
+        let cursorPos = input.selectionStart;
+        let value = input.value;
+        let lastValue = lastDateValue;
 
-        if (value.length > 0) {
-            formatted = value.substring(0, 2);
-            if (value.length > 2) {
-                formatted += '/' + value.substring(2, 4);
-            }
-            if (value.length > 4) {
-                formatted += '/' + value.substring(4, 8);
+        // Remove all non-digit and non-slash characters
+        let cleaned = value.replace(/[^\d\/]/g, '');
+
+        // Extract just the digits
+        let digits = cleaned.replace(/[^\d]/g, '');
+        let lastDigits = lastValue.replace(/[^\d]/g, '');
+
+        // Detect if user deleted a formatting character (length decreased but digit count stayed same)
+        let deletedFormatChar = value.length < lastValue.length && digits.length === lastDigits.length;
+
+        // Limit to 8 digits (MMDDYYYY)
+        digits = digits.substring(0, 8);
+
+        // If user deleted a format character, just show the cleaned input without auto-formatting
+        let formatted = '';
+        if (deletedFormatChar) {
+            // Don't auto-format, just use cleaned input
+            formatted = cleaned;
+        } else {
+            // Normal formatting
+            if (digits.length > 0) {
+                formatted = digits.substring(0, 2);
+                if (digits.length >= 2) {
+                    formatted += '/';
+                }
+                if (digits.length > 2) {
+                    formatted += digits.substring(2, 4);
+                }
+                if (digits.length >= 4) {
+                    formatted += '/';
+                }
+                if (digits.length > 4) {
+                    formatted += digits.substring(4, 8);
+                }
             }
         }
 
+        // Calculate new cursor position
+        let newCursorPos = cursorPos;
+        if (!deletedFormatChar && formatted.length > value.length) {
+            // Auto-formatting added characters, move cursor forward
+            newCursorPos = cursorPos + (formatted.length - value.length);
+        }
+
+        // Update value and store for next time
         input.value = formatted;
+        lastDateValue = formatted;
+
+        // Set cursor position
+        input.setSelectionRange(newCursorPos, newCursorPos);
     }
 
     function isValidDate(dateStr) {
