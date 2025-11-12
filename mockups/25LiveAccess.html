@@ -5,19 +5,19 @@
         <h2 id="form-title">25Live Access Request</h2>
 
         <div class="field">
-            <label for="name">Name of person needing access</label>
+            <label for="name">Name of person needing access<span class="required">*</span></label>
             <input class="styled-input" type="text" id="name" name="nameofpersonneedingaccess" required aria-describedby="name-help" />
             <div id="name-help" class="hint">Enter the name of the person needing access to 25Live.</div>
         </div>
 
         <div class="field">
-            <label for="myid">MyID of person needing access</label>
+            <label for="myid">MyID of person needing access<span class="required">*</span></label>
             <input class="styled-input" type="text" id="myid" name="myidofpersonneedingaccesst" required aria-describedby="myid-help" inputmode="email" />
             <div id="myid-help" class="hint">Enter the MyID of the person needing access to 25Live.</div>
         </div>
 
         <div class="field">
-            <label for="dept">Department of person needing access to 25Live</label>
+            <label for="dept">Department of person needing access to 25Live<span class="required">*</span></label>
             <input class="styled-input" type="text" id="dept" name="departmentofpersonneedingaccesst" required aria-describedby="dept-help" />
             <div id="dept-help" class="hint">Please enter the department of the person needing access to 25Live.</div>
         </div>
@@ -25,7 +25,7 @@
         <div class="checkbox-card">
             <label class="checkbox-row">
                 <input type="checkbox" id="tutorial" name="tutorialcompleted" value="I certify that I have completed the 25Live Tutorial." required />
-                <span>I certify that I have completed the 25Live Tutorial.</span>
+                <span>I certify that I have completed the 25Live Tutorial.<span class="required">*</span></span>
             </label>
         </div>
 
@@ -68,6 +68,11 @@
         font-weight: 700;
         margin: 0 0 8px;
         color: #4a4a4a;
+    }
+
+    .uga-form .required {
+        color: #ba0c2f;
+        margin-left: 4px;
     }
 
     /* Inputs */
@@ -208,16 +213,24 @@
     .uga-form .styled-input.is-invalid {
         border-color: #ba0c2f;
         box-shadow: 0 0 0 3px rgba(186,12,47,.18);
+        animation: shake 0.4s ease-in-out;
     }
     .uga-form .styled-input.is-valid {
         border-color: #00a3ad;
         box-shadow: 0 0 0 3px rgba(0,163,173,.18);
     }
 
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+        20%, 40%, 60%, 80% { transform: translateX(4px); }
+    }
+
     /* Motion respect */
     @media (prefers-reduced-motion: reduce) {
         .uga-form .styled-input,
         .uga-form button { transition: none; }
+        .uga-form .styled-input.is-invalid { animation: none; }
     }
 </style>
 
@@ -262,14 +275,17 @@
                     statusEl.textContent = "Your request has been submitted.";
                     statusEl.className = "success";
                     form.reset();
+                    statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 } else {
                     statusEl.textContent = "Request not sent. Please re-enter.";
                     statusEl.className = "error";
+                    statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             } catch (err) {
                 console.error(err);
                 statusEl.textContent = "Request not sent. Please re-enter.";
                 statusEl.className = "error";
+                statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         });
     })();

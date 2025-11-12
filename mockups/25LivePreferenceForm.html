@@ -36,6 +36,11 @@
         color: #4a4a4a;
     }
 
+    .uga-form .required {
+        color: #ba0c2f;
+        margin-left: 4px;
+    }
+
     /* Inputs */
     .uga-form .styled-input {
         display: block;
@@ -174,16 +179,24 @@
     .uga-form .styled-input.is-invalid {
         border-color: #ba0c2f;
         box-shadow: 0 0 0 3px rgba(186,12,47,.18);
+        animation: shake 0.4s ease-in-out;
     }
     .uga-form .styled-input.is-valid {
         border-color: #00a3ad;
         box-shadow: 0 0 0 3px rgba(0,163,173,.18);
     }
 
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+        20%, 40%, 60%, 80% { transform: translateX(4px); }
+    }
+
     /* Motion respect */
     @media (prefers-reduced-motion: reduce) {
         .uga-form .styled-input,
         .uga-form button { transition: none; }
+        .uga-form .styled-input.is-invalid { animation: none; }
     }
 </style>
 <div class="uga-form">
@@ -191,25 +204,25 @@
         <h2>Campus Location Preference Form</h2>
 
         <div class="field">
-            <label for="submittedBy">Submitted By</label>
+            <label for="submittedBy">Submitted By<span class="required">*</span></label>
             <input id="submittedBy" name="submittedBy" class="styled-input" type="text" required />
             <div class="hint">Enter the last and first names of the person submitting this request.</div>
         </div>
 
         <div class="field">
-            <label for="submitterEmail">Submitter Email</label>
+            <label for="submitterEmail">Submitter Email<span class="required">*</span></label>
             <input id="submitterEmail" name="submitterEmail" class="styled-input" type="email" required />
             <div class="hint">Enter the email address of the person submitting this request.</div>
         </div>
 
         <div class="field">
-            <label for="semester">Semester</label>
+            <label for="semester">Semester<span class="required">*</span></label>
             <input id="semester" name="semester" class="styled-input" type="text" required />
             <div class="hint">Enter the term the course is being offered.</div>
         </div>
 
         <div class="field">
-            <label for="subject">Subject</label>
+            <label for="subject">Subject<span class="required">*</span></label>
             <select id="subject" name="subject" class="styled-input" required>
                 <option value="">Select a Subject...</option>
                 <!-- Subjects injected by JS -->
@@ -218,19 +231,19 @@
         </div>
 
         <div class="field">
-            <label for="course">Course</label>
+            <label for="course">Course<span class="required">*</span></label>
             <input id="course" name="course" class="styled-input" type="text" required />
             <div class="hint">Enter the course number for this request.</div>
         </div>
 
         <div class="field">
-            <label for="crn">CRN</label>
+            <label for="crn">CRN<span class="required">*</span></label>
             <input id="crn" name="crn" class="styled-input" type="text" required />
             <div class="hint">Enter the CRN for this request. (If cross-listed, only one CRN is necessary).</div>
         </div>
 
         <div class="field">
-            <label>CRN Cross-list</label>
+            <label>CRN Cross-list<span class="required">*</span></label>
             <label class="checkbox-row" style="font-weight:600;">
                 <input type="radio" name="crnCrosslist" value="Cross-listed course" required />
                 Cross-listed course
@@ -448,6 +461,7 @@
                 statusBox.className = "success";
                 statusBox.textContent = "Thank you! Your location preferences have been submitted.";
                 form.reset();
+                statusBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
                 const err = await res.text();
                 throw new Error(err || res.statusText);
@@ -455,6 +469,7 @@
         } catch (err) {
             statusBox.className = "error";
             statusBox.textContent = "Error submitting form: " + err.message;
+            statusBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } finally {
             submitBtn.disabled = false;
         }

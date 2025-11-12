@@ -14,6 +14,7 @@
     }
     .uga-form .field { margin-bottom: 18px; }
     .uga-form label { display: block; font-weight: 700; margin: 0 0 8px; color: #4a4a4a; }
+    .uga-form .required { color: #ba0c2f; margin-left: 4px; }
     .uga-form .styled-input {
         display: block; width: 100%; padding: 14px 16px; border-radius: 10px;
         border: 1.5px solid #c7c7c7; background: linear-gradient(180deg,#fff 0%,#f6f6f6 100%);
@@ -47,8 +48,22 @@
         color:#ba0c2f; background: rgba(186,12,47,0.08); border:2px solid #ba0c2f;
         border-radius:10px; padding:14px 18px; margin-top:20px; box-shadow:0 4px 12px rgba(186,12,47,0.12);
     }
-    .uga-form .styled-input.is-invalid { border-color:#ba0c2f; box-shadow:0 0 0 3px rgba(186,12,47,.18); }
-    @media (prefers-reduced-motion: reduce) { .uga-form .styled-input, .uga-form button { transition:none; } }
+    .uga-form .styled-input.is-invalid {
+        border-color:#ba0c2f;
+        box-shadow:0 0 0 3px rgba(186,12,47,.18);
+        animation: shake 0.4s ease-in-out;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+        20%, 40%, 60%, 80% { transform: translateX(4px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .uga-form .styled-input, .uga-form button { transition:none; }
+        .uga-form .styled-input.is-invalid { animation: none; }
+    }
 </style>
 
 <div class="uga-form">
@@ -86,37 +101,37 @@
 
         <!-- Fields -->
         <div class="field">
-            <label for="ugaDepartment">UGA Department</label>
+            <label for="ugaDepartment">UGA Department<span class="required">*</span></label>
             <input id="ugaDepartment" name="ugaDepartment" class="styled-input" type="text" required>
             <div class="hint">Enter the UGA department or unit associated with this request.</div>
         </div>
 
         <div class="field">
-            <label for="primaryContactName">Primary Contact Name</label>
+            <label for="primaryContactName">Primary Contact Name<span class="required">*</span></label>
             <input id="primaryContactName" name="primaryContactName" class="styled-input" type="text" required>
             <div class="hint">Enter the name of the person primarily responsible for this request.</div>
         </div>
 
         <div class="field">
-            <label for="title">Title</label>
+            <label for="title">Title<span class="required">*</span></label>
             <input id="title" name="title" class="styled-input" type="text" required>
             <div class="hint">Enter the title of the primary contact.</div>
         </div>
 
         <div class="field">
-            <label for="email">Email</label>
+            <label for="email">Email<span class="required">*</span></label>
             <input id="email" name="email" class="styled-input" type="email" required>
             <div class="hint">Enter the email address of the primary contact.</div>
         </div>
 
         <div class="field">
-            <label for="departmentPhoneNumber">Department Phone Number</label>
+            <label for="departmentPhoneNumber">Department Phone Number<span class="required">*</span></label>
             <input id="departmentPhoneNumber" name="departmentPhoneNumber" class="styled-input" type="tel" required>
             <div class="hint">Enter the phone number of the UGA department submitting this request.</div>
         </div>
 
         <div class="field">
-            <label for="primaryContactCellPhoneNumber">Primary Contact Cell Phone Number</label>
+            <label for="primaryContactCellPhoneNumber">Primary Contact Cell Phone Number<span class="required">*</span></label>
             <input id="primaryContactCellPhoneNumber" name="primaryContactCellPhoneNumber" class="styled-input" type="tel" required>
             <div class="hint">Enter the cell phone number of the primary contact.</div>
         </div>
@@ -140,41 +155,44 @@
         </div>
 
         <div class="field">
-            <label for="dateOfTheEvent">Date of the Event</label>
+            <label for="dateOfTheEvent">Date of the Event<span class="required">*</span></label>
             <input id="dateOfTheEvent" name="dateOfTheEvent" class="styled-input" type="text" placeholder="MM/DD/YYYY" required>
             <div class="hint">Enter the date the event will take place.</div>
         </div>
 
         <div class="field">
-            <label for="eventStartAndEndTime">Event Start and End Time</label>
+            <label for="eventStartAndEndTime">Event Start and End Time<span class="required">*</span></label>
             <input id="eventStartAndEndTime" name="eventStartAndEndTime" class="styled-input" type="text" placeholder="e.g., 1:00 PM - 3:30 PM (include setup/teardown)" required>
             <div class="hint">Enter the start and end times for the event. Please include setup and teardown times. Same-day and next-day reservations cannot be honored. Please allow five (5) business days for processing.</div>
         </div>
 
         <div class="field">
-            <label for="eventNameAndDescription">Event Name and Description</label>
+            <label for="eventNameAndDescription">Event Name and Description<span class="required">*</span></label>
             <textarea id="eventNameAndDescription" name="eventNameAndDescription" class="styled-input" rows="3" required></textarea>
             <div class="hint">Enter a name for the event as well as a brief description.</div>
         </div>
 
         <div class="field">
-            <label for="numberOfAttendees">Number of Attendees</label>
+            <label for="numberOfAttendees">Number of Attendees<span class="required">*</span></label>
             <input id="numberOfAttendees" name="numberOfAttendees" class="styled-input" type="number" min="1" step="1" required>
             <div class="hint">Enter the number of expected attendees.</div>
         </div>
 
         <div class="field">
-            <label>Will you serve food at your event?</label>
+            <label>Will you serve food at your event?<span class="required">*</span></label>
             <label style="display:flex;gap:10px;align-items:center;font-weight:600;">
-                <input type="radio" name="willServeFood" value="Yes, food will be served." required> Yes, food will be served.
+                <input type="radio" name="willServeFood" value="Yes, food will be served.">
+                Yes, food will be served.
             </label>
             <label style="display:flex;gap:10px;align-items:center;font-weight:600;margin-top:6px;">
-                <input type="radio" name="willServeFood" value="No, food will not be served." required> No, food will not be served.
+                <input type="radio" name="willServeFood" value="No, food will not be served.">
+                No, food will not be served.
             </label>
+
         </div>
 
         <div class="field">
-            <label for="chartStringOrSpeedTypeAccountNum">Chart String or Speed Type Account Number</label>
+            <label for="chartStringOrSpeedTypeAccountNum">Chart String or Speed Type Account Number<span class="required">*</span></label>
             <input id="chartStringOrSpeedTypeAccountNum" name="chartStringOrSpeedTypeAccountNum" class="styled-input" type="text" required>
             <div class="hint">The Registrar's Office will submit a work order to FMD for opening/closing and access. Provide the billable Chart String or Speed Type account number.</div>
         </div>
@@ -204,8 +222,69 @@
     const statusBox = document.getElementById('status');
     const markInvalid = el => el.classList.add('is-invalid');
     const clearInvalid = el => el.classList.remove('is-invalid');
-    const isEmail = v => /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(v);
-    const isPhone10 = v => v.replace(/[^\\d]/g,'').length >= 10;
+    const isEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    const isPhone10 = v => v.replace(/[^\d]/g,'').length >= 10;
+
+    /* === Phone formatting === */
+    function formatPhoneInput(e) {
+        let input = e.target;
+        let value = input.value.replace(/[^\d]/g, '');
+        let formatted = '';
+
+        if (value.length > 0) {
+            formatted = '(' + value.substring(0, 3);
+            if (value.length > 3) {
+                formatted += ') ' + value.substring(3, 6);
+            }
+            if (value.length > 6) {
+                formatted += '-' + value.substring(6, 10);
+            }
+        }
+
+        input.value = formatted;
+    }
+
+    function formatPhoneForSubmit(value) {
+        const digits = value.replace(/[^\d]/g, '');
+        if (digits.length === 10) {
+            return `(${digits.substring(0, 3)}) ${digits.substring(3, 6)}-${digits.substring(6, 10)}`;
+        }
+        return value;
+    }
+
+    /* === Date formatting === */
+    function formatDateInput(e) {
+        let input = e.target;
+        let value = input.value.replace(/[^\d]/g, '');
+        let formatted = '';
+
+        if (value.length > 0) {
+            formatted = value.substring(0, 2);
+            if (value.length > 2) {
+                formatted += '/' + value.substring(2, 4);
+            }
+            if (value.length > 4) {
+                formatted += '/' + value.substring(4, 8);
+            }
+        }
+
+        input.value = formatted;
+    }
+
+    function isValidDate(dateStr) {
+        const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+        if (!regex.test(dateStr)) return false;
+
+        const parts = dateStr.split('/');
+        const month = parseInt(parts[0], 10);
+        const day = parseInt(parts[1], 10);
+        const year = parseInt(parts[2], 10);
+
+        const date = new Date(year, month - 1, day);
+        return date.getFullYear() === year &&
+               date.getMonth() === month - 1 &&
+               date.getDate() === day;
+    }
 
     function validate() {
         statusBox.textContent = ''; statusBox.className = '';
@@ -228,6 +307,9 @@
         if (form.primaryContactCellPhoneNumber.value && !isPhone10(form.primaryContactCellPhoneNumber.value)) { markInvalid(form.primaryContactCellPhoneNumber); ok = false; }
         if (form.additionalContactPhoneNumber.value && form.additionalContactPhoneNumber.value.trim() && !isPhone10(form.additionalContactPhoneNumber.value)) { markInvalid(form.additionalContactPhoneNumber); ok = false; }
 
+        // date validation
+        if (form.dateOfTheEvent.value && !isValidDate(form.dateOfTheEvent.value.trim())) { markInvalid(form.dateOfTheEvent); ok = false; }
+
         if (Number(form.numberOfAttendees.value) < 1) { markInvalid(form.numberOfAttendees); ok = false; }
 
         const hasFoodChoice = Array.from(form.querySelectorAll('input[name="willServeFood"]')).some(r => r.checked);
@@ -244,6 +326,14 @@
     form.addEventListener('input', e => { if (e.target.classList) clearInvalid(e.target); });
     form.addEventListener('change', e => { if (e.target.classList) clearInvalid(e.target); });
 
+    /* === Attach phone formatters === */
+    form.departmentPhoneNumber.addEventListener('input', formatPhoneInput);
+    form.primaryContactCellPhoneNumber.addEventListener('input', formatPhoneInput);
+    form.additionalContactPhoneNumber.addEventListener('input', formatPhoneInput);
+
+    /* === Attach date formatter === */
+    form.dateOfTheEvent.addEventListener('input', formatDateInput);
+
     /* === Submit === */
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -251,7 +341,10 @@
         const submitBtn = form.querySelector('button');
         submitBtn.disabled = true;
 
-        const willServeFood = (Array.from(form.querySelectorAll('input[name="willServeFood"]')).find(r => r.checked) || {}).value || '';
+        const willServeFood = (
+            Array.from(form.querySelectorAll('input[name="willServeFood"]')).find(r => r.checked)?.value
+        ) || "";
+
 
         const body = {
             secret: SECRET,
@@ -259,11 +352,11 @@
             primaryContactName: form.primaryContactName.value.trim(),
             title: form.title.value.trim(),
             email: form.email.value.trim(),
-            departmentPhoneNumber: form.departmentPhoneNumber.value.trim(),
-            primaryContactCellPhoneNumber: form.primaryContactCellPhoneNumber.value.trim(),
+            departmentPhoneNumber: formatPhoneForSubmit(form.departmentPhoneNumber.value.trim()),
+            primaryContactCellPhoneNumber: formatPhoneForSubmit(form.primaryContactCellPhoneNumber.value.trim()),
             additionalContactName: form.additionalContactName.value.trim(),
             additionalContactEmail: form.additionalContactEmail.value.trim(),
-            additionalContactPhoneNumber: form.additionalContactPhoneNumber.value.trim(),
+            additionalContactPhoneNumber: formatPhoneForSubmit(form.additionalContactPhoneNumber.value.trim()),
             dateOfTheEvent: form.dateOfTheEvent.value.trim(),
             eventStartAndEndTime: form.eventStartAndEndTime.value.trim(),
             eventNameAndDescription: form.eventNameAndDescription.value.trim(),
@@ -284,10 +377,11 @@
             statusBox.className = "success";
             statusBox.textContent = "Thank you! Your HHAB Courtyard request has been submitted.";
             form.reset();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            statusBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } catch (err) {
             statusBox.className = "error";
             statusBox.textContent = "Error submitting form: " + err.message;
+            statusBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } finally {
             submitBtn.disabled = false;
         }
