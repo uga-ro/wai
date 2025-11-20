@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UGA Component Templates</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Imports (Oswald & Merriweather) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Oswald:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'uga-red': '#BA0C2F',
+                        'uga-black': '#333333',
+                        'tertiary-teal': '#005f6b',
+                        'tertiary-teal-light': '#e0f2f1',
+                    },
+                    fontFamily: {
+                        'sans': ['Oswald', 'sans-serif'],
+                        'serif': ['Merriweather', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white p-12 space-y-20 max-w-4xl mx-auto">
+
+<!-- ==================================================================
+     COMPONENT 1: INSTRUCTIONS CARD
+     Style: Gray container, UGA Red Squared Numbers
+     ================================================================== -->
+<section>
+    <div class="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+
+        <!-- Header (Inside Container) -->
+        <div class="p-8 pb-4 border-b border-gray-200/60">
+            <h2 class="text-2xl font-sans font-bold text-uga-black uppercase tracking-wide">
+                Step-by-Step Instructions
+            </h2>
+            <p class="text-sm text-gray-500 mt-1 font-serif italic">Follow these steps to complete your enrollment.</p>
+        </div>
+
+        <!-- Steps Content -->
+        <div class="p-8 pt-6">
+            <div class="space-y-6">
+
+                <!-- Step 1 -->
+                <div class="flex gap-5">
+                    <!-- Icon: Squared Number (UGA Red) -->
+                    <div class="flex-shrink-0 w-10 h-10 bg-uga-red text-white font-sans font-bold text-xl flex items-center justify-center rounded shadow-sm mt-1">
+                        1
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-sans font-bold text-uga-black uppercase mb-2 mt-1">Apply for Admission</h3>
+                        <p class="text-gray-600 text-base font-serif">
+                            Prospective students must first apply to either an <a href="#" class="text-uga-red underline decoration-1 underline-offset-2 hover:text-black">Undergraduate</a> or <a href="#" class="text-uga-red underline decoration-1 underline-offset-2 hover:text-black">Graduate</a> program.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex gap-5">
+                    <div class="flex-shrink-0 w-10 h-10 bg-uga-red text-white font-sans font-bold text-xl flex items-center justify-center rounded shadow-sm mt-1">
+                        2
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-sans font-bold text-uga-black uppercase mb-2 mt-1">Submit Documentation</h3>
+                        <p class="text-gray-600 text-base font-serif">
+                            Once admitted, email a copy of a valid driver’s license or official age documentation to <span class="font-bold text-uga-black">reghelp@uga.edu</span>.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex gap-5">
+                    <div class="flex-shrink-0 w-10 h-10 bg-uga-red text-white font-sans font-bold text-xl flex items-center justify-center rounded shadow-sm mt-1">
+                        3
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-sans font-bold text-uga-black uppercase mb-2 mt-1">Register</h3>
+                        <p class="text-gray-600 text-base font-serif">
+                            Log in to Athena to view your registration time ticket.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ==================================================================
+     COMPONENT 2: CHECKLIST / REQUIREMENTS BOX
+     Style: Teal Highlight Box, Solid Circle Icons
+     ================================================================== -->
+<section>
+
+    <!-- Optional Section Title -->
+    <h3 class="text-2xl font-sans font-bold text-uga-black uppercase mb-4">
+        Course Data Requirements
+    </h3>
+    <p class="text-gray-700 font-serif mb-5">
+        It is important that all courses meet the following criteria before the deadline:
+    </p>
+
+    <!-- The Highlight Box -->
+    <div class="bg-tertiary-teal-light rounded-lg p-6 border border-tertiary-teal/20">
+        <ul class="space-y-3">
+
+            <!-- Item 1 -->
+            <li class="flex items-start gap-4">
+                <!-- Icon: Solid Teal Circle -->
+                <div class="flex-shrink-0 mt-0.5 w-6 h-6 rounded-full bg-tertiary-teal flex items-center justify-center shadow-sm">
+                    <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <span class="text-uga-black font-serif">Have accurate day, time, and maximum enrollment data</span>
+            </li>
+
+            <!-- Item 2 -->
+            <li class="flex items-start gap-4">
+                <div class="flex-shrink-0 mt-0.5 w-6 h-6 rounded-full bg-tertiary-teal flex items-center justify-center shadow-sm">
+                    <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <span class="text-uga-black font-serif">Are correctly cross-listed (if the courses meet together)</span>
+            </li>
+
+            <!-- Item 3 -->
+            <li class="flex items-start gap-4">
+                <div class="flex-shrink-0 mt-0.5 w-6 h-6 rounded-full bg-tertiary-teal flex items-center justify-center shadow-sm">
+                    <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <span class="text-uga-black font-serif">Have an instructor assigned, if known</span>
+            </li>
+
+        </ul>
+    </div>
+</section>
+
+<!-- ==================================================================
+     COMPONENT 3: INLINE ELEMENTS & PILLS (UPDATED)
+     Style: Badges, Data Identifiers, and Action Links
+     ================================================================== -->
+<section>
+    <h3 class="text-2xl font-sans font-bold text-uga-black uppercase mb-6">
+        Inline Styles & Pills
+    </h3>
+
+    <div class="space-y-10">
+
+        <!-- Group 1: Alerts & Badges -->
+        <div>
+            <h4 class="text-xs font-sans font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-200 pb-1">Alerts & Statuses</h4>
+            <div class="flex flex-wrap gap-3 items-center">
+
+                <!-- NEW Badge (High Vis) -->
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-sans font-bold bg-uga-red text-white uppercase tracking-wider shadow-sm transform -translate-y-px">
+                        NEW
+                    </span>
+
+                <!-- UPDATED Badge (Teal) -->
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-sans font-bold bg-tertiary-teal text-white uppercase tracking-wider shadow-sm transform -translate-y-px">
+                        UPDATED
+                    </span>
+
+                <!-- REQUIRED Badge (Gray) -->
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-sans font-bold bg-gray-600 text-white uppercase tracking-wider shadow-sm transform -translate-y-px">
+                        REQUIRED
+                    </span>
+            </div>
+        </div>
+
+        <!-- Group 2: Data Identifiers (Codes & Policies) -->
+        <div>
+            <h4 class="text-xs font-sans font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-200 pb-1">Data Identifiers</h4>
+            <div class="flex flex-wrap gap-4 items-center">
+
+                <!-- Course Code (Standard) -->
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-sans font-bold bg-gray-100 text-uga-black border border-gray-200 font-mono">
+                        CHEM 2100
+                    </span>
+
+                <!-- Policy Number Style (Official Document Look) -->
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded border border-gray-300 bg-white text-xs text-gray-600 shadow-sm">
+                        <span class="font-sans font-bold text-uga-black uppercase tracking-wider text-[10px]">Policy</span>
+                        <span class="font-serif font-medium">01.01.002</span>
+                    </span>
+
+                <!-- Policy Number (Alternative / Minimal) -->
+                <span class="text-sm font-serif text-gray-600 border-b border-dotted border-gray-400 hover:text-uga-red cursor-help" title="Academic Affairs Policy">
+                        Policy 4.07-5
+                    </span>
+
+            </div>
+        </div>
+
+        <!-- Group 3: Action Links (Not Buttons) -->
+        <div>
+            <h4 class="text-xs font-sans font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-200 pb-1">Action Links</h4>
+            <div class="flex flex-col gap-3 items-start">
+
+                <!-- Action Link: Arrow Style -->
+                <a href="#" class="group inline-flex items-center gap-1 font-sans font-bold text-uga-red hover:text-uga-black transition-colors uppercase text-sm tracking-wide border-b border-transparent hover:border-uga-black">
+                    Create Cohort Request
+                    <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </a>
+
+                <!-- Action Link: External/Tool Style -->
+                <a href="#" class="group inline-flex items-center gap-2 text-sm font-sans font-bold text-tertiary-teal hover:underline underline-offset-4 decoration-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    Launch Banner Admin
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Example in Context -->
+        <div>
+            <h4 class="text-xs font-sans font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-200 pb-1">Contextual Usage Example</h4>
+            <p class="text-gray-700 font-serif leading-relaxed bg-gray-50 p-6 rounded border border-gray-200 text-lg">
+                <span class="float-right ml-4 mb-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-sans font-bold bg-uga-red text-white uppercase tracking-wider shadow-sm">NEW</span>
+                Per <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-gray-300 bg-white text-xs text-gray-600 align-baseline mx-1"><span class="font-sans font-bold text-uga-black uppercase tracking-wider text-[9px]">Policy</span><span class="font-serif">04.01</span></span>, all students registering for <span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-sans font-bold bg-white text-uga-black border border-gray-200 align-baseline mx-1 font-mono text-xs">BIOL 1107</span> must first complete the safety orientation. Please <a href="#" class="inline-flex items-center gap-1 font-sans font-bold text-uga-red hover:text-uga-black transition-colors uppercase text-xs tracking-wide border-b border-uga-red hover:border-uga-black mx-1">Submit Waiver Form</a> before your appointment.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+<!-- ==================================================================
+     COMPONENT 4: POLICY STATEMENTS & TEXT BLOCKS
+     Style: Formal, Dull, Distinct
+     ================================================================== -->
+<section>
+    <h3 class="text-2xl font-sans font-bold text-uga-black uppercase mb-6">
+        Policy Blocks
+    </h3>
+
+    <!--
+       STYLE: Formal/Neutral Policy Block
+       - Removed Icon and Red Border
+       - "Dull but distinct" gray slate theme
+       - Hard lines for separation
+    -->
+    <div class="p-8 bg-slate-50 border border-slate-300 rounded-sm">
+
+        <h4 class="font-sans font-bold text-uga-black uppercase tracking-widest text-sm mb-4 border-b border-slate-300 pb-2 inline-block">
+            Policy Statement
+        </h4>
+
+        <p class="font-serif text-gray-800 leading-relaxed text-base">
+            The Office of the Registrar of the University of Georgia provides access to the student information system to employees with a legitimate need for information concerning students. All new users must first complete the <a href="#" class="text-uga-red underline decoration-1 underline-offset-2 hover:text-black font-medium">FERPA Tutorial and Quiz</a> conducted by the Office of the Registrar.
+        </p>
+    </div>
+
+</section>
+
+<!-- ==================================================================
+     COMPONENT 5: ARCHIVED CONTENT DISCLAIMER
+     Style: Dashed Border, Warm Gray, Accessibility Focus
+     ================================================================== -->
+<section>
+    <h3 class="text-2xl font-sans font-bold text-uga-black uppercase mb-6">
+        Archived Content Disclaimer
+    </h3>
+
+    <!--
+       STYLE: Archive Notice
+       - Dashed border implies "storage/old"
+       - Split layout separates the disclaimer from the solution (Request Version)
+       - High contrast button for accessibility
+    -->
+    <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-sm">
+        <div class="flex flex-col md:flex-row justify-between md:items-center gap-6">
+
+            <!-- Warning Text -->
+            <div class="max-w-2xl">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h4 class="font-sans font-bold text-gray-500 uppercase tracking-widest text-xs">
+                        Archived Content
+                    </h4>
+                </div>
+                <p class="font-serif text-sm text-gray-700 leading-relaxed">
+                    This content is preserved for historical purposes and may not follow current WCAG accessibility guidelines.
+                </p>
+            </div>
+
+            <!-- Action Link -->
+            <a href="#" class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 shadow-sm hover:border-uga-black hover:shadow-md transition-all group">
+                <span class="font-sans font-bold text-xs uppercase text-uga-black">Request Accessible Version</span>
+                <svg class="w-3 h-3 text-uga-red group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

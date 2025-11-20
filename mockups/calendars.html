@@ -7,7 +7,7 @@
     <!-- Load Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@700&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Merriweather:wght@700&family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         /* --- Base & Typography --- */
         body {
@@ -19,8 +19,11 @@
             font-size: 18px; /* Increased from default 16px */
         }
 
-        h1, h2, h3, .merriweather {
+        h1, h2, h3 {
             font-family: 'Merriweather', serif;
+            margin-top: 0;
+            margin-bottom: 0;
+
         }
 
         /* --- Layout Wrappers --- */
@@ -194,10 +197,7 @@
         /* --- Unified Widget --- */
         .unified-widget {
             border-radius: 0.5rem; /* rounded-lg */
-            box-shadow:
-                0 1px 3px rgba(0, 0, 0, 0.05),
-                0 10px 25px -5px rgba(0, 0, 0, 0.15),
-                0 20px 40px -10px rgba(0, 0, 0, 0.1);
+            box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
             overflow: hidden; /* To clip the children's corners */
 
         }
@@ -219,6 +219,9 @@
         .card-header {
             margin-bottom: 1.5rem; /* mb-6 */
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .card-title {
             font-size: 2.25rem; /* Increased from 1.875rem */
@@ -230,6 +233,23 @@
             color: #4b5563; /* text-gray-600 */
             margin-top: 0.25rem; /* mt-1 */
             font-size: 1.125rem; /* Increased */
+        }
+
+        /* Last updated subtitle under title */
+        .last-updated-subtitle {
+            color: #4b5563;
+            margin: 0.5rem 0 0 0;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        /* Export buttons standalone container */
+        .export-buttons-standalone {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
         }
 
         /* --- Calendar Table --- */
@@ -310,6 +330,72 @@
             line-height: 1.875rem;
             font-weight: 600; /* font-semibold */
             color: #1f2937; /* text-gray-800 */
+        }
+
+        /* Term Label (above table) */
+        .term-label {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            font-weight: 400;
+            color: #111827; /* gray-900 */
+            font-size: 2.6rem;
+            margin-bottom: 0.75rem;
+            margin-top: 2rem;
+            position: relative;
+            display: inline-block;
+            padding-right: 1.5rem;
+        }
+
+        .term-label:first-of-type {
+            margin-top: 0;
+        }
+
+        /* Triangle bookend after term label */
+        .term-label::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: 0.3em;
+            width: 0;
+            height: 0;
+            border-left: 1.04rem solid #BA0C2F;
+            border-top: 1.04rem solid transparent;
+        }
+
+        /* Term header with buttons (for first term only) */
+        .term-header-with-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .term-header-with-buttons:first-of-type {
+            margin-top: 0;
+        }
+
+        .term-header-with-buttons .term-label {
+            margin: 0;
+            flex: 0 1 auto;
+        }
+
+        .term-header-with-buttons .export-buttons-standalone {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin: 0;
+        }
+
+        /* Table wrapper for annual view */
+        .table-section {
+            margin-bottom: 2rem;
+        }
+
+        .table-section:last-child {
+            margin-bottom: 0;
         }
 
         /* --- Responsive Helpers --- */
@@ -423,6 +509,99 @@
         .dropdown-item.selected .check-icon {
             visibility: visible;
         }
+
+        /* --- Export Buttons --- */
+        .export-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            background-color: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .export-btn:hover {
+            background-color: #f9fafb;
+            border-color: #9ca3af;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .export-btn svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
+        }
+
+        .export-btn svg:last-child {
+            width: 10px;
+            height: 10px;
+        }
+
+        /* Dropdown for Save button */
+        .export-dropdown-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .export-dropdown-panel {
+            position: absolute;
+            display: none;
+            top: 100%;
+            right: 0;
+            margin-top: 0.25rem;
+            background-color: #ffffff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 0.375rem;
+            border: 1px solid #e5e7eb;
+            padding: 0.25rem;
+            z-index: 50;
+            min-width: 150px;
+        }
+
+        .export-dropdown-panel.show {
+            display: block;
+        }
+
+        .export-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.4rem 0.65rem;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.8125rem;
+            color: #374151;
+            text-align: left;
+            border-radius: 0.25rem;
+            transition: background-color 0.15s;
+        }
+
+        .export-dropdown-item:hover {
+            background-color: #f3f4f6;
+        }
+
+        .export-dropdown-item svg {
+            width: 13px;
+            height: 13px;
+        }
     </style>
 </head>
 <body class="bg-gray-200 text-gray-900">
@@ -491,23 +670,108 @@
             <!-- Header section (Inside Card) -->
             <header class="card-header">
                 <h2 id="calendar-title" class="card-title">Loading...</h2>
-                <p id="last-updated-p" class="card-subtitle">Official Calendar - Last Updated: <span id="last-updated"></span></p>
+                <p id="last-updated-p" class="last-updated-subtitle">Last Updated: <span id="last-updated"></span></p>
             </header>
 
+            <!-- Export Buttons - will be repositioned by JS -->
+            <div id="export-buttons-container" class="export-buttons-standalone">
+                <!-- Save Dropdown -->
+                <div class="export-dropdown-wrapper">
+                    <button id="save-btn" class="export-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Save
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div id="save-dropdown" class="export-dropdown-panel">
+                        <button class="export-dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            Excel
+                        </button>
+                        <button class="export-dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            CSV
+                        </button>
+                        <button class="export-dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                            PDF
+                        </button>
+                        <button class="export-dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                <rect x="6" y="14" width="12" height="8"></rect>
+                            </svg>
+                            Print
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Add to Calendar Dropdown -->
+                <div class="export-dropdown-wrapper">
+                    <button id="calendar-export-btn" class="export-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Add to Calendar
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div id="calendar-export-dropdown" class="export-dropdown-panel">
+                        <button class="export-dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Google Calendar
+                        </button>
+                        <button class="export-dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            Outlook Calendar
+                        </button>
+                        <button class="export-dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <circle cx="12" cy="12" r="6"></circle>
+                                <circle cx="12" cy="12" r="2"></circle>
+                            </svg>
+                            Apple Calendar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Calendar Table Container -->
-            <div class="table-container">
-                <table class="calendar-table">
-                    <thead>
-                        <tr>
-                            <th id="event-header" class="text-left">Event</th>
-                            <th class="text-center w-48">Date</th>
-                            <th class="text-center w-48 hidden sm-table-cell">Day</th>
-                        </tr>
-                    </thead>
-                    <tbody id="calendar-body">
-                        <!-- Rows will be populated by JavaScript -->
-                    </tbody>
-                </table>
+            <div id="calendar-tables-wrapper">
+                <!-- Will be populated with one or more tables by JavaScript -->
             </div>
         </div>
 
@@ -636,7 +900,7 @@
     // Load calendars from API
     async function loadCalendarsFromAPI() {
         try {
-            const response = await fetch(`${API_BASE}/calendars`);
+            const response = await fetch(`${API_BASE}/calendars?order=start_iso.asc`);
             if (!response.ok) throw new Error('Failed to fetch calendars');
 
             const apiData = await response.json();
@@ -709,8 +973,7 @@
     const calendarTitleElem = document.getElementById('calendar-title');
     const lastUpdatedElem = document.getElementById('last-updated');
     const lastUpdatedP = document.getElementById('last-updated-p');
-    const calendarBody = document.getElementById('calendar-body');
-    const eventHeader = document.getElementById('event-header');
+    const calendarTablesWrapper = document.getElementById('calendar-tables-wrapper');
 
     // --- Generic Dropdown Toggle Function ---
     function toggleDropdown(dropdown) {
@@ -723,60 +986,125 @@
         dropdown.classList.toggle('show');
     }
 
+    // --- Export Button Elements ---
+    const saveBtn = document.getElementById('save-btn');
+    const calendarExportBtn = document.getElementById('calendar-export-btn');
+    const saveDropdown = document.getElementById('save-dropdown');
+    const calendarExportDropdown = document.getElementById('calendar-export-dropdown');
+
     // --- Close all dropdowns if clicking outside ---
     window.addEventListener('click', (e) => {
         const isOutside = ![
             calendarBtn, calendarDropdown,
             yearBtn, yearDropdown,
-            termBtn, termDropdown
+            termBtn, termDropdown,
+            saveBtn, saveDropdown,
+            calendarExportBtn, calendarExportDropdown
         ].some(el => el.contains(e.target));
 
         if (isOutside) {
             calendarDropdown.classList.remove('show');
             yearDropdown.classList.remove('show');
             termDropdown.classList.remove('show');
+            saveDropdown.classList.remove('show');
+            calendarExportDropdown.classList.remove('show');
         }
     });
 
     // --- Main Function to Build the Calendar ---
     function renderCalendar(year, term) {
-        calendarBody.innerHTML = '';
+        // Get the export buttons container BEFORE clearing
+        const exportButtonsContainer = document.getElementById('export-buttons-container');
 
-        if (eventHeader) {
-            eventHeader.style.boxShadow = 'inset 7px 0 0 0 #F3F4F6';
+        // Store it temporarily if it exists
+        let exportButtonsParent = null;
+        if (exportButtonsContainer && exportButtonsContainer.parentNode) {
+            exportButtonsParent = exportButtonsContainer.parentNode;
+            exportButtonsContainer.remove();
         }
+
+        calendarTablesWrapper.innerHTML = '';
 
         // --- ANNUAL VIEW LOGIC ---
         if (term === 'annual') {
-            calendarTitleElem.textContent = `UGA ${year} Annual Academic Calendar`;
+            calendarTitleElem.textContent = `UGA Academic Calendar ${year}`;
             const termsToRender = ['fall', 'spring', 'summer'];
             let hasEvents = false;
             const years = year.split('-');
             const fallYear = years[0];
             const springSummerYear = years[1];
+            let isFirstTerm = true;
 
             termsToRender.forEach(termKey => {
                 const calendar = allCalendars[year]?.[termKey];
                 if (!calendar) return;
 
                 hasEvents = true;
-                let simpleTitle = "";
                 const termText = termKey.charAt(0).toUpperCase() + termKey.slice(1);
+                let termYear = '';
                 if (termKey === 'fall') {
-                    simpleTitle = `${termText} ${fallYear}`;
+                    termYear = fallYear;
                 } else {
-                    simpleTitle = `${termText} ${springSummerYear}`;
+                    termYear = springSummerYear;
                 }
 
-                const subHeaderRow = document.createElement('tr');
-                subHeaderRow.className = 'annual-subheader-row';
-                subHeaderRow.innerHTML = `<td colspan="3" class="merriweather" style="box-shadow: inset 7px 0 0 0 #F3F4F6;">${simpleTitle}</td>`;
-                calendarBody.appendChild(subHeaderRow);
+                // Create table section wrapper
+                const tableSection = document.createElement('div');
+                tableSection.className = 'table-section';
 
+                // For first term, create header with buttons
+                if (isFirstTerm) {
+                    const termHeaderWithButtons = document.createElement('div');
+                    termHeaderWithButtons.className = 'term-header-with-buttons';
+
+                    const termLabel = document.createElement('div');
+                    termLabel.className = 'term-label';
+                    termLabel.textContent = `${termText} ${termYear}`;
+                    termHeaderWithButtons.appendChild(termLabel);
+
+                    // Move export buttons into this header
+                    termHeaderWithButtons.appendChild(exportButtonsContainer);
+                    tableSection.appendChild(termHeaderWithButtons);
+
+                    isFirstTerm = false;
+                } else {
+                    // Regular term label for subsequent terms
+                    const termLabel = document.createElement('div');
+                    termLabel.className = 'term-label';
+                    termLabel.textContent = `${termText} ${termYear}`;
+                    tableSection.appendChild(termLabel);
+                }
+
+                // Create table container
+                const tableContainer = document.createElement('div');
+                tableContainer.className = 'table-container';
+
+                // Create table
+                const table = document.createElement('table');
+                table.className = 'calendar-table';
+
+                // Add thead
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th class="text-left" style="box-shadow: inset 7px 0 0 0 #F3F4F6;">Event</th>
+                        <th class="text-center w-48">Date</th>
+                        <th class="text-center w-48 hidden sm-table-cell">Day</th>
+                    </tr>
+                `;
+                table.appendChild(thead);
+
+                // Add tbody with data
+                const tbody = document.createElement('tbody');
                 calendar.data.forEach((item, index) => {
                     const row = createCalendarRow(item, index);
-                    calendarBody.appendChild(row);
+                    tbody.appendChild(row);
                 });
+                table.appendChild(tbody);
+
+                tableContainer.appendChild(table);
+                tableSection.appendChild(tableContainer);
+                calendarTablesWrapper.appendChild(tableSection);
             });
 
             if (!hasEvents) {
@@ -793,12 +1121,60 @@
                 return;
             }
 
-            calendarTitleElem.textContent = calendar.title;
+            // Update title to match format: "UGA Academic Calendar 2025-2026"
+            calendarTitleElem.textContent = `UGA Academic Calendar ${year}`;
 
+            // Extract year from calendar title for term label
+            const years = year.split('-');
+            const termText = term.charAt(0).toUpperCase() + term.slice(1);
+            let termYear = '';
+            if (term === 'fall') {
+                termYear = years[0];
+            } else {
+                termYear = years[1];
+            }
+
+            // Create header with buttons
+            const termHeaderWithButtons = document.createElement('div');
+            termHeaderWithButtons.className = 'term-header-with-buttons';
+
+            const termLabel = document.createElement('div');
+            termLabel.className = 'term-label';
+            termLabel.textContent = `${termText} ${termYear}`;
+            termHeaderWithButtons.appendChild(termLabel);
+
+            // Move export buttons into this header
+            termHeaderWithButtons.appendChild(exportButtonsContainer);
+            calendarTablesWrapper.appendChild(termHeaderWithButtons);
+
+            // Create single table
+            const tableContainer = document.createElement('div');
+            tableContainer.className = 'table-container';
+
+            const table = document.createElement('table');
+            table.className = 'calendar-table';
+
+            // Add thead
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th class="text-left" style="box-shadow: inset 7px 0 0 0 #F3F4F6;">Event</th>
+                    <th class="text-center w-48">Date</th>
+                    <th class="text-center w-48 hidden sm-table-cell">Day</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+
+            // Add tbody with data
+            const tbody = document.createElement('tbody');
             calendar.data.forEach((item, index) => {
                 const row = createCalendarRow(item, index);
-                calendarBody.appendChild(row);
+                tbody.appendChild(row);
             });
+            table.appendChild(tbody);
+
+            tableContainer.appendChild(table);
+            calendarTablesWrapper.appendChild(tableContainer);
         }
 
         updateLastUpdated();
@@ -847,21 +1223,43 @@
         lastUpdatedElem.textContent = new Date().toLocaleDateString('en-US', {
             year: 'numeric', month: 'long', day: 'numeric'
         });
-        lastUpdatedP.style.display = 'block';
+        lastUpdatedP.style.display = 'flex';
     }
 
     // --- Helper: Show Error State ---
     function showError(message) {
+        // Get and preserve export buttons container
+        const exportButtonsContainer = document.getElementById('export-buttons-container');
+        if (exportButtonsContainer && exportButtonsContainer.parentNode) {
+            exportButtonsContainer.remove();
+        }
+
         calendarTitleElem.textContent = "Calendar Not Found";
-        calendarBody.innerHTML = `<tr><td colspan="3" style="padding: 2rem; text-align: center; color: #4b5563;">${message}</td></tr>`;
+        calendarTablesWrapper.innerHTML = `<div style="padding: 2rem; text-align: center; color: #4b5563;">${message}</div>`;
         lastUpdatedP.style.display = 'none';
+
+        // Put buttons back at the top if they exist
+        if (exportButtonsContainer) {
+            calendarTablesWrapper.insertBefore(exportButtonsContainer, calendarTablesWrapper.firstChild);
+        }
     }
 
     // --- Function to show a placeholder page ---
     function renderPlaceholder(title) {
+        // Get and preserve export buttons container
+        const exportButtonsContainer = document.getElementById('export-buttons-container');
+        if (exportButtonsContainer && exportButtonsContainer.parentNode) {
+            exportButtonsContainer.remove();
+        }
+
         calendarTitleElem.textContent = title;
-        calendarBody.innerHTML = `<tr><td colspan="3" style="padding: 2rem; text-align: center; color: #4b5563;">Content for "${title}" is not yet available.</td></tr>`;
+        calendarTablesWrapper.innerHTML = `<div style="padding: 2rem; text-align: center; color: #4b5563;">Content for "${title}" is not yet available.</div>`;
         lastUpdatedP.style.display = 'none';
+
+        // Put buttons back at the top if they exist
+        if (exportButtonsContainer) {
+            calendarTablesWrapper.insertBefore(exportButtonsContainer, calendarTablesWrapper.firstChild);
+        }
 
         buildCalendarDropdown();
     }
@@ -984,9 +1382,13 @@
         yearBtn.addEventListener('click', () => toggleDropdown(yearDropdown));
         termBtn.addEventListener('click', () => toggleDropdown(termDropdown));
 
+        // Setup export button toggles
+        saveBtn.addEventListener('click', () => toggleDropdown(saveDropdown));
+        calendarExportBtn.addEventListener('click', () => toggleDropdown(calendarExportDropdown));
+
         // Show loading state
         calendarTitleElem.textContent = 'Loading calendars...';
-        calendarBody.innerHTML = '<tr><td colspan="3" style="padding: 2rem; text-align: center; color: #4b5563;">Loading data from API...</td></tr>';
+        calendarTablesWrapper.innerHTML = '<div style="padding: 2rem; text-align: center; color: #4b5563;">Loading data from API...</div>';
 
         // Load calendar data from API
         await loadCalendarsFromAPI();
