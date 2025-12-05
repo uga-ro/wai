@@ -37,18 +37,25 @@
      Style: Gray container, UGA Red Squared Numbers
      ================================================================== -->
 <section>
-    <div class="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-[#f5f4f0] border border-[#c9c5b9] rounded-lg overflow-hidden">
 
-        <!-- Header (Inside Container) -->
-        <div class="p-8 pb-4 border-b border-gray-200/60">
-            <h2 class="text-2xl font-sans font-bold text-uga-black uppercase tracking-wide">
-                Step-by-Step Instructions
-            </h2>
-            <p class="text-sm text-gray-500 mt-1 font-serif italic">Follow these steps to complete your enrollment.</p>
+        <!-- FIRST COLLAPSIBLE: Example Instructions Set -->
+        <!-- Header (Inside Container) - Clickable to expand/collapse -->
+        <div class="px-8 py-4 border-b border-[#c9c5b9] cursor-pointer select-none flex justify-between items-start" onclick="toggleInstructions(this)">
+            <div>
+                <h2 class="text-2xl font-sans font-bold text-uga-black uppercase tracking-wide">
+                    Instructions Title Here
+                </h2>
+                <p class="text-sm text-gray-500 mt-1 font-serif italic">Brief description of what these instructions cover.</p>
+            </div>
+            <!-- Chevron Icon (default rotated for collapsed state) -->
+            <svg class="w-6 h-6 text-gray-500 mt-1 transition-transform duration-200 instructions-chevron" style="transform: rotate(180deg);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
         </div>
 
-        <!-- Steps Content -->
-        <div class="p-8 pt-6">
+        <!-- Steps Content (default collapsed) -->
+        <div class="p-8 pt-6 instructions-content transition-all duration-200 hidden">
             <div class="space-y-6">
 
                 <!-- Step 1 -->
@@ -58,9 +65,9 @@
                         1
                     </div>
                     <div>
-                        <h3 class="text-lg font-sans font-bold text-uga-black uppercase mb-2 mt-1">Apply for Admission</h3>
+                        <h3 class="text-lg font-sans font-bold text-uga-black uppercase mb-2 mt-1">Example First Step</h3>
                         <p class="text-gray-600 text-base font-serif">
-                            Prospective students must first apply to either an <a href="#" class="text-uga-red underline decoration-1 underline-offset-2 hover:text-black">Undergraduate</a> or <a href="#" class="text-uga-red underline decoration-1 underline-offset-2 hover:text-black">Graduate</a> program.
+                            This is placeholder text describing the first step. It includes an <a href="#" class="text-uga-red underline decoration-1 underline-offset-2 hover:text-black">example link</a> to demonstrate link styling.
                         </p>
                     </div>
                 </div>
@@ -71,9 +78,9 @@
                         2
                     </div>
                     <div>
-                        <h3 class="text-lg font-sans font-bold text-uga-black uppercase mb-2 mt-1">Submit Documentation</h3>
+                        <h3 class="text-lg font-sans font-bold text-uga-black uppercase mb-2 mt-1">Example Second Step</h3>
                         <p class="text-gray-600 text-base font-serif">
-                            Once admitted, email a copy of a valid driver’s license or official age documentation to <span class="font-bold text-uga-black">reghelp@uga.edu</span>.
+                            Another placeholder describing step two. This shows how <span class="font-bold text-uga-black">bold emphasis</span> appears inline.
                         </p>
                     </div>
                 </div>
@@ -84,9 +91,9 @@
                         3
                     </div>
                     <div>
-                        <h3 class="text-lg font-sans font-bold text-uga-black uppercase mb-2 mt-1">Register</h3>
+                        <h3 class="text-lg font-sans font-bold text-uga-black uppercase mb-2 mt-1">Example Third Step</h3>
                         <p class="text-gray-600 text-base font-serif">
-                            Log in to Athena to view your registration time ticket.
+                            Final placeholder step to complete the example sequence.
                         </p>
                     </div>
                 </div>
@@ -94,6 +101,58 @@
             </div>
         </div>
     </div>
+
+    <!-- SECOND COLLAPSIBLE: Another Example Set (Separate Container) -->
+    <div class="bg-[#f5f4f0] border border-[#c9c5b9] rounded-lg overflow-hidden mt-6">
+
+        <!-- Header - Clickable to expand/collapse -->
+        <div class="px-8 py-4 border-b border-[#c9c5b9] cursor-pointer select-none flex justify-between items-start" onclick="toggleInstructions(this)">
+            <div>
+                <h2 class="text-2xl font-sans font-bold text-uga-black uppercase tracking-wide">
+                    Another Process Title
+                </h2>
+                <p class="text-sm text-gray-500 mt-1 font-serif italic">Description for a second collapsible instructions set.</p>
+            </div>
+            <!-- Chevron Icon (default rotated for collapsed state) -->
+            <svg class="w-6 h-6 text-gray-500 mt-1 transition-transform duration-200 instructions-chevron" style="transform: rotate(180deg);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </div>
+
+        <!-- Steps Content (default collapsed) -->
+        <div class="p-8 pt-6 instructions-content transition-all duration-200 hidden">
+            <div class="space-y-6">
+
+                <!-- Step 1 -->
+                <div class="flex gap-5">
+                    <div class="flex-shrink-0 w-10 h-10 bg-uga-red text-white font-sans font-bold text-xl flex items-center justify-center rounded shadow-sm mt-1">
+                        1
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-sans font-bold text-uga-black uppercase mb-2 mt-1">Placeholder Step One</h3>
+                        <p class="text-gray-600 text-base font-serif">
+                            Example text for the first step of this process with an <a href="#" class="text-uga-red underline decoration-1 underline-offset-2 hover:text-black">inline link</a>.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex gap-5">
+                    <div class="flex-shrink-0 w-10 h-10 bg-uga-red text-white font-sans font-bold text-xl flex items-center justify-center rounded shadow-sm mt-1">
+                        2
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-sans font-bold text-uga-black uppercase mb-2 mt-1">Placeholder Step Two</h3>
+                        <p class="text-gray-600 text-base font-serif">
+                            Example text showing a <span class="font-bold text-uga-black">bold term</span> within the description.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 </section>
 
 
@@ -177,45 +236,35 @@
             </div>
         </div>
 
-        <!-- Group 2: Data Identifiers (Codes & Policies) -->
+        <!-- Group 2: Data Identifiers - COMMENTED OUT
         <div>
             <h4 class="text-xs font-sans font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-200 pb-1">Data Identifiers</h4>
             <div class="flex flex-wrap gap-4 items-center">
-
-                <!-- Course Code (Standard) -->
                 <span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-sans font-bold bg-gray-100 text-uga-black border border-gray-200 font-mono">
                         CHEM 2100
                     </span>
-
-                <!-- Policy Number Style (Official Document Look) -->
                 <span class="inline-flex items-center gap-2 px-3 py-1 rounded border border-gray-300 bg-white text-xs text-gray-600 shadow-sm">
                         <span class="font-sans font-bold text-uga-black uppercase tracking-wider text-[10px]">Policy</span>
                         <span class="font-serif font-medium">01.01.002</span>
                     </span>
-
-                <!-- Policy Number (Alternative / Minimal) -->
                 <span class="text-sm font-serif text-gray-600 border-b border-dotted border-gray-400 hover:text-uga-red cursor-help" title="Academic Affairs Policy">
                         Policy 4.07-5
                     </span>
-
             </div>
         </div>
+        -->
 
-        <!-- Group 3: Action Links (Not Buttons) -->
+        <!-- Group 3: Action Links - COMMENTED OUT
         <div>
             <h4 class="text-xs font-sans font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-200 pb-1">Action Links</h4>
             <div class="flex flex-col gap-3 items-start">
-
-                <!-- Action Link: Arrow Style -->
                 <a href="#" class="group inline-flex items-center gap-1 font-sans font-bold text-uga-red hover:text-uga-black transition-colors uppercase text-sm tracking-wide border-b border-transparent hover:border-uga-black">
                     Create Cohort Request
                     <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                 </a>
-
-
-
             </div>
         </div>
+        -->
 
 
 
@@ -223,20 +272,15 @@
 </section>
 
 <!-- ==================================================================
-     COMPONENT 4: POLICY STATEMENTS & TEXT BLOCKS
+     COMPONENT 4: POLICY STATEMENTS & TEXT BLOCKS - COMMENTED OUT
      Style: Formal, Dull, Distinct
      ================================================================== -->
+<!--
 <section>
     <h3 class="text-2xl font-sans font-bold text-uga-black uppercase mb-6">
         Policy Blocks
     </h3>
 
-    <!--
-       STYLE: Formal/Neutral Policy Block
-       - Removed Icon and Red Border
-       - "Dull but distinct" gray slate theme
-       - Hard lines for separation
-    -->
     <div class="p-8 bg-slate-50 border border-slate-300 rounded-sm">
 
         <h4 class="font-sans font-bold text-uga-black uppercase tracking-widest text-sm mb-4 border-b border-slate-300 pb-2 inline-block">
@@ -249,6 +293,7 @@
     </div>
 
 </section>
+-->
 
 <!-- ==================================================================
      COMPONENT 5: ARCHIVED CONTENT DISCLAIMER
@@ -262,34 +307,50 @@
     <!--
        STYLE: Archive Notice
        - Dashed border implies "storage/old"
-       - Split layout separates the disclaimer from the solution (Request Version)
+       - Stacked layout with button below text
        - High contrast button for accessibility
     -->
     <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-6 rounded-sm">
-        <div class="flex flex-col md:flex-row justify-between md:items-center gap-6">
 
-            <!-- Warning Text -->
-            <div class="max-w-2xl">
-                <div class="flex items-center gap-2 mb-2">
-                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <h4 class="font-sans font-bold text-gray-500 uppercase tracking-widest text-xs">
-                        Archived Content
-                    </h4>
-                </div>
-                <p class="font-serif text-sm text-gray-700 leading-relaxed">
-                    This content is preserved for historical purposes and may not follow current WCAG accessibility guidelines.
-                </p>
+        <!-- Warning Text -->
+        <div class="mb-4">
+            <div class="flex items-center gap-3 mb-2">
+                <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h4 class="font-sans font-bold text-gray-600 uppercase tracking-widest text-base">
+                    Archived Content
+                </h4>
             </div>
-
-            <!-- Action Link -->
-            <a href="#" class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 shadow-sm hover:border-uga-black hover:shadow-md transition-all group">
-                <span class="font-sans font-bold text-xs uppercase text-uga-black">Request Accessible Version</span>
-                <svg class="w-3 h-3 text-uga-red group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-            </a>
-
+            <p class="font-serif text-base text-gray-700 leading-relaxed">
+                This content is preserved for historical purposes and may not follow current WCAG accessibility guidelines.
+            </p>
         </div>
+
+        <!-- Action Link -->
+        <a href="#" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 shadow-sm hover:border-uga-black hover:shadow-md transition-all group">
+            <span class="font-sans font-bold text-xs uppercase text-uga-black">Request Accessible Version</span>
+            <svg class="w-3 h-3 text-uga-red group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </a>
+
     </div>
 </section>
+
+<script>
+    function toggleInstructions(header) {
+        // Find the content div immediately following this header
+        const content = header.nextElementSibling;
+        const chevron = header.querySelector('.instructions-chevron');
+
+        if (content.classList.contains('hidden')) {
+            // Expand
+            content.classList.remove('hidden');
+            chevron.style.transform = 'rotate(0deg)';
+        } else {
+            // Collapse
+            content.classList.add('hidden');
+            chevron.style.transform = 'rotate(180deg)';
+        }
+    }
+</script>
 
 </body>
 </html>
