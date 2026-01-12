@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Form Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+
+        /* === Form Preview Styles === */
+        .preview-page {
+            width: 8.5in;
+            min-height: 11in;
+            background: #fff;
+            padding: 0.5in 0.6in 0.4in;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+            position: relative;
+        }
+
+        /* Page break indicator */
+        .page-break-indicator {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 0;
+            border-top: 2px dashed #BA0C2F;
+            pointer-events: none;
+        }
+        .page-break-indicator::before {
+            content: 'Page Break';
+            position: absolute;
+            right: -70px;
+            top: -10px;
+            font-size: 10px;
+            color: #BA0C2F;
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+        .page-break-indicator::after {
+            content: attr(data-page);
+            position: absolute;
+            left: -55px;
+            top: -10px;
+            font-size: 10px;
+            color: #666;
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        /* Letterhead - fixed at top */
+        .preview-letterhead {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ccc;
+        }
+        .preview-letterhead-logo img {
+            height: 60px;
+            width: auto;
+        }
+        .preview-letterhead-right {
+            text-align: right;
+            font-family: Georgia, serif;
+        }
+        .preview-letterhead-title {
+            font-size: 14px;
+            font-weight: 400;
+            color: #000;
+            text-decoration: underline;
+            margin-bottom: 6px;
+        }
+        .preview-letterhead-address {
+            font-size: 11px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .preview-section {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #e2e2e2;
+            background: #fafafa;
+        }
+        .preview-section-header {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #BA0C2F;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 5px;
+        }
+
+        .preview-field-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a4a4a;
+            margin-bottom: 3px;
+        }
+        .preview-field-line {
+            border: 1px solid #cfcfcf;
+            border-radius: 3px;
+            height: 24px;
+            margin-bottom: 6px;
+            background: #fff;
+        }
+        .preview-field-multiline {
+            border: 1px solid #cfcfcf;
+            border-radius: 3px;
+            height: 48px;
+            margin-bottom: 6px;
+            background: #fff;
+        }
+
+        .preview-notice {
+            background: #fff8f5;
+            border-left: 4px solid #BA0C2F;
+            padding: 10px 14px;
+            font-size: 12px;
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+
+        .preview-row { display: flex; gap: 12px; }
+        .preview-row > div { flex: 1; }
+        .preview-row .col-city { flex: 2; }
+        .preview-row .col-state { flex: 0.8; }
+        .preview-row .col-postal { flex: 1.2; }
+
+        .preview-signature-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .preview-signature-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a4a4a;
+            width: 140px;
+            flex-shrink: 0;
+        }
+        .preview-signature-line {
+            flex: 1;
+            border-bottom: 1px solid #999;
+            height: 20px;
+        }
+
+        .preview-office-use {
+            background: #fff;
+            border: 2px dashed #999;
+            border-radius: 6px;
+            margin-top: 20px;
+            padding: 8px 12px;
+        }
+        .preview-office-use .preview-section-header {
+            color: #4a4a4a;
+            font-style: italic;
+        }
+
+        .preview-checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+        .preview-checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1.5px solid #555;
+            border-radius: 2px;
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        /* Block selection */
+        .block-item { position: relative; cursor: pointer; }
+        .block-item:hover { outline: 1px dashed #ccc; outline-offset: 2px; }
+        .block-item.selected { outline: 2px solid #BA0C2F; outline-offset: 2px; }
+
+        /* Letterhead selection */
+        .letterhead-wrapper { cursor: pointer; }
+        .letterhead-wrapper:hover { outline: 1px dashed #ccc; outline-offset: 2px; }
+        .letterhead-wrapper.selected { outline: 2px solid #BA0C2F; outline-offset: 2px; }
+
+        /* Block buttons */
+        .block-btn { transition: all 0.1s ease; }
+        .block-btn:hover { background: #f0f0f0; }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen overflow-hidden">
+
+    <!-- Toolbar -->
+    <header class="bg-white border-b px-4 py-2.5 flex items-center justify-between sticky top-0 z-50" style="height:49px;box-sizing:border-box;">
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+                <i data-lucide="file-stack" class="w-5 h-5 text-red-700"></i>
+                <span class="font-semibold text-gray-800">REGI Form Builder</span>
+            </div>
+            <input type="text" id="formTitle" value="Untitled Form"
+                   class="text-sm border border-gray-300 rounded px-2 py-1 w-56 focus:outline-none focus:border-gray-500">
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="newForm()" class="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50">New</button>
+            <button onclick="openLibrary()" class="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 flex items-center gap-1">
+                <i data-lucide="folder-open" class="w-4 h-4"></i> Library
+            </button>
+            <button onclick="saveToServer()" class="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50">Save</button>
+            <button onclick="exportPDF()" class="px-4 py-1.5 text-sm bg-gray-800 text-white rounded hover:bg-gray-700">Export PDF</button>
+        </div>
+    </header>
+
+    <div class="flex h-[calc(100vh-49px)]">
+
+        <!-- Left: Block Library -->
+        <aside class="w-56 bg-white border-r p-3 overflow-y-auto flex-shrink-0 flex flex-col">
+            <div class="flex-1">
+                <!-- Reusable Blocks -->
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Reusable Blocks</p>
+                <div class="space-y-1 mb-4">
+                    <button onclick="addBlock('student-info')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                        <i data-lucide="user" class="w-4 h-4 text-gray-400"></i>
+                        Student Information
+                    </button>
+                    <button onclick="addBlock('address')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i>
+                        Address Block
+                    </button>
+                    <button onclick="addBlock('signature')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                        <i data-lucide="pen-tool" class="w-4 h-4 text-gray-400"></i>
+                        Signature Line
+                    </button>
+                    <button onclick="addBlock('office-use')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                        <i data-lucide="lock" class="w-4 h-4 text-gray-400"></i>
+                        Office Use Only
+                    </button>
+                    <button onclick="addBlock('footer')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                        <i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i>
+                        Revision Date
+                    </button>
+                </div>
+
+                <!-- Custom Blocks -->
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Custom Blocks</p>
+                <div class="space-y-1">
+                    <button onclick="addBlock('info-paragraph')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                        <i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i>
+                        Information Paragraph
+                    </button>
+                    <button onclick="addBlock('notice')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                        <i data-lucide="alert-circle" class="w-4 h-4 text-gray-400"></i>
+                        Notice Box
+                    </button>
+                    <div class="text-field-group">
+                        <button onclick="toggleTextFieldMenu()" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                            <i data-lucide="text-cursor-input" class="w-4 h-4 text-gray-400"></i>
+                            Text Field
+                            <i data-lucide="chevron-right" class="w-3 h-3 text-gray-400 ml-auto transition-transform" id="textFieldChevron"></i>
+                        </button>
+                        <div id="textFieldMenu" class="hidden pl-6 py-1 space-y-1">
+                            <button onclick="addTextFields(1)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">1 Field</button>
+                            <button onclick="addTextFields(2)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">2 Fields (row)</button>
+                            <button onclick="addTextFields(3)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">3 Fields (row)</button>
+                            <button onclick="addTextFields(4)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">4 Fields (row)</button>
+                        </div>
+                    </div>
+                    <button onclick="addBlock('textarea')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                        <i data-lucide="align-left" class="w-4 h-4 text-gray-400"></i>
+                        Text Area
+                    </button>
+                    <div class="checkbox-group">
+                        <button onclick="toggleCheckboxMenu()" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                            <i data-lucide="check-square" class="w-4 h-4 text-gray-400"></i>
+                            Checkbox Group
+                            <i data-lucide="chevron-right" class="w-3 h-3 text-gray-400 ml-auto transition-transform" id="checkboxChevron"></i>
+                        </button>
+                        <div id="checkboxMenu" class="hidden pl-6 py-1 space-y-1">
+                            <button onclick="addCheckboxGroup('horizontal')" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">Horizontal</button>
+                            <button onclick="addCheckboxGroup('vertical')" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">Vertical (stacked)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logo at bottom -->
+            <div class="pt-4 mt-4 border-t">
+                <img src="../images/OfficeRegistrar_logo_Horizontal_FC.svg" alt="Office of the Registrar" class="w-full opacity-60">
+            </div>
+        </aside>
+
+        <!-- Center: Preview -->
+        <main class="flex-1 overflow-auto bg-gray-200 p-6">
+            <div class="flex justify-center">
+                <div id="preview" class="preview-page">
+                </div>
+            </div>
+        </main>
+
+        <!-- Right: Properties -->
+        <aside class="w-64 bg-white border-l p-3 overflow-y-auto flex-shrink-0">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Properties</p>
+            <div id="props">
+                <p class="text-sm text-gray-400 italic">Select a block to edit</p>
+            </div>
+        </aside>
+    </div>
+
+    <input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleLoad(event)">
+
+    <!-- Generic Modal -->
+    <div id="appModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="px-4 py-3 border-b">
+                <h2 id="modalTitle" class="text-lg font-semibold text-gray-800">Message</h2>
+            </div>
+            <div class="p-4">
+                <p id="modalMessage" class="text-gray-600"></p>
+            </div>
+            <div id="modalButtons" class="px-4 py-3 border-t bg-gray-50 flex justify-end gap-2">
+            </div>
+        </div>
+    </div>
+
+    <!-- Library Modal -->
+    <div id="libraryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div class="flex items-center justify-between px-4 py-3 border-b">
+                <h2 class="text-lg font-semibold text-gray-800">Form Library</h2>
+                <button onclick="closeLibrary()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-1">
+                <div id="libraryList" class="space-y-2">
+                    <p class="text-gray-400 text-sm text-center py-8">Loading...</p>
+                </div>
+            </div>
+            <div class="px-4 py-3 border-t bg-gray-50 flex justify-between items-center">
+                <button onclick="loadFromFile()" class="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-white flex items-center gap-1">
+                    <i data-lucide="upload" class="w-4 h-4"></i> Import from File
+                </button>
+                <button onclick="closeLibrary()" class="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-white">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Letterhead is always present (title is editable)
+        let letterheadTitle = 'Title';
+
+        let blocks = [];
+        let selectedId = null; // 'letterhead' or block id
+        let idCounter = 0;
+        let currentTemplateId = null; // Track current server template ID
+        let modalResolve = null; // For modal promise resolution
+
+        // Custom modal functions to replace browser popups
+        function showModal(title, message, buttons = [{ text: 'OK', primary: true }]) {
+            return new Promise((resolve) => {
+                modalResolve = resolve;
+                document.getElementById('modalTitle').textContent = title;
+                document.getElementById('modalMessage').innerHTML = message;
+                const btnContainer = document.getElementById('modalButtons');
+                btnContainer.innerHTML = buttons.map((btn, i) => `
+                    <button onclick="closeModal(${btn.value !== undefined ? btn.value : (btn.primary ? 'true' : 'false')})"
+                        class="px-4 py-2 text-sm rounded ${btn.primary ? 'bg-gray-800 text-white hover:bg-gray-700' : 'border border-gray-300 hover:bg-gray-50'}">
+                        ${btn.text}
+                    </button>
+                `).join('');
+                document.getElementById('appModal').classList.remove('hidden');
+            });
+        }
+
+        function closeModal(value) {
+            document.getElementById('appModal').classList.add('hidden');
+            if (modalResolve) {
+                modalResolve(value);
+                modalResolve = null;
+            }
+        }
+
+        async function showAlert(message, title = 'Notice') {
+            await showModal(title, message, [{ text: 'OK', primary: true }]);
+        }
+
+        async function showConfirm(message, title = 'Confirm') {
+            return await showModal(title, message, [
+                { text: 'Cancel', primary: false, value: false },
+                { text: 'Continue', primary: true, value: true }
+            ]);
+        }
+
+        async function showSuccess(message) {
+            await showModal('Success', message, [{ text: 'OK', primary: true }]);
+        }
+
+        // RODS API Configuration
+        const RODS_API_BASE = 'https://apps8.reg.uga.edu/rods_api';
+        const RODS_TABLE = 'pdf_forms';
+        const RODS_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoicm9kc19hcGkiLCJleHAiOjE4OTM0NTYwMDB9._3h0fg8OwgAMDoW-dcYY8H9dPgLLqYWSaiPgL0pLXfQ';
+
+        // Helper for API headers
+        function getApiHeaders(forWrite = false) {
+            const headers = {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+            };
+            if (forWrite) {
+                headers['Prefer'] = 'return=representation';
+            }
+            if (RODS_API_TOKEN) {
+                headers['Authorization'] = `Bearer ${RODS_API_TOKEN}`;
+            }
+            return headers;
+        }
+
+        const templates = {
+            'section': { type: 'section', title: 'Section Title' },
+            'notice': { type: 'notice', title: 'Notice:', text: 'Enter notice text here.' },
+            'text-field': { type: 'text-field', fields: [{ label: 'Field Label', fieldName: 'field_1' }], required: false },
+            'textarea': { type: 'textarea', label: 'Field Label', fieldName: 'field', rows: 2, required: false },
+            'checkbox': { type: 'checkbox', label: 'Options', layout: 'vertical', options: [{ text: 'Option 1', bold: false, hasField: false, fieldRows: 1 }, { text: 'Option 2', bold: false, hasField: false, fieldRows: 1 }], fieldName: 'checkbox' },
+            'address': { type: 'address', title: 'Address', fieldPrefix: 'addr', includePhone: false, includeTypeSelector: false },
+            'student-info': { type: 'student-info', title: 'Student Information', fieldPrefix: 'student' },
+            'signature': { type: 'signature', label: 'Signature', fieldName: 'sig', includeDate: true, includePhotoId: false },
+            'office-use': { type: 'office-use', title: 'Office Use Only', includeApprovalCheckboxes: false, lines: ['System Updated By', 'Date'] },
+            'footer': { type: 'footer', revisedMonth: 'January', revisedYear: '2025' },
+            'info-paragraph': { type: 'info-paragraph', title: 'Information', text: 'Enter paragraph text here. Use **bold** for emphasis.' }
+        };
+
+        function addBlock(type) {
+            const block = JSON.parse(JSON.stringify(templates[type]));
+            block.id = ++idCounter;
+            // Auto-generate unique field names based on block ID to prevent duplicates
+            if (block.fieldName) {
+                block.fieldName = block.fieldName + '_' + block.id;
+            }
+            if (block.fieldPrefix) {
+                block.fieldPrefix = block.fieldPrefix + '_' + block.id;
+            }
+            if (block.fields) {
+                block.fields.forEach((f, i) => {
+                    f.fieldName = f.fieldName + '_' + block.id;
+                });
+            }
+            blocks.push(block);
+            selectedId = block.id;
+            render();
+        }
+
+        function toggleTextFieldMenu() {
+            const menu = document.getElementById('textFieldMenu');
+            const chevron = document.getElementById('textFieldChevron');
+            menu.classList.toggle('hidden');
+            chevron.style.transform = menu.classList.contains('hidden') ? '' : 'rotate(90deg)';
+        }
+
+        function addTextFields(count) {
+            const fields = [];
+            for (let i = 1; i <= count; i++) {
+                fields.push({ label: 'Field ' + i, fieldName: 'field_' + i });
+            }
+            const block = {
+                type: 'text-field',
+                id: ++idCounter,
+                fields: fields,
+                required: false
+            };
+            blocks.push(block);
+            selectedId = block.id;
+            render();
+        }
+
+        function toggleCheckboxMenu() {
+            const menu = document.getElementById('checkboxMenu');
+            const chevron = document.getElementById('checkboxChevron');
+            menu.classList.toggle('hidden');
+            chevron.style.transform = menu.classList.contains('hidden') ? '' : 'rotate(90deg)';
+        }
+
+        function addCheckboxGroup(layout) {
+            const block = {
+                type: 'checkbox',
+                id: ++idCounter,
+                label: 'Options',
+                layout: layout,
+                options: [
+                    { text: 'Option 1', bold: false, italic: false, underline: false },
+                    { text: 'Option 2', bold: false, italic: false, underline: false }
+                ],
+                fieldName: 'checkbox'
+            };
+            blocks.push(block);
+            selectedId = block.id;
+            render();
+        }
+
+        function render() {
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+
+            // Always render letterhead first
+            const letterhead = document.createElement('div');
+            letterhead.className = `letterhead-wrapper ${selectedId === 'letterhead' ? 'selected' : ''}`;
+            letterhead.onclick = (e) => { e.stopPropagation(); selectedId = 'letterhead'; render(); };
+            letterhead.innerHTML = `
+                <div class="preview-letterhead">
+                    <div class="preview-letterhead-logo">
+                        <img src="../images/OfficeRegistrar_logo_Horizontal_FC.svg" alt="Office of the Registrar - University of Georgia">
+                    </div>
+                    <div class="preview-letterhead-right">
+                        <div class="preview-letterhead-title">${letterheadTitle}</div>
+                        <div class="preview-letterhead-address">
+                            University of Georgia<br>
+                            Office of the Registrar<br>
+                            Holmes-Hunter Academic Building<br>
+                            Athens, Georgia 30602
+                        </div>
+                    </div>
+                </div>
+            `;
+            preview.appendChild(letterhead);
+
+            // Render blocks
+            if (blocks.length === 0) {
+                const empty = document.createElement('p');
+                empty.className = 'text-gray-400 text-center py-10 text-sm';
+                empty.textContent = 'Click a block to add content';
+                preview.appendChild(empty);
+            } else {
+                blocks.forEach(b => {
+                    const el = document.createElement('div');
+                    el.className = `block-item ${selectedId === b.id ? 'selected' : ''}`;
+                    el.onclick = (e) => { e.stopPropagation(); selectedId = b.id; render(); };
+                    el.innerHTML = renderBlock(b);
+                    preview.appendChild(el);
+                });
+            }
+
+            renderProps();
+            lucide.createIcons();
+
+            // Add page break indicators
+            setTimeout(() => addPageBreakIndicators(), 50);
+        }
+
+        function addPageBreakIndicators() {
+            const preview = document.getElementById('preview');
+            // Remove existing indicators
+            preview.querySelectorAll('.page-break-indicator').forEach(el => el.remove());
+
+            // Page is 11 inches, at 96dpi = 1056px
+            // But the preview has CSS padding built in, so we measure actual usable space
+            // Adding extra buffer since PDF has more room than preview suggests
+            const pageHeightPx = 11 * 96 + 40; // 11 inches + buffer for more accuracy
+            const usableHeight = 10.1 * 96 + 40; // Usable content area + buffer
+
+            const contentHeight = preview.scrollHeight;
+
+            // Add indicators for each page break
+            let pageNum = 1;
+            let breakPoint = pageHeightPx;
+            while (breakPoint < contentHeight) {
+                const indicator = document.createElement('div');
+                indicator.className = 'page-break-indicator';
+                indicator.style.top = breakPoint + 'px';
+                indicator.dataset.page = 'Page ' + pageNum + ' ends';
+                preview.appendChild(indicator);
+                pageNum++;
+                breakPoint += usableHeight;
+            }
+        }
+
+        function renderBlock(b) {
+            switch(b.type) {
+                case 'section':
+                    return `<div class="preview-section">
+                        <div class="preview-section-header">${b.title}</div>
+                    </div>`;
+
+                case 'notice':
+                    // Parse **bold** markdown per-word in notice text
+                    const noticeTextFormatted = (b.text || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    return `<div class="preview-notice"><strong>${b.title}</strong> ${noticeTextFormatted}</div>`;
+
+                case 'text-field':
+                    const fieldCount = b.fields ? b.fields.length : 1;
+                    if (fieldCount === 1) {
+                        const f = b.fields ? b.fields[0] : { label: b.label || 'Field' };
+                        return `<div class="mb-1">
+                            <div class="preview-field-label">${f.label}${b.required ? ' *' : ''}</div>
+                            <div class="preview-field-line"></div>
+                        </div>`;
+                    } else {
+                        const cols = b.fields.map(f => `<div><div class="preview-field-label">${f.label}${b.required ? ' *' : ''}</div><div class="preview-field-line"></div></div>`).join('');
+                        return `<div class="mb-1"><div style="display:grid;grid-template-columns:repeat(${fieldCount}, 1fr);gap:10px;">${cols}</div></div>`;
+                    }
+
+                case 'textarea':
+                    return `<div class="mb-1">
+                        <div class="preview-field-label">${b.label}${b.required ? ' *' : ''}</div>
+                        <div class="preview-field-multiline" style="height:${b.rows * 24}px"></div>
+                    </div>`;
+
+                case 'checkbox':
+                    const cbOpts = (b.options || []).map(o => {
+                        // Handle both old string format and new object format
+                        const text = typeof o === 'string' ? o : o.text;
+                        const style = typeof o === 'object' ? o : {};
+                        let styled = text;
+                        if (style.bold) {
+                            styled = `<strong>${styled}</strong>`;
+                        } else {
+                            // Parse **bold** markdown per-word
+                            styled = styled.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                        }
+                        // Add fillable field if enabled (rows-based height)
+                        const rows = style.fieldRows || 1;
+                        const fieldHeight = rows === 1 ? '18px' : (rows * 20) + 'px';
+                        const fieldHtml = style.hasField ? `<div class="preview-field-${rows === 1 ? 'line' : 'multiline'}" style="flex:1;min-width:150px;margin:0;${rows > 1 ? 'height:' + fieldHeight : ''}"></div>` : '';
+                        return `<div style="display:flex;align-items:${rows > 1 ? 'flex-start' : 'center'};gap:6px;${b.layout === 'vertical' ? 'margin-bottom:8px;' : ''}"><span class="preview-checkbox" style="flex-shrink:0;${rows > 1 ? 'margin-top:3px;' : ''}"></span><span style="font-size:11px;color:#4a4a4a;white-space:nowrap;">${styled}</span>${fieldHtml}</div>`;
+                    }).join('');
+                    const cbLayout = b.layout === 'vertical' ? 'flex-direction:column;' : 'flex-direction:row;flex-wrap:wrap;gap:16px;';
+                    return `<div class="mb-3">
+                        <div style="border:1px solid #ccc;border-radius:4px;padding:10px 12px;position:relative;margin-top:8px;">
+                            <div style="position:absolute;top:-8px;left:10px;background:#fff;padding:0 6px;font-size:11px;font-weight:600;color:#666;">${b.label}</div>
+                            <div style="display:flex;${cbLayout}margin-top:4px;">${cbOpts}</div>
+                        </div>
+                    </div>`;
+
+                case 'address':
+                    const typeSelectorHtml = b.includeTypeSelector ? `
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+                            <span style="font-size:11px;font-weight:600;color:#4a4a4a;">Select Address Type: <span style="color:#BA0C2F;">*</span></span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4a4a4a;">
+                                <span class="preview-checkbox"></span> Local
+                            </label>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4a4a4a;">
+                                <span class="preview-checkbox"></span> Permanent
+                            </label>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4a4a4a;">
+                                <span class="preview-checkbox"></span> Billing
+                            </label>
+                        </div>` : '';
+                    const phoneHtml = b.includePhone ? `
+                        <div style="margin-top:8px;">
+                            <div class="preview-field-label">Phone <span style="color:#BA0C2F;">*</span> <span style="font-weight:normal;font-style:italic;color:#888;font-size:9px;">(include area code)</span></div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div class="preview-field-line" style="flex:1;margin:0;"></div>
+                                <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4a4a4a;white-space:nowrap;">
+                                    <span class="preview-checkbox"></span> Make primary phone
+                                </label>
+                            </div>
+                        </div>` : '';
+                    return `<div class="preview-section">
+                        <div class="preview-section-header">${b.title}</div>
+                        ${typeSelectorHtml}
+                        <div style="display:grid;grid-template-columns:4fr 1fr;gap:10px;margin-bottom:6px;">
+                            <div><div class="preview-field-label">Street Address <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
+                            <div><div class="preview-field-label">Apt</div><div class="preview-field-line"></div></div>
+                        </div>
+                        <div class="preview-row">
+                            <div class="col-city"><div class="preview-field-label">City <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
+                            <div class="col-state"><div class="preview-field-label">State <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
+                            <div><div class="preview-field-label">Country <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
+                            <div class="col-postal"><div class="preview-field-label">Zip Code <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
+                        </div>
+                        ${phoneHtml}
+                    </div>`;
+
+                case 'student-info':
+                    return `<div class="preview-section">
+                        <div class="preview-section-header">${b.title}</div>
+                        <!-- Row 1: Name fields -->
+                        <div style="display:grid;grid-template-columns:1.2fr 1fr 0.8fr;gap:8px;margin-bottom:8px;">
+                            <div><div class="preview-field-label">Last Name <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
+                            <div><div class="preview-field-label">First Name <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
+                            <div><div class="preview-field-label">Middle Name</div><div class="preview-field-line"></div></div>
+                        </div>
+                        <!-- Row 2: UGA ID + Email -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div>
+                                <div class="preview-field-label">UGA ID (810X) Number <span style="color:#BA0C2F;">*</span> <span style="font-weight:normal;font-style:italic;color:#888;font-size:9px;">(or Date of Birth if unavailable)</span></div>
+                                <div class="preview-field-line" style="margin-top:4px;"></div>
+                            </div>
+                            <div>
+                                <div class="preview-field-label">Contact Email Address <span style="color:#BA0C2F;">*</span></div>
+                                <div class="preview-field-line" style="margin-top:4px;"></div>
+                            </div>
+                        </div>
+                    </div>`;
+
+                case 'info-paragraph':
+                    // Parse **bold** markdown per-word
+                    const infoParagraphText = (b.text || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    return `<div style="margin-bottom:12px;">
+                        <div style="background:#d1b896;padding:4px 10px;border-radius:4px 4px 0 0;">
+                            <span style="font-size:9px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:0.5px;">${b.title}</span>
+                        </div>
+                        <div style="background:#f5f0eb;padding:12px 14px;border-radius:0 0 4px 4px;">
+                            <div style="font-size:11px;color:#4a4a4a;line-height:1.6;">${infoParagraphText}</div>
+                        </div>
+                    </div>`;
+
+                case 'signature':
+                    const photoIdBoxHtml = b.includePhotoId ? `
+                        <div style="width:180px;height:50px;border:2px dashed #999;border-radius:6px;display:flex;align-items:center;gap:10px;padding:0 12px;background:#fafafa;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                <circle cx="8" cy="10" r="2"></circle>
+                                <path d="M14 10h4"></path>
+                                <path d="M14 14h4"></path>
+                                <path d="M6 16h4"></path>
+                            </svg>
+                            <span style="font-size:11px;color:#4a4a4a;font-weight:600;line-height:1.3;">Include copy of<br>Photo ID <span style="color:#BA0C2F;">*</span></span>
+                        </div>` : '';
+                    return `<div class="my-2" style="display:flex;align-items:flex-start;justify-content:space-between;">
+                        <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                            <div class="preview-signature-row" style="justify-content:flex-start;">
+                                <span class="preview-signature-label">${b.label} <span style="color:#BA0C2F;">*</span></span>
+                                <span class="preview-signature-line" style="width:200px;"></span>
+                            </div>
+                            ${b.includeDate ? '<div class="preview-signature-row" style="justify-content:flex-start;"><span class="preview-signature-label">Date <span style="color:#BA0C2F;">*</span></span><div class="preview-field-line" style="width:200px;margin:0;"></div></div>' : ''}
+                        </div>
+                        ${photoIdBoxHtml}
+                    </div>`;
+
+                case 'office-use':
+                    const approvalHtml = b.includeApprovalCheckboxes ? `
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap;">
+                            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4a4a4a;">
+                                <span class="preview-checkbox"></span> Request Approved
+                            </label>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4a4a4a;">
+                                <span class="preview-checkbox"></span> Request Denied
+                            </label>
+                            <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:200px;">
+                                <span style="font-size:11px;color:#4a4a4a;white-space:nowrap;">Denial Reason:</span>
+                                <div class="preview-field-line" style="flex:1;margin:0;"></div>
+                            </div>
+                        </div>` : '';
+                    return `<div class="preview-office-use" style="border:1px solid #000;padding:10px;border-radius:0;">
+                        <div class="preview-section-header">${b.title}</div>
+                        ${approvalHtml}
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            ${b.lines.map(l => `<div style="display:flex;align-items:center;gap:6px;"><span style="font-size:11px;font-weight:600;color:#4a4a4a;white-space:nowrap;">${l}:</span><div class="preview-field-line" style="flex:1;margin:0;"></div></div>`).join('')}
+                        </div>
+                    </div>`;
+
+                case 'footer':
+                    return `<div style="text-align:center;font-size:10px;color:#666;font-style:italic;margin-top:20px;padding-top:10px;border-top:1px solid #e0e0e0;">
+                        Revised ${b.revisedMonth} ${b.revisedYear}
+                    </div>`;
+            }
+        }
+
+        function renderProps() {
+            const panel = document.getElementById('props');
+
+            // Letterhead selected
+            if (selectedId === 'letterhead') {
+                panel.innerHTML = `
+                    <div class="space-y-3">
+                        <p class="text-xs text-gray-500 uppercase font-medium">Letterhead</p>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Title</label>
+                            <input type="text" value="${letterheadTitle}" onchange="letterheadTitle = this.value; render();"
+                                   class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400">
+                        </div>
+                        <p class="text-xs text-gray-400 italic">Address is fixed and cannot be edited.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b) {
+                panel.innerHTML = '<p class="text-sm text-gray-400 italic">Select a block to edit</p>';
+                return;
+            }
+
+            let html = '<div class="space-y-3">';
+
+            // Move/Delete controls
+            html += `<div class="flex gap-1 mb-2">
+                <button onclick="moveBlock(-1)" class="flex-1 py-1 text-xs border rounded hover:bg-gray-50">Move Up</button>
+                <button onclick="moveBlock(1)" class="flex-1 py-1 text-xs border rounded hover:bg-gray-50">Move Down</button>
+                <button onclick="deleteBlock()" class="py-1 px-2 text-xs border rounded text-red-600 hover:bg-red-50">Delete</button>
+            </div>`;
+
+            switch(b.type) {
+                case 'section':
+                case 'student-info':
+                    html += field('Title', 'title', b.title);
+                    if (b.fieldPrefix !== undefined) html += field('Field Prefix', 'fieldPrefix', b.fieldPrefix);
+                    break;
+                case 'address':
+                    html += field('Title', 'title', b.title);
+                    html += field('Field Prefix', 'fieldPrefix', b.fieldPrefix);
+                    html += `<hr class="my-2">`;
+                    html += checkbox('Include Type Selector', 'includeTypeSelector', b.includeTypeSelector);
+                    html += checkbox('Include Phone Field', 'includePhone', b.includePhone);
+                    break;
+                case 'notice':
+                    html += field('Title', 'title', b.title);
+                    html += `<div>
+                        <label class="block text-xs text-gray-500 mb-1">Text</label>
+                        <div class="flex gap-1 mb-1">
+                            <button onclick="toggleBoldEditor('noticeEditor')" class="px-2 py-0.5 text-xs border rounded bg-white hover:bg-gray-100" title="Bold selected text"><strong>B</strong></button>
+                            <span class="text-xs text-gray-400 ml-1">Select text & click B</span>
+                        </div>
+                        <div id="noticeEditor" contenteditable="true" oninput="updateFromEditor('noticeEditor', 'text')"
+                            class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400 min-h-[60px] bg-white">${markdownToHtml(b.text || '')}</div>
+                    </div>`;
+                    break;
+                case 'text-field':
+                    if (b.fields && b.fields.length > 0) {
+                        html += `<p class="text-xs text-gray-500 font-medium">${b.fields.length} Field${b.fields.length > 1 ? 's' : ''} in Row</p>`;
+                        b.fields.forEach((f, i) => {
+                            html += `<div class="p-2 bg-gray-50 rounded border">
+                                <p class="text-xs text-gray-400 mb-1">Field ${i + 1}</p>
+                                <div class="mb-2">
+                                    <label class="block text-xs text-gray-500 mb-1">Label</label>
+                                    <input type="text" value="${f.label}" onchange="updateTextField(${i}, 'label', this.value)"
+                                           class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">Field Name</label>
+                                    <input type="text" value="${f.fieldName}" onchange="updateTextField(${i}, 'fieldName', this.value)"
+                                           class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400">
+                                </div>
+                            </div>`;
+                        });
+                        html += checkbox('Required', 'required', b.required);
+                    }
+                    break;
+                case 'textarea':
+                    html += field('Label', 'label', b.label);
+                    html += field('Field Name', 'fieldName', b.fieldName);
+                    html += checkbox('Required', 'required', b.required);
+                    html += field('Rows', 'rows', b.rows, 'number');
+                    break;
+                case 'checkbox':
+                    html += field('Label', 'label', b.label);
+                    html += `<div class="mb-2">
+                        <label class="block text-xs text-gray-500 mb-1">Layout</label>
+                        <select onchange="updateProp('layout', this.value)" class="w-full px-2 py-1 text-sm border rounded">
+                            <option value="horizontal" ${b.layout === 'horizontal' ? 'selected' : ''}>Horizontal</option>
+                            <option value="vertical" ${b.layout === 'vertical' ? 'selected' : ''}>Vertical</option>
+                        </select>
+                    </div>`;
+                    html += `<div class="mb-2"><label class="block text-xs text-gray-500 mb-1">Options</label></div>`;
+                    (b.options || []).forEach((opt, i) => {
+                        const o = typeof opt === 'string' ? { text: opt, bold: false, hasField: false, fieldRows: 1 } : opt;
+                        html += `<div class="p-2 bg-gray-50 rounded border mb-2">
+                            <div class="flex items-center gap-1 mb-1">
+                                <span class="text-xs text-gray-400">Option ${i + 1}</span>
+                                <button onclick="removeCheckboxOption(${i})" class="ml-auto text-xs text-red-500 hover:text-red-700">Remove</button>
+                            </div>
+                            <div class="flex gap-1 mb-1">
+                                <button onclick="toggleBoldCheckboxOption(${i})" class="px-2 py-0.5 text-xs border rounded bg-white hover:bg-gray-100" title="Bold selected text"><strong>B</strong></button>
+                                <span class="text-xs text-gray-400">Select text & click B</span>
+                            </div>
+                            <div id="checkboxOptionEditor_${i}" contenteditable="true" oninput="updateCheckboxOptionFromEditor(${i})"
+                                class="w-full px-2 py-1 text-sm border rounded mb-2 focus:outline-none focus:border-gray-400 min-h-[36px] bg-white">${markdownToHtml(o.text)}</div>
+                            <div class="flex items-center gap-2">
+                                <label class="flex items-center gap-1 text-xs">
+                                    <input type="checkbox" ${o.hasField ? 'checked' : ''} onchange="updateCheckboxOption(${i}, 'hasField', this.checked)">
+                                    Add fillable field
+                                </label>
+                                ${o.hasField ? `<label class="flex items-center gap-1 text-xs">
+                                    Rows:
+                                    <input type="number" min="1" max="5" value="${o.fieldRows || 1}" onchange="updateCheckboxOption(${i}, 'fieldRows', parseInt(this.value))" class="w-12 px-1 py-0.5 text-xs border rounded">
+                                </label>` : ''}
+                            </div>
+                        </div>`;
+                    });
+                    html += `<button onclick="addCheckboxOption()" class="w-full py-1 text-xs border border-dashed rounded text-gray-500 hover:bg-gray-50">+ Add Option</button>`;
+                    break;
+                case 'signature':
+                    html += field('Label', 'label', b.label);
+                    html += checkbox('Include Date', 'includeDate', b.includeDate);
+                    html += checkbox('Include Photo ID Attachment', 'includePhotoId', b.includePhotoId);
+                    break;
+                case 'info-paragraph':
+                    html += field('Title', 'title', b.title);
+                    html += `<div>
+                        <label class="block text-xs text-gray-500 mb-1">Text</label>
+                        <div class="flex gap-1 mb-1">
+                            <button onclick="toggleBoldEditor('infoParagraphEditor')" class="px-2 py-0.5 text-xs border rounded bg-white hover:bg-gray-100" title="Bold selected text"><strong>B</strong></button>
+                            <span class="text-xs text-gray-400 ml-1">Select text & click B</span>
+                        </div>
+                        <div id="infoParagraphEditor" contenteditable="true" oninput="updateFromEditor('infoParagraphEditor', 'text')"
+                            class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400 min-h-[80px] bg-white">${markdownToHtml(b.text || '')}</div>
+                    </div>`;
+                    break;
+                case 'office-use':
+                    html += field('Title', 'title', b.title);
+                    html += checkbox('Include Approval Checkboxes', 'includeApprovalCheckboxes', b.includeApprovalCheckboxes);
+                    html += `<p class="text-xs text-gray-400 mb-2">Shows Request Approved/Denied checkboxes with denial reason field</p>`;
+                    html += textarea('Bottom Lines (one per line)', 'lines', b.lines.join('\n'), true);
+                    html += `<p class="text-xs text-gray-400">Lines display in 50/50 split layout</p>`;
+                    break;
+                case 'footer':
+                    html += `<div class="mb-2">
+                        <label class="block text-xs text-gray-500 mb-1">Revised Month</label>
+                        <select onchange="updateProp('revisedMonth', this.value)" class="w-full px-2 py-1 text-sm border rounded">
+                            ${['January','February','March','April','May','June','July','August','September','October','November','December'].map(m =>
+                                `<option value="${m}" ${b.revisedMonth === m ? 'selected' : ''}>${m}</option>`
+                            ).join('')}
+                        </select>
+                    </div>`;
+                    html += field('Revised Year', 'revisedYear', b.revisedYear);
+                    break;
+            }
+
+            html += '</div>';
+            panel.innerHTML = html;
+        }
+
+        function field(label, prop, value, type = 'text') {
+            return `<div>
+                <label class="block text-xs text-gray-500 mb-1">${label}</label>
+                <input type="${type}" value="${value}" oninput="updateProp('${prop}', this.value)"
+                       class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400">
+            </div>`;
+        }
+
+        function textarea(label, prop, value, isArray = false) {
+            return `<div>
+                <label class="block text-xs text-gray-500 mb-1">${label}</label>
+                <textarea rows="3" onchange="updateProp('${prop}', this.value, ${isArray})"
+                       class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400">${value}</textarea>
+            </div>`;
+        }
+
+        function checkbox(label, prop, checked) {
+            return `<label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" ${checked ? 'checked' : ''} onchange="updateProp('${prop}', this.checked)">
+                ${label}
+            </label>`;
+        }
+
+        function updateProp(prop, value, isArray = false) {
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b) return;
+            if (isArray) value = value.split('\n').filter(x => x.trim());
+            if (prop === 'rows') value = parseInt(value) || 2;
+            b[prop] = value;
+            render();
+        }
+
+        function updateTextField(index, prop, value) {
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b || !b.fields || !b.fields[index]) return;
+            b.fields[index][prop] = value;
+            render();
+        }
+
+        function updateCheckboxOption(index, prop, value) {
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b || !b.options || !b.options[index]) return;
+            // Ensure option is an object
+            if (typeof b.options[index] === 'string') {
+                b.options[index] = { text: b.options[index], bold: false, italic: false, underline: false };
+            }
+            b.options[index][prop] = value;
+            render();
+        }
+
+        function toggleCheckboxStyle(index, style) {
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b || !b.options || !b.options[index]) return;
+            if (typeof b.options[index] === 'string') {
+                b.options[index] = { text: b.options[index], bold: false, italic: false, underline: false };
+            }
+            b.options[index][style] = !b.options[index][style];
+            render();
+        }
+
+        function addCheckboxOption() {
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b) return;
+            if (!b.options) b.options = [];
+            b.options.push({ text: 'New Option', bold: false, hasField: false, fieldRows: 1 });
+            render();
+        }
+
+        function removeCheckboxOption(index) {
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b || !b.options) return;
+            b.options.splice(index, 1);
+            render();
+        }
+
+        function toggleBoldCheckboxOption(index) {
+            const editor = document.getElementById('checkboxOptionEditor_' + index);
+            if (!editor) return;
+            editor.focus();
+            document.execCommand('bold', false, null);
+            updateCheckboxOptionFromEditor(index);
+        }
+
+        function updateCheckboxOptionFromEditor(index) {
+            const editor = document.getElementById('checkboxOptionEditor_' + index);
+            if (!editor) return;
+            const markdown = htmlToMarkdown(editor.innerHTML);
+            const b = blocks.find(x => x.id === selectedId);
+            if (b && b.options && b.options[index]) {
+                if (typeof b.options[index] === 'string') {
+                    b.options[index] = { text: markdown, bold: false, hasField: false, fieldRows: 1 };
+                } else {
+                    b.options[index].text = markdown;
+                }
+                renderPreview();
+            }
+        }
+
+        // Convert **markdown** to <strong>HTML</strong> for display
+        function markdownToHtml(text) {
+            if (!text) return '';
+            return text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        }
+
+        // Convert <strong>HTML</strong> back to **markdown** for storage
+        function htmlToMarkdown(html) {
+            if (!html) return '';
+            // Create a temp div to parse HTML
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+            // Replace <strong> and <b> tags with **markdown**
+            temp.querySelectorAll('strong, b').forEach(el => {
+                el.replaceWith('**' + el.textContent + '**');
+            });
+            // Get text content and clean up
+            return temp.textContent || temp.innerText || '';
+        }
+
+        // Toggle bold on selected text in contenteditable
+        function toggleBoldEditor(editorId) {
+            const editor = document.getElementById(editorId);
+            if (!editor) return;
+            editor.focus();
+            document.execCommand('bold', false, null);
+            // Trigger update
+            const prop = editorId === 'noticeEditor' ? 'text' : 'text';
+            updateFromEditor(editorId, prop);
+        }
+
+        // Update prop from contenteditable editor
+        function updateFromEditor(editorId, prop) {
+            const editor = document.getElementById(editorId);
+            if (!editor) return;
+            const markdown = htmlToMarkdown(editor.innerHTML);
+            const b = blocks.find(x => x.id === selectedId);
+            if (b) {
+                b[prop] = markdown;
+                // Don't call full render() as it would lose focus
+                // Just update the preview
+                renderPreview();
+            }
+        }
+
+        // Render only the preview without re-rendering props
+        function renderPreview() {
+            document.getElementById('blocks').innerHTML = blocks.map(b => `
+                <div class="preview-block ${selectedId === b.id ? 'ring-2 ring-blue-500' : ''}" data-id="${b.id}">
+                    ${renderBlock(b)}
+                </div>
+            `).join('');
+            setTimeout(() => addPageBreakIndicators(), 50);
+        }
+
+        function moveBlock(dir) {
+            const idx = blocks.findIndex(x => x.id === selectedId);
+            if (idx < 0) return;
+            const newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= blocks.length) return;
+            [blocks[idx], blocks[newIdx]] = [blocks[newIdx], blocks[idx]];
+            render();
+        }
+
+        function deleteBlock() {
+            blocks = blocks.filter(x => x.id !== selectedId);
+            selectedId = null;
+            render();
+        }
+
+        async function newForm() {
+            if (blocks.length) {
+                const confirmed = await showConfirm('Start a new form? Any unsaved changes will be lost.', 'New Form');
+                if (!confirmed) return;
+            }
+            blocks = [];
+            selectedId = null;
+            idCounter = 0;
+            currentTemplateId = null;
+            letterheadTitle = 'Title';
+            document.getElementById('formTitle').value = 'Untitled Form';
+            render();
+        }
+
+        // Save function - uses RODS API
+        async function saveToServer() {
+            const title = document.getElementById('formTitle').value;
+            const formData = {
+                title: title,
+                letterheadTitle: letterheadTitle,
+                blocks: blocks
+            };
+
+            try {
+                let response;
+                let isNew = !currentTemplateId;
+
+                if (currentTemplateId) {
+                    // Update existing record
+                    response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?id=eq.${currentTemplateId}`, {
+                        method: 'PATCH',
+                        headers: getApiHeaders(true),
+                        cache: 'no-store',
+                        body: JSON.stringify({
+                            title: title,
+                            letterhead_title: letterheadTitle,
+                            form_data: formData
+                        })
+                    });
+                } else {
+                    // Create new record
+                    response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}`, {
+                        method: 'POST',
+                        headers: getApiHeaders(true),
+                        cache: 'no-store',
+                        body: JSON.stringify({
+                            title: title,
+                            letterhead_title: letterheadTitle,
+                            form_data: formData
+                        })
+                    });
+                }
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API error: ${response.status} - ${errorText}`);
+                }
+
+                const result = await response.json();
+                // PostgREST returns an array for both POST and PATCH with Prefer: return=representation
+                const savedRecord = Array.isArray(result) ? result[0] : result;
+                currentTemplateId = savedRecord.id;
+
+                // Refresh library list if modal is open
+                if (!document.getElementById('libraryModal').classList.contains('hidden')) {
+                    loadLibraryList();
+                }
+
+                await showSuccess(isNew ? 'Form saved to library!' : 'Form updated!');
+
+            } catch (err) {
+                await showAlert('Error saving form: ' + err.message, 'Save Error');
+                console.error('Save error:', err);
+            }
+        }
+
+        // Download as file (backup)
+        function downloadTemplate() {
+            const data = {
+                title: document.getElementById('formTitle').value,
+                letterheadTitle: letterheadTitle,
+                blocks: blocks
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = data.title.replace(/[^a-z0-9]/gi, '_') + '.json';
+            a.click();
+        }
+
+        // Library modal functions
+        function openLibrary() {
+            document.getElementById('libraryModal').classList.remove('hidden');
+            loadLibraryList();
+            lucide.createIcons();
+        }
+
+        function closeLibrary() {
+            document.getElementById('libraryModal').classList.add('hidden');
+        }
+
+        async function loadLibraryList() {
+            const listEl = document.getElementById('libraryList');
+            listEl.innerHTML = '<p class="text-gray-400 text-sm text-center py-8">Loading...</p>';
+
+            try {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?order=updated_at.desc`, {
+                    headers: getApiHeaders(false),
+                    cache: 'no-store'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const records = await response.json();
+
+                if (records && records.length > 0) {
+                    const templates = records.map(r => ({
+                        id: r.id,
+                        title: r.title || 'Untitled',
+                        modified: r.updated_at ? new Date(r.updated_at).toLocaleString() : 'Unknown'
+                    }));
+                    renderLibraryList(listEl, templates);
+                } else {
+                    listEl.innerHTML = '<p class="text-gray-400 text-sm text-center py-8">No saved forms yet. Create a form and click Save to add it to your library.</p>';
+                }
+            } catch (err) {
+                listEl.innerHTML = '<p class="text-red-500 text-sm text-center py-8">Error loading library: ' + err.message + '</p>';
+                console.error('Load library error:', err);
+            }
+        }
+
+        function renderLibraryList(listEl, templates) {
+            listEl.innerHTML = templates.map(t => `
+                <div class="flex items-center justify-between p-3 border rounded hover:bg-gray-50 group">
+                    <div class="flex-1 cursor-pointer" onclick="loadFromLibrary('${t.id}')">
+                        <div class="font-medium text-gray-800">${escapeHtml(t.title)}</div>
+                        <div class="text-xs text-gray-400">Last modified: ${t.modified}</div>
+                    </div>
+                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="loadFromLibrary('${t.id}')" class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded" title="Open">
+                            <i data-lucide="folder-open" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="downloadFromLibrary('${t.id}')" class="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded" title="Download">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteFromLibrary('${t.id}', '${escapeHtml(t.title)}')" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded" title="Delete">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        async function loadFromLibrary(id) {
+            if (blocks.length) {
+                const confirmed = await showConfirm('Load this form? Any unsaved changes will be lost.', 'Load Form');
+                if (!confirmed) return;
+            }
+
+            try {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?id=eq.${id}`, {
+                    headers: getApiHeaders(false),
+                    cache: 'no-store'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const records = await response.json();
+
+                if (records && records.length > 0) {
+                    const record = records[0];
+                    const formData = record.form_data;
+
+                    document.getElementById('formTitle').value = formData.title || record.title || 'Untitled Form';
+                    letterheadTitle = formData.letterheadTitle || record.letterhead_title || 'Title';
+                    blocks = formData.blocks || [];
+                    idCounter = Math.max(0, ...blocks.map(b => b.id || 0));
+                    currentTemplateId = record.id;
+                    selectedId = null;
+                    render();
+                    closeLibrary();
+                } else {
+                    await showAlert('Form not found', 'Load Error');
+                }
+            } catch (err) {
+                await showAlert('Error loading form: ' + err.message, 'Load Error');
+                console.error('Load error:', err);
+            }
+        }
+
+        async function downloadFromLibrary(id) {
+            try {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?id=eq.${id}`, {
+                    headers: getApiHeaders(false),
+                    cache: 'no-store'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const records = await response.json();
+
+                if (records && records.length > 0) {
+                    const data = records[0].form_data;
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = (data.title || 'form').replace(/[^a-z0-9]/gi, '_') + '.json';
+                    a.click();
+                }
+            } catch (err) {
+                await showAlert('Error downloading: ' + err.message, 'Download Error');
+                console.error('Download error:', err);
+            }
+        }
+
+        async function deleteFromLibrary(id, title) {
+            const confirmed = await showConfirm('Delete "' + title + '"? This cannot be undone.', 'Delete Form');
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?id=eq.${id}`, {
+                    method: 'DELETE',
+                    headers: getApiHeaders(false),
+                    cache: 'no-store'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                if (currentTemplateId === id) {
+                    currentTemplateId = null;
+                }
+                await showSuccess('Form deleted successfully');
+                loadLibraryList();
+
+            } catch (err) {
+                await showAlert('Error deleting form: ' + err.message, 'Delete Error');
+                console.error('Delete error:', err);
+            }
+        }
+
+        function loadFromFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleLoad(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const data = JSON.parse(ev.target.result);
+                document.getElementById('formTitle').value = data.title || 'Untitled Form';
+                letterheadTitle = data.letterheadTitle || 'Title';
+                blocks = data.blocks || [];
+                idCounter = Math.max(0, ...blocks.map(b => b.id || 0));
+                currentTemplateId = null; // Imported files get a new ID when saved
+                selectedId = null;
+                render();
+                closeLibrary();
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Helper function to convert SVG to PNG data URL
+        async function svgToPng(svgUrl, width, height) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width * 2; // 2x for better quality
+                    canvas.height = height * 2;
+                    const ctx = canvas.getContext('2d');
+                    ctx.scale(2, 2);
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob(blob => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsArrayBuffer(blob);
+                    }, 'image/png');
+                };
+                img.onerror = reject;
+                img.src = svgUrl;
+            });
+        }
+
+        async function exportPDF() {
+            const { PDFDocument, StandardFonts, rgb } = PDFLib;
+            const pdf = await PDFDocument.create();
+            const form = pdf.getForm();
+
+            const font = await pdf.embedFont(StandardFonts.Helvetica);
+            const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
+            const fontSerif = await pdf.embedFont(StandardFonts.TimesRoman);
+            const red = rgb(186/255, 12/255, 47/255);
+            const gray = rgb(74/255, 74/255, 74/255);
+
+            // Page dimensions (8.5 x 11 inches at 72 dpi)
+            const pageWidth = 612;
+            const pageHeight = 792;
+
+            // Margins matching preview: padding: 0.5in 0.6in 0.4in (top, sides, bottom)
+            const mTop = 36;    // 0.5in * 72
+            const mSide = 43;   // 0.6in * 72
+            const mBottom = 29; // 0.4in * 72
+            const contentWidth = pageWidth - (mSide * 2);
+
+            // Load and embed the logo
+            let logoImage = null;
+            try {
+                const logoData = await svgToPng('../images/OfficeRegistrar_logo_Horizontal_FC.svg', 219, 60);
+                logoImage = await pdf.embedPng(logoData);
+            } catch (e) {
+                console.warn('Could not load logo:', e);
+            }
+
+            // Track current page and y position
+            let currentPage = pdf.addPage([pageWidth, pageHeight]);
+            let y = pageHeight - mTop;
+
+            // Helper to check if we need a new page and create one if needed
+            function ensureSpace(neededHeight) {
+                if (y - neededHeight < mBottom) {
+                    currentPage = pdf.addPage([pageWidth, pageHeight]);
+                    y = pageHeight - mTop;
+                    return true;
+                }
+                return false;
+            }
+
+            // --- LETTERHEAD ---
+            // Logo (top left)
+            const logoWidth = 150;
+            const logoHeight = 41;
+            if (logoImage) {
+                currentPage.drawImage(logoImage, {
+                    x: mSide,
+                    y: y - logoHeight + 10,
+                    width: logoWidth,
+                    height: logoHeight
+                });
+            }
+
+            // Title (right aligned, underlined)
+            const titleWidth = fontSerif.widthOfTextAtSize(letterheadTitle, 12);
+            const titleX = pageWidth - mSide - titleWidth;
+            currentPage.drawText(letterheadTitle, { x: titleX, y: y, size: 12, font: fontSerif });
+            currentPage.drawLine({ start: { x: titleX, y: y - 2 }, end: { x: titleX + titleWidth, y: y - 2 }, thickness: 0.5, color: rgb(0, 0, 0) });
+            y -= 14;
+
+            // Address (right aligned)
+            const addressLines = [
+                'University of Georgia',
+                'Office of the Registrar',
+                'Holmes-Hunter Academic Building',
+                'Athens, Georgia 30602'
+            ];
+            addressLines.forEach(line => {
+                const lineWidth = fontSerif.widthOfTextAtSize(line, 9);
+                currentPage.drawText(line, { x: pageWidth - mSide - lineWidth, y: y, size: 9, font: fontSerif, color: gray });
+                y -= 11;
+            });
+
+            // Line under letterhead
+            y -= 8;
+            currentPage.drawLine({ start: { x: mSide, y: y }, end: { x: pageWidth - mSide, y: y }, thickness: 0.5, color: rgb(0.8, 0.8, 0.8) });
+            y -= 16;
+
+            // --- BLOCKS ---
+            for (const b of blocks) {
+                switch(b.type) {
+                    case 'section':
+                        const sectionH = 32;
+                        ensureSpace(sectionH + 10);
+                        // Draw padded section background with border
+                        currentPage.drawRectangle({ x: mSide, y: y - sectionH, width: contentWidth, height: sectionH, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
+                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
+                        currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                        y -= sectionH + 10;
+                        break;
+
+                    case 'notice':
+                        const noticeH = 28;
+                        ensureSpace(noticeH + 8);
+                        currentPage.drawRectangle({ x: mSide, y: y - noticeH, width: contentWidth, height: noticeH, color: rgb(1, 0.97, 0.96) });
+                        currentPage.drawRectangle({ x: mSide, y: y - noticeH, width: 4, height: noticeH, color: red });
+                        currentPage.drawText(b.title, { x: mSide + 12, y: y - 11, size: 9, font: fontBold });
+                        // Draw notice text with space after title - supports **bold** markdown
+                        const noticeText = b.text || '';
+                        let noticeX = mSide + 12 + fontBold.widthOfTextAtSize(b.title, 9) + 4;
+                        const noticeParts = noticeText.split(/(\*\*[^*]+\*\*)/g);
+                        noticeParts.forEach(part => {
+                            if (part.startsWith('**') && part.endsWith('**')) {
+                                const boldText = part.slice(2, -2);
+                                currentPage.drawText(boldText, { x: noticeX, y: y - 11, size: 9, font: fontBold });
+                                noticeX += fontBold.widthOfTextAtSize(boldText, 9);
+                            } else if (part) {
+                                currentPage.drawText(part, { x: noticeX, y: y - 11, size: 9, font: font });
+                                noticeX += font.widthOfTextAtSize(part, 9);
+                            }
+                        });
+                        y -= noticeH + 8;
+                        break;
+
+                    case 'text-field':
+                        const tfFields = b.fields || [{ label: b.label || 'Field', fieldName: b.fieldName || 'field' }];
+                        const tfCount = tfFields.length;
+                        const tfGap = 10;
+                        const tfWidth = (contentWidth - (tfGap * (tfCount - 1))) / tfCount;
+                        ensureSpace(40);
+                        // Draw labels
+                        tfFields.forEach((f, i) => {
+                            currentPage.drawText(f.label + (b.required ? ' *' : ''), { x: mSide + i * (tfWidth + tfGap), y, size: 9, font: fontBold, color: gray });
+                        });
+                        y -= 12;
+                        // Draw fields
+                        tfFields.forEach((f, i) => {
+                            const tfField = form.createTextField(f.fieldName + '_' + b.id);
+                            tfField.addToPage(currentPage, { x: mSide + i * (tfWidth + tfGap), y: y - 16, width: tfWidth, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        });
+                        y -= 30;
+                        break;
+
+                    case 'textarea':
+                        const taHeight = b.rows * 18 + 20;
+                        ensureSpace(taHeight);
+                        currentPage.drawText(b.label + (b.required ? ' *' : ''), { x: mSide, y, size: 10, font: fontBold, color: gray });
+                        y -= 14;
+                        const ta = form.createTextField(b.fieldName + '_' + b.id);
+                        ta.enableMultiline();
+                        ta.addToPage(currentPage, { x: mSide, y: y - b.rows * 18, width: contentWidth, height: b.rows * 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        y -= b.rows * 18 + 10;
+                        break;
+
+                    case 'checkbox':
+                        const cbOptions = b.options || [];
+                        const isVertical = b.layout === 'vertical';
+                        // Calculate total height including multi-row fields
+                        let totalCbHeight = 24; // Base padding
+                        cbOptions.forEach(opt => {
+                            const rows = typeof opt === 'object' ? (opt.fieldRows || 1) : 1;
+                            const hasField = typeof opt === 'object' && opt.hasField;
+                            totalCbHeight += hasField && rows > 1 ? (rows * 14 + 8) : 20;
+                        });
+                        const cbBoxHeight = isVertical ? totalCbHeight : 50;
+                        ensureSpace(cbBoxHeight + 10);
+
+                        // Draw bordered box with label
+                        currentPage.drawRectangle({ x: mSide, y: y - cbBoxHeight, width: contentWidth, height: cbBoxHeight, borderWidth: 1, borderColor: rgb(0.75, 0.75, 0.75) });
+                        // Label background
+                        const labelWidth = fontBold.widthOfTextAtSize(b.label, 9) + 8;
+                        currentPage.drawRectangle({ x: mSide + 8, y: y - 5, width: labelWidth, height: 10, color: rgb(1, 1, 1) });
+                        currentPage.drawText(b.label, { x: mSide + 12, y: y - 3, size: 9, font: fontBold, color: gray });
+
+                        let cbX = mSide + 10;
+                        let cbY = y - 18;
+                        const standardFieldWidth = contentWidth - 150; // Standardized width
+
+                        cbOptions.forEach((opt, i) => {
+                            const text = typeof opt === 'string' ? opt : opt.text;
+                            const isBold = typeof opt === 'object' && opt.bold;
+                            const hasField = typeof opt === 'object' && opt.hasField;
+                            const fieldRows = typeof opt === 'object' ? (opt.fieldRows || 1) : 1;
+                            const fieldHeight = fieldRows * 14;
+
+                            const cb = form.createCheckBox(b.fieldName + '_' + i + '_' + b.id);
+                            cb.addToPage(currentPage, { x: cbX, y: cbY - 10, width: 12, height: 12 });
+
+                            // Render text with per-word bold support
+                            let textX = cbX + 16;
+                            let totalWidth = 0;
+                            if (isBold) {
+                                currentPage.drawText(text, { x: textX, y: cbY - 8, size: 9, font: fontBold, color: gray });
+                                totalWidth = fontBold.widthOfTextAtSize(text, 9);
+                            } else {
+                                const parts = text.split(/(\*\*[^*]+\*\*)/g);
+                                parts.forEach(part => {
+                                    if (part.startsWith('**') && part.endsWith('**')) {
+                                        const boldText = part.slice(2, -2);
+                                        currentPage.drawText(boldText, { x: textX, y: cbY - 8, size: 9, font: fontBold, color: gray });
+                                        const w = fontBold.widthOfTextAtSize(boldText, 9);
+                                        textX += w;
+                                        totalWidth += w;
+                                    } else if (part) {
+                                        currentPage.drawText(part, { x: textX, y: cbY - 8, size: 9, font: font, color: gray });
+                                        const w = font.widthOfTextAtSize(part, 9);
+                                        textX += w;
+                                        totalWidth += w;
+                                    }
+                                });
+                            }
+
+                            // Add fillable field if enabled
+                            if (hasField) {
+                                const fieldX = textX + 8;
+                                const optField = form.createTextField(b.fieldName + '_field_' + i + '_' + b.id);
+                                if (fieldRows > 1) {
+                                    optField.enableMultiline();
+                                }
+                                optField.addToPage(currentPage, { x: fieldX, y: cbY - fieldHeight + 4, width: standardFieldWidth - totalWidth, height: fieldHeight, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            }
+
+                            if (isVertical) {
+                                cbY -= hasField && fieldRows > 1 ? (fieldRows * 14 + 8) : 20;
+                            } else {
+                                cbX += totalWidth + (hasField ? standardFieldWidth - totalWidth + 20 : 36);
+                            }
+                        });
+                        y -= cbBoxHeight + 8;
+                        break;
+
+                    case 'address':
+                        const addrTypeH = b.includeTypeSelector ? 22 : 0;
+                        const addrH = (b.includePhone ? 145 : 118) + addrTypeH;
+                        ensureSpace(addrH + 16);
+                        currentPage.drawRectangle({ x: mSide, y: y - addrH, width: contentWidth, height: addrH, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
+                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
+                        currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                        y -= 30;
+                        const addrInnerW = contentWidth - 20;
+                        // Type selector checkboxes (optional)
+                        if (b.includeTypeSelector) {
+                            y -= 4; // Add slight space below header line
+                            const addrTypeLabelText = 'Select Address Type:';
+                            currentPage.drawText(addrTypeLabelText, { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
+                            currentPage.drawText(' *', { x: mSide + 10 + fontBold.widthOfTextAtSize(addrTypeLabelText, 9), y, size: 9, font: fontBold, color: red });
+                            let typeX = mSide + 10 + fontBold.widthOfTextAtSize(addrTypeLabelText + ' *', 9) + 15;
+                            const typeLabels = ['Local', 'Permanent', 'Billing'];
+                            typeLabels.forEach((label, i) => {
+                                const typeCb = form.createCheckBox(b.fieldPrefix + '_type_' + label.toLowerCase());
+                                typeCb.addToPage(currentPage, { x: typeX, y: y - 3, width: 12, height: 12 });
+                                currentPage.drawText(label, { x: typeX + 15, y, size: 9, font, color: gray });
+                                typeX += 15 + font.widthOfTextAtSize(label, 9) + 20;
+                            });
+                            y -= 22;
+                        }
+                        // Street Address (80%) and Apt (20%) layout
+                        const streetW = addrInnerW * 0.80;
+                        const aptW = addrInnerW * 0.18;
+                        const streetGap = 10;
+                        // Street Address with required *
+                        currentPage.drawText('Street Address', { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + fontBold.widthOfTextAtSize('Street Address', 9), y, size: 9, font: fontBold, color: red });
+                        // Apt (no required)
+                        currentPage.drawText('Apt', { x: mSide + 10 + streetW + streetGap, y, size: 9, font: fontBold, color: gray });
+                        y -= 12;
+                        form.createTextField(b.fieldPrefix + '_street').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: streetW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_apt').addToPage(currentPage, { x: mSide + 10 + streetW + streetGap, y: y - 16, width: aptW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        y -= 28;
+                        // City, State, Country, Zip Code row - all with required *
+                        const cityW = addrInnerW * 0.32, stateW = addrInnerW * 0.12, countryW = addrInnerW * 0.24, zipW = addrInnerW * 0.20;
+                        const gap2 = 8;
+                        currentPage.drawText('City', { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + fontBold.widthOfTextAtSize('City', 9), y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText('State', { x: mSide + 10 + cityW + gap2, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + cityW + gap2 + fontBold.widthOfTextAtSize('State', 9), y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText('Country', { x: mSide + 10 + cityW + stateW + gap2*2, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + cityW + stateW + gap2*2 + fontBold.widthOfTextAtSize('Country', 9), y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText('Zip Code', { x: mSide + 10 + cityW + stateW + countryW + gap2*3, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + cityW + stateW + countryW + gap2*3 + fontBold.widthOfTextAtSize('Zip Code', 9), y, size: 9, font: fontBold, color: red });
+                        y -= 12;
+                        form.createTextField(b.fieldPrefix + '_city').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: cityW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_state').addToPage(currentPage, { x: mSide + 10 + cityW + gap2, y: y - 16, width: stateW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_country').addToPage(currentPage, { x: mSide + 10 + cityW + stateW + gap2*2, y: y - 16, width: countryW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_zip').addToPage(currentPage, { x: mSide + 10 + cityW + stateW + countryW + gap2*3, y: y - 16, width: zipW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        y -= 26;
+                        // Phone field (optional)
+                        if (b.includePhone) {
+                            const phoneLabelW = fontBold.widthOfTextAtSize('Phone', 9);
+                            currentPage.drawText('Phone', { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
+                            currentPage.drawText(' *', { x: mSide + 10 + phoneLabelW, y, size: 9, font: fontBold, color: red });
+                            currentPage.drawText(' (include area code)', { x: mSide + 10 + phoneLabelW + 8, y, size: 7, font, color: rgb(0.4, 0.4, 0.4) });
+                            y -= 12;
+                            const phoneFieldW = addrInnerW * 0.5;
+                            form.createTextField(b.fieldPrefix + '_phone').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: phoneFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            // Make primary phone checkbox
+                            const phoneCb = form.createCheckBox(b.fieldPrefix + '_primary_phone');
+                            phoneCb.addToPage(currentPage, { x: mSide + 10 + phoneFieldW + 15, y: y - 12, width: 12, height: 12 });
+                            currentPage.drawText('Make primary phone', { x: mSide + 10 + phoneFieldW + 30, y: y - 10, size: 8, font, color: gray });
+                            y -= 26;
+                        }
+                        y -= 12;
+                        break;
+
+                    case 'student-info':
+                        const siH = 112;
+                        ensureSpace(siH + 16);
+                        currentPage.drawRectangle({ x: mSide, y: y - siH, width: contentWidth, height: siH, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
+                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
+                        currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                        y -= 30;
+                        // Row 1: Name fields (Last, First, Middle)
+                        const siInnerW = contentWidth - 20;
+                        const nameW1 = siInnerW * 0.38, nameW2 = siInnerW * 0.32, nameW3 = siInnerW * 0.26;
+                        const nameGap = 6;
+                        // Last Name with required *
+                        currentPage.drawText('Last Name', { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + fontBold.widthOfTextAtSize('Last Name', 9), y, size: 9, font: fontBold, color: red });
+                        // First Name with required *
+                        currentPage.drawText('First Name', { x: mSide + 10 + nameW1 + nameGap, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + nameW1 + nameGap + fontBold.widthOfTextAtSize('First Name', 9), y, size: 9, font: fontBold, color: red });
+                        // Middle Name (no required)
+                        currentPage.drawText('Middle Name', { x: mSide + 10 + nameW1 + nameW2 + nameGap*2, y, size: 9, font: fontBold, color: gray });
+                        y -= 12;
+                        form.createTextField(b.fieldPrefix + '_last').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: nameW1, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_first').addToPage(currentPage, { x: mSide + 10 + nameW1 + nameGap, y: y - 16, width: nameW2, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_middle').addToPage(currentPage, { x: mSide + 10 + nameW1 + nameW2 + nameGap*2, y: y - 16, width: nameW3 - nameGap, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        y -= 30;
+                        // Row 2: UGA ID (left) + Email (right)
+                        const siHalfW = (siInnerW - 12) / 2;
+                        // UGA ID Number with required * and inline hint
+                        const ugaIdLabel = 'UGA ID (810X) Number';
+                        currentPage.drawText(ugaIdLabel, { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
+                        const ugaIdLabelW = fontBold.widthOfTextAtSize(ugaIdLabel, 9);
+                        currentPage.drawText(' *', { x: mSide + 10 + ugaIdLabelW, y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText(' (or Date of Birth if unavailable)', { x: mSide + 10 + ugaIdLabelW + 8, y, size: 7, font, color: rgb(0.4, 0.4, 0.4) });
+                        // Contact Email Address with required *
+                        currentPage.drawText('Contact Email Address', { x: mSide + 10 + siHalfW + 12, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + siHalfW + 12 + fontBold.widthOfTextAtSize('Contact Email Address', 9), y, size: 9, font: fontBold, color: red });
+                        y -= 12;
+                        // UGA ID field
+                        form.createTextField(b.fieldPrefix + '_ugaid').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: siHalfW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        // Email field on right
+                        form.createTextField(b.fieldPrefix + '_email').addToPage(currentPage, { x: mSide + 10 + siHalfW + 12, y: y - 16, width: siHalfW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        y -= 38;
+                        break;
+
+                    case 'info-paragraph':
+                        const infoText = b.text || '';
+                        // Estimate height based on text length (rough calculation)
+                        const infoLineHeight = 12;
+                        const infoEstimatedLines = Math.ceil(infoText.length / 70) + 1;
+                        const infoBoxH = 24 + (infoEstimatedLines * infoLineHeight);
+                        ensureSpace(infoBoxH + 20);
+
+                        // Header bar
+                        currentPage.drawRectangle({ x: mSide, y: y - 14, width: contentWidth, height: 16, color: rgb(0.82, 0.71, 0.55) });
+                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 8, y: y - 10, size: 8, font: fontBold, color: rgb(1, 1, 1) });
+
+                        // Content box
+                        currentPage.drawRectangle({ x: mSide, y: y - infoBoxH, width: contentWidth, height: infoBoxH - 14, color: rgb(0.96, 0.94, 0.92) });
+
+                        // Text with **bold** markdown support
+                        const infoParts = infoText.split(/(\*\*[^*]+\*\*)/g);
+                        let infoX = mSide + 10;
+                        let infoY = y - 28;
+                        infoParts.forEach(part => {
+                            if (part.startsWith('**') && part.endsWith('**')) {
+                                const boldText = part.slice(2, -2);
+                                currentPage.drawText(boldText, { x: infoX, y: infoY, size: 9, font: fontBold, color: gray });
+                                infoX += fontBold.widthOfTextAtSize(boldText, 9);
+                            } else if (part) {
+                                currentPage.drawText(part, { x: infoX, y: infoY, size: 9, font: font, color: gray });
+                                infoX += font.widthOfTextAtSize(part, 9);
+                            }
+                        });
+                        y -= infoBoxH + 8;
+                        break;
+
+                    case 'signature':
+                        ensureSpace(80);
+                        y -= 10; // Add space above signature block
+                        // Left-aligned signature - both lines same width
+                        const sigLineW = 200;
+                        const sigLabelW = fontBold.widthOfTextAtSize(b.label, 10);
+                        const sigLabelX = mSide;
+                        const sigLineX = mSide + sigLabelW + 15;
+
+                        // Photo ID box dimensions (right side) - horizontal layout
+                        const photoIdBoxW = 140;
+                        const photoIdBoxH = 40;
+                        const photoIdBoxX = pageWidth - mSide - photoIdBoxW;
+                        const photoIdBoxY = y - photoIdBoxH + 5;
+
+                        // Signature label with required *
+                        currentPage.drawText(b.label, { x: sigLabelX, y, size: 10, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: sigLabelX + sigLabelW, y, size: 10, font: fontBold, color: red });
+                        // Signature line
+                        currentPage.drawLine({ start: { x: sigLineX, y: y - 2 }, end: { x: sigLineX + sigLineW, y: y - 2 }, thickness: 0.5, color: rgb(0.5, 0.5, 0.5) });
+                        y -= 22;
+                        if (b.includeDate) {
+                            const dateLabelW = fontBold.widthOfTextAtSize('Date', 10);
+                            // Date label with required *
+                            currentPage.drawText('Date', { x: sigLabelX, y: y + 4, size: 10, font: fontBold, color: gray });
+                            currentPage.drawText(' *', { x: sigLabelX + dateLabelW, y: y + 4, size: 10, font: fontBold, color: red });
+                            // Date as fillable text field
+                            const dateField = form.createTextField(b.fieldName + '_date');
+                            dateField.addToPage(currentPage, { x: sigLineX, y: y - 10, width: sigLineW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            y -= 22;
+                        }
+                        // Photo ID attachment box (right side)
+                        if (b.includePhotoId) {
+                            // Dashed border box
+                            currentPage.drawRectangle({
+                                x: photoIdBoxX, y: photoIdBoxY,
+                                width: photoIdBoxW, height: photoIdBoxH,
+                                borderColor: rgb(0.6, 0.6, 0.6),
+                                borderWidth: 1,
+                                color: rgb(0.98, 0.98, 0.98),
+                                borderDashArray: [4, 3]
+                            });
+                            // ID card icon on left side
+                            const iconX = photoIdBoxX + 22;
+                            const iconY = photoIdBoxY + photoIdBoxH/2;
+                            currentPage.drawRectangle({ x: iconX - 12, y: iconY - 8, width: 24, height: 16, borderColor: rgb(0.4, 0.4, 0.4), borderWidth: 1 });
+                            currentPage.drawEllipse({ x: iconX - 5, y: iconY - 1, xScale: 3, yScale: 3, borderColor: rgb(0.4, 0.4, 0.4), borderWidth: 0.75 });
+                            currentPage.drawLine({ start: { x: iconX + 1, y: iconY + 1 }, end: { x: iconX + 8, y: iconY + 1 }, thickness: 1, color: rgb(0.4, 0.4, 0.4) });
+                            currentPage.drawLine({ start: { x: iconX + 1, y: iconY - 3 }, end: { x: iconX + 8, y: iconY - 3 }, thickness: 1, color: rgb(0.4, 0.4, 0.4) });
+                            // Text on right side - bigger and bolder
+                            currentPage.drawText('Include copy of', { x: photoIdBoxX + 45, y: photoIdBoxY + 24, size: 9, font: fontBold, color: gray });
+                            currentPage.drawText('Photo ID', { x: photoIdBoxX + 45, y: photoIdBoxY + 12, size: 9, font: fontBold, color: gray });
+                            currentPage.drawText(' *', { x: photoIdBoxX + 45 + fontBold.widthOfTextAtSize('Photo ID', 9), y: photoIdBoxY + 12, size: 9, font: fontBold, color: red });
+                        }
+                        break;
+
+                    case 'office-use':
+                        const approvalH = b.includeApprovalCheckboxes ? 20 : 0;
+                        const linesH = Math.ceil(b.lines.length / 2) * 22;
+                        const boxH = linesH + approvalH + 24;
+                        ensureSpace(boxH + 6);
+                        currentPage.drawRectangle({ x: mSide, y: y - boxH, width: contentWidth, height: boxH, borderWidth: 0.75, borderColor: rgb(0, 0, 0) });
+                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 8, y: y - 12, size: 8, font: fontBold, color: gray });
+                        y -= 20;
+
+                        // Approval checkboxes + denial reason all on one line
+                        if (b.includeApprovalCheckboxes) {
+                            const approvedCb = form.createCheckBox('office_approved');
+                            approvedCb.addToPage(currentPage, { x: mSide + 8, y: y - 8, width: 10, height: 10 });
+                            currentPage.drawText('Request Approved', { x: mSide + 22, y: y - 6, size: 7, font, color: gray });
+
+                            const deniedCb = form.createCheckBox('office_denied');
+                            deniedCb.addToPage(currentPage, { x: mSide + 105, y: y - 8, width: 10, height: 10 });
+                            currentPage.drawText('Request Denied', { x: mSide + 119, y: y - 6, size: 7, font, color: gray });
+
+                            currentPage.drawText('Denial Reason:', { x: mSide + 195, y: y - 6, size: 7, font, color: gray });
+                            form.createTextField('office_denial_reason').addToPage(currentPage, { x: mSide + 255, y: y - 10, width: contentWidth - 265, height: 14, borderWidth: 1, borderColor: rgb(0.7, 0.7, 0.7) });
+                            y -= 18;
+                        }
+
+                        // Lines in 50/50 split layout with text fields
+                        const halfW = (contentWidth - 28) / 2;
+                        for (let i = 0; i < b.lines.length; i += 2) {
+                            // Left side
+                            const leftLine = b.lines[i];
+                            const leftLabelW = font.widthOfTextAtSize(leftLine + ':', 7) + 4;
+                            currentPage.drawText(leftLine + ':', { x: mSide + 8, y: y - 4, size: 7, font: font, color: gray });
+                            form.createTextField('office_' + leftLine.toLowerCase().replace(/\s+/g, '_')).addToPage(currentPage, { x: mSide + 8 + leftLabelW, y: y - 8, width: halfW - leftLabelW - 4, height: 14, borderWidth: 1, borderColor: rgb(0.7, 0.7, 0.7) });
+
+                            // Right side (if exists)
+                            if (i + 1 < b.lines.length) {
+                                const rightLine = b.lines[i + 1];
+                                const rightLabelW = font.widthOfTextAtSize(rightLine + ':', 7) + 4;
+                                currentPage.drawText(rightLine + ':', { x: mSide + 8 + halfW + 12, y: y - 4, size: 7, font: font, color: gray });
+                                form.createTextField('office_' + rightLine.toLowerCase().replace(/\s+/g, '_')).addToPage(currentPage, { x: mSide + 8 + halfW + 12 + rightLabelW, y: y - 8, width: halfW - rightLabelW, height: 14, borderWidth: 1, borderColor: rgb(0.7, 0.7, 0.7) });
+                            }
+                            y -= 20;
+                        }
+                        y -= 4;
+                        break;
+
+                    case 'footer':
+                        ensureSpace(30);
+                        y -= 10;
+                        currentPage.drawLine({ start: { x: mSide, y: y }, end: { x: pageWidth - mSide, y: y }, thickness: 0.5, color: rgb(0.8, 0.8, 0.8) });
+                        y -= 12;
+                        const footerText = `Revised ${b.revisedMonth} ${b.revisedYear}`;
+                        const footerWidth = font.widthOfTextAtSize(footerText, 9);
+                        currentPage.drawText(footerText, { x: (pageWidth - footerWidth) / 2, y, size: 9, font: font, color: rgb(0.4, 0.4, 0.4) });
+                        y -= 20;
+                        break;
+                }
+            }
+
+            const bytes = await pdf.save();
+            const blob = new Blob([bytes], { type: 'application/pdf' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = document.getElementById('formTitle').value.replace(/[^a-z0-9]/gi, '_') + '.pdf';
+            a.click();
+        }
+
+        render();
+    </script>
+</body>
+</html>
