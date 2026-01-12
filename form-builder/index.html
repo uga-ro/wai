@@ -203,6 +203,32 @@
 </head>
 <body class="bg-gray-100 h-screen overflow-hidden">
 
+    <!-- Login Screen -->
+    <div id="loginScreen" class="fixed inset-0 z-[100] flex items-center justify-center" style="background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm text-center">
+            <div class="mb-6">
+                <div class="flex items-center justify-center gap-3 mb-2">
+                    <i data-lucide="file-stack" class="w-10 h-10 text-red-700"></i>
+                    <span class="text-2xl font-bold text-gray-800">REGI</span>
+                </div>
+                <h1 class="text-xl font-semibold text-gray-700">Form Builder</h1>
+                <p class="text-sm text-gray-400 mt-2">Enter password to continue</p>
+            </div>
+            <form onsubmit="return attemptLogin(event)">
+                <input type="password" id="loginPassword" placeholder="Password" autofocus
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-lg focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 mb-4">
+                <p id="loginError" class="text-red-500 text-sm mb-3 hidden">Incorrect password</p>
+                <button type="submit" class="w-full bg-red-700 text-white py-3 rounded-lg font-medium hover:bg-red-800 transition-colors">
+                    Sign In
+                </button>
+            </form>
+            <p class="text-xs text-gray-400 mt-6">Office of the Registrar</p>
+        </div>
+    </div>
+
+    <!-- Main App Container (hidden until login) -->
+    <div id="mainApp" class="hidden">
+
     <!-- Toolbar -->
     <header class="bg-white border-b px-4 py-2.5 flex items-center justify-between sticky top-0 z-50" style="height:49px;box-sizing:border-box;">
         <div class="flex items-center gap-3">
@@ -357,7 +383,53 @@
         </div>
     </div>
 
+    </div><!-- End mainApp -->
+
     <script>
+        // Login functionality
+        const LOGIN_KEY = 'regi_form_builder_auth';
+        const LOGIN_EXPIRY_DAYS = 7;
+        const CORRECT_PASSWORD = 'a11yforms';
+
+        function checkLogin() {
+            const stored = localStorage.getItem(LOGIN_KEY);
+            if (stored) {
+                const { expiry } = JSON.parse(stored);
+                if (new Date().getTime() < expiry) {
+                    showApp();
+                    return true;
+                }
+                localStorage.removeItem(LOGIN_KEY);
+            }
+            return false;
+        }
+
+        function attemptLogin(event) {
+            event.preventDefault();
+            const password = document.getElementById('loginPassword').value;
+            if (password === CORRECT_PASSWORD) {
+                const expiry = new Date().getTime() + (LOGIN_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+                localStorage.setItem(LOGIN_KEY, JSON.stringify({ expiry }));
+                showApp();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('loginPassword').focus();
+            }
+            return false;
+        }
+
+        function showApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        // Check login on page load
+        if (!checkLogin()) {
+            lucide.createIcons(); // For login screen icons
+        }
+
         lucide.createIcons();
 
         // Letterhead is always present (title is editable)
