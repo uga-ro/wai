@@ -785,7 +785,7 @@
                 case 'info-paragraph':
                     // Parse markdown (bold, bullets, line breaks) for preview
                     const infoParagraphHtml = markdownToHtml(b.text || '');
-                    return `<div style="margin-bottom:12px;">
+                    return `<div style="margin-bottom:12px;background:#f5f0eb;border-radius:4px;padding:10px 14px;">
                         <div style="font-size:10px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">${b.title}</div>
                         <div style="font-size:11px;color:#4a4a4a;line-height:1.6;">${infoParagraphHtml}</div>
                     </div>`;
@@ -1855,14 +1855,17 @@
                         const infoBoxH = 30 + (infoEstimatedLines * infoLineHeight);
                         ensureSpace(infoBoxH + 20);
 
+                        // Single light background box
+                        currentPage.drawRectangle({ x: mSide, y: y - infoBoxH, width: contentWidth, height: infoBoxH, color: rgb(0.96, 0.94, 0.92) });
+
                         // Header text (dark, uppercase) with underline
-                        currentPage.drawText(b.title.toUpperCase(), { x: mSide, y: y - 14, size: 10, font: fontBold, color: gray });
-                        currentPage.drawLine({ start: { x: mSide, y: y - 20 }, end: { x: pageWidth - mSide, y: y - 20 }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
+                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 10, font: fontBold, color: gray });
+                        currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
 
                         // Render text with bold, bullets, and line breaks
                         let infoY = y - 34;
                         infoLines.forEach(line => {
-                            let infoX = mSide;
+                            let infoX = mSide + 10;
                             const isBullet = line.trim().startsWith('- ');
                             if (isBullet) {
                                 currentPage.drawText('•', { x: infoX, y: infoY, size: 9, font, color: gray });
