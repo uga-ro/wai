@@ -710,14 +710,14 @@
                         const rows = style.fieldRows || 1;
                         const fieldHeight = rows === 1 ? '18px' : (rows * 20) + 'px';
                         const fieldHtml = style.hasField ? `<div class="preview-field-${rows === 1 ? 'line' : 'multiline'}" style="flex:1;min-width:150px;margin:0;${rows > 1 ? 'height:' + fieldHeight : ''}"></div>` : '';
-                        return `<div style="display:flex;align-items:flex-start;gap:6px;${b.layout === 'vertical' ? 'margin-bottom:8px;' : ''}${!style.hasField ? 'max-width:100%;' : ''}"><span class="preview-checkbox" style="flex-shrink:0;margin-top:2px;"></span><span style="font-size:11px;color:#4a4a4a;word-wrap:break-word;overflow-wrap:break-word;${!style.hasField ? 'flex:1;' : ''}">${styled}</span>${fieldHtml}</div>`;
+                        return `<div style="display:flex;align-items:flex-start;gap:6px;width:100%;min-width:0;${b.layout === 'vertical' ? 'margin-bottom:8px;' : ''}"><span class="preview-checkbox" style="flex-shrink:0;margin-top:2px;"></span><span style="font-size:11px;color:#4a4a4a;word-wrap:break-word;overflow-wrap:break-word;min-width:0;flex:1;">${styled}</span>${fieldHtml}</div>`;
                     }).join('');
-                    const cbLayout = b.layout === 'vertical' ? 'flex-direction:column;' : 'flex-direction:row;flex-wrap:wrap;gap:16px;';
+                    const cbLayout = b.layout === 'vertical' ? 'flex-direction:column;align-items:stretch;' : 'flex-direction:row;flex-wrap:wrap;gap:16px;';
                     const cbRequired = b.required ? '<span style="color:#BA0C2F;"> *</span>' : '';
                     return `<div class="mb-3">
-                        <div style="border:1px solid #ccc;border-radius:4px;padding:10px 12px;position:relative;margin-top:8px;">
+                        <div style="border:1px solid #ccc;border-radius:4px;padding:10px 12px;position:relative;margin-top:8px;overflow:hidden;">
                             <div style="position:absolute;top:-8px;left:10px;background:#fff;padding:0 6px;font-size:11px;font-weight:600;color:#666;">${b.label}${cbRequired}</div>
-                            <div style="display:flex;${cbLayout}margin-top:4px;">${cbOpts}</div>
+                            <div style="display:flex;${cbLayout}margin-top:4px;width:100%;">${cbOpts}</div>
                         </div>
                     </div>`;
 
@@ -1689,12 +1689,37 @@
                     case 'checkbox':
                         const cbOptions = b.options || [];
                         const isVertical = b.layout === 'vertical';
-                        // Calculate total height including multi-row fields
+                        const cbTextMaxWidth = contentWidth - 36; // Available width for text (minus margins and checkbox)
+
+                        // Helper function to calculate wrapped lines for checkbox text
+                        function getCheckboxTextLines(text, maxWidth) {
+                            const words = text.replace(/\*\*/g, '').split(' ');
+                            let lines = [];
+                            let currentLine = '';
+                            words.forEach(word => {
+                                const testLine = currentLine ? currentLine + ' ' + word : word;
+                                const lineWidth = font.widthOfTextAtSize(testLine, 9);
+                                if (lineWidth > maxWidth && currentLine) {
+                                    lines.push(currentLine);
+                                    currentLine = word;
+                                } else {
+                                    currentLine = testLine;
+                                }
+                            });
+                            if (currentLine) lines.push(currentLine);
+                            return lines.length || 1;
+                        }
+
+                        // Calculate total height including multi-row fields and text wrapping
                         let totalCbHeight = 24; // Base padding
                         cbOptions.forEach(opt => {
+                            const text = typeof opt === 'string' ? opt : opt.text;
                             const rows = typeof opt === 'object' ? (opt.fieldRows || 1) : 1;
                             const hasField = typeof opt === 'object' && opt.hasField;
-                            totalCbHeight += hasField && rows > 1 ? (rows * 14 + 8) : 20;
+                            const textLines = getCheckboxTextLines(text, hasField ? cbTextMaxWidth * 0.4 : cbTextMaxWidth);
+                            const textHeight = textLines * 12;
+                            const fieldHeight = hasField && rows > 1 ? (rows * 14 + 8) : 20;
+                            totalCbHeight += Math.max(textHeight, fieldHeight);
                         });
                         const cbBoxHeight = isVertical ? totalCbHeight : 50;
                         ensureSpace(cbBoxHeight + 10);
@@ -1714,6 +1739,26 @@
                         let cbY = y - 18;
                         const standardFieldWidth = contentWidth - 150; // Standardized width
 
+                        // Helper to wrap checkbox text into lines
+                        function wrapCheckboxText(text, maxWidth, useFont) {
+                            const plainText = text.replace(/\*\*/g, '');
+                            const words = plainText.split(' ');
+                            let lines = [];
+                            let currentLine = '';
+                            words.forEach(word => {
+                                const testLine = currentLine ? currentLine + ' ' + word : word;
+                                const lineWidth = useFont.widthOfTextAtSize(testLine, 9);
+                                if (lineWidth > maxWidth && currentLine) {
+                                    lines.push(currentLine);
+                                    currentLine = word;
+                                } else {
+                                    currentLine = testLine;
+                                }
+                            });
+                            if (currentLine) lines.push(currentLine);
+                            return lines;
+                        }
+
                         cbOptions.forEach((opt, i) => {
                             const text = typeof opt === 'string' ? opt : opt.text;
                             const isBold = typeof opt === 'object' && opt.bold;
@@ -1724,44 +1769,45 @@
                             const cb = form.createCheckBox(b.fieldName + '_' + i + '_' + b.id);
                             cb.addToPage(currentPage, { x: cbX, y: cbY - 10, width: 12, height: 12 });
 
-                            // Render text with per-word bold support
-                            let textX = cbX + 16;
-                            let totalWidth = 0;
-                            if (isBold) {
-                                currentPage.drawText(text, { x: textX, y: cbY - 8, size: 9, font: fontBold, color: gray });
-                                totalWidth = fontBold.widthOfTextAtSize(text, 9);
-                            } else {
-                                const parts = text.split(/(\*\*[^*]+\*\*)/g);
-                                parts.forEach(part => {
-                                    if (part.startsWith('**') && part.endsWith('**')) {
-                                        const boldText = part.slice(2, -2);
-                                        currentPage.drawText(boldText, { x: textX, y: cbY - 8, size: 9, font: fontBold, color: gray });
-                                        const w = fontBold.widthOfTextAtSize(boldText, 9);
-                                        textX += w;
-                                        totalWidth += w;
-                                    } else if (part) {
-                                        currentPage.drawText(part, { x: textX, y: cbY - 8, size: 9, font: font, color: gray });
-                                        const w = font.widthOfTextAtSize(part, 9);
-                                        textX += w;
-                                        totalWidth += w;
-                                    }
-                                });
-                            }
+                            // Calculate wrapped lines for this checkbox text
+                            const textStartX = cbX + 16;
+                            const availableWidth = hasField ? cbTextMaxWidth * 0.4 : cbTextMaxWidth;
+                            const useFont = isBold ? fontBold : font;
+                            const wrappedLines = wrapCheckboxText(text, availableWidth, useFont);
+                            const lineHeight = 12;
+
+                            // Render each wrapped line
+                            let lineY = cbY - 8;
+                            wrappedLines.forEach((line, lineIdx) => {
+                                let textX = textStartX;
+                                if (isBold) {
+                                    currentPage.drawText(line, { x: textX, y: lineY, size: 9, font: fontBold, color: gray });
+                                } else {
+                                    // For wrapped lines, just render plain text (bold markers removed during wrapping)
+                                    currentPage.drawText(line, { x: textX, y: lineY, size: 9, font: font, color: gray });
+                                }
+                                lineY -= lineHeight;
+                            });
+
+                            // Calculate total width of first line for field positioning
+                            const firstLineWidth = useFont.widthOfTextAtSize(wrappedLines[0] || '', 9);
 
                             // Add fillable field if enabled
                             if (hasField) {
-                                const fieldX = textX + 8;
+                                const fieldX = textStartX + firstLineWidth + 8;
                                 const optField = form.createTextField(b.fieldName + '_field_' + i + '_' + b.id);
                                 if (fieldRows > 1) {
                                     optField.enableMultiline();
                                 }
-                                optField.addToPage(currentPage, { x: fieldX, y: cbY - fieldHeight + 4, width: standardFieldWidth - totalWidth, height: fieldHeight, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                                optField.addToPage(currentPage, { x: fieldX, y: cbY - fieldHeight + 4, width: standardFieldWidth - firstLineWidth, height: fieldHeight, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                             }
 
                             if (isVertical) {
-                                cbY -= hasField && fieldRows > 1 ? (fieldRows * 14 + 8) : 20;
+                                const textRowHeight = wrappedLines.length * lineHeight;
+                                const fieldRowHeight = hasField && fieldRows > 1 ? (fieldRows * 14 + 8) : 20;
+                                cbY -= Math.max(textRowHeight, fieldRowHeight);
                             } else {
-                                cbX += totalWidth + (hasField ? standardFieldWidth - totalWidth + 20 : 36);
+                                cbX += firstLineWidth + (hasField ? standardFieldWidth - firstLineWidth + 20 : 36);
                             }
                         });
                         y -= cbBoxHeight + 8;
