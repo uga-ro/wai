@@ -507,7 +507,7 @@
             'notice': { type: 'notice', title: 'Notice:', text: 'Enter notice text here.' },
             'text-field': { type: 'text-field', fields: [{ label: 'Field Label', fieldName: 'field_1' }], required: false },
             'textarea': { type: 'textarea', label: 'Field Label', fieldName: 'field', rows: 2, required: false },
-            'checkbox': { type: 'checkbox', label: 'Options', layout: 'vertical', options: [{ text: 'Option 1', bold: false, hasField: false, fieldRows: 1 }, { text: 'Option 2', bold: false, hasField: false, fieldRows: 1 }], fieldName: 'checkbox' },
+            'checkbox': { type: 'checkbox', label: 'Options', layout: 'vertical', options: [{ text: 'Option 1', bold: false, hasField: false, fieldRows: 1 }, { text: 'Option 2', bold: false, hasField: false, fieldRows: 1 }], fieldName: 'checkbox', required: false },
             'address': { type: 'address', title: 'Address', fieldPrefix: 'addr', includePhone: false, includeTypeSelector: false },
             'student-info': { type: 'student-info', title: 'Student Information', fieldPrefix: 'student' },
             'signature': { type: 'signature', label: 'Signature', fieldName: 'sig', includeDate: true, includePhotoId: false },
@@ -710,12 +710,13 @@
                         const rows = style.fieldRows || 1;
                         const fieldHeight = rows === 1 ? '18px' : (rows * 20) + 'px';
                         const fieldHtml = style.hasField ? `<div class="preview-field-${rows === 1 ? 'line' : 'multiline'}" style="flex:1;min-width:150px;margin:0;${rows > 1 ? 'height:' + fieldHeight : ''}"></div>` : '';
-                        return `<div style="display:flex;align-items:${rows > 1 ? 'flex-start' : 'center'};gap:6px;${b.layout === 'vertical' ? 'margin-bottom:8px;' : ''}"><span class="preview-checkbox" style="flex-shrink:0;${rows > 1 ? 'margin-top:3px;' : ''}"></span><span style="font-size:11px;color:#4a4a4a;white-space:nowrap;">${styled}</span>${fieldHtml}</div>`;
+                        return `<div style="display:flex;align-items:${rows > 1 ? 'flex-start' : 'flex-start'};gap:6px;${b.layout === 'vertical' ? 'margin-bottom:8px;' : ''}"><span class="preview-checkbox" style="flex-shrink:0;margin-top:2px;"></span><span style="font-size:11px;color:#4a4a4a;">${styled}</span>${fieldHtml}</div>`;
                     }).join('');
                     const cbLayout = b.layout === 'vertical' ? 'flex-direction:column;' : 'flex-direction:row;flex-wrap:wrap;gap:16px;';
+                    const cbRequired = b.required ? '<span style="color:#BA0C2F;"> *</span>' : '';
                     return `<div class="mb-3">
                         <div style="border:1px solid #ccc;border-radius:4px;padding:10px 12px;position:relative;margin-top:8px;">
-                            <div style="position:absolute;top:-8px;left:10px;background:#fff;padding:0 6px;font-size:11px;font-weight:600;color:#666;">${b.label}</div>
+                            <div style="position:absolute;top:-8px;left:10px;background:#fff;padding:0 6px;font-size:11px;font-weight:600;color:#666;">${b.label}${cbRequired}</div>
                             <div style="display:flex;${cbLayout}margin-top:4px;">${cbOpts}</div>
                         </div>
                     </div>`;
@@ -930,6 +931,7 @@
                     break;
                 case 'checkbox':
                     html += field('Label', 'label', b.label);
+                    html += checkbox('Required', 'required', b.required);
                     html += `<div class="mb-2">
                         <label class="block text-xs text-gray-500 mb-1">Layout</label>
                         <select onchange="updateProp('layout', this.value)" class="w-full px-2 py-1 text-sm border rounded">
@@ -1601,24 +1603,53 @@
                         break;
 
                     case 'notice':
-                        const noticeH = 28;
+                        // Word-wrap notice text
+                        const noticeText = b.text || '';
+                        const noticeMaxWidth = contentWidth - 24;
+                        const noticeTitleWidth = fontBold.widthOfTextAtSize(b.title, 9) + 4;
+                        const noticeWords = noticeText.replace(/\*\*/g, '').split(' ');
+                        let noticeLines = [];
+                        let noticeLine = '';
+                        let firstLine = true;
+                        noticeWords.forEach(word => {
+                            const testLine = noticeLine ? noticeLine + ' ' + word : word;
+                            const lineWidth = font.widthOfTextAtSize(testLine, 9) + (firstLine ? noticeTitleWidth : 0);
+                            if (lineWidth > noticeMaxWidth && noticeLine) {
+                                noticeLines.push({ text: noticeLine, isFirst: firstLine });
+                                noticeLine = word;
+                                firstLine = false;
+                            } else {
+                                noticeLine = testLine;
+                            }
+                        });
+                        if (noticeLine) noticeLines.push({ text: noticeLine, isFirst: firstLine });
+
+                        const noticeLineHeight = 12;
+                        const noticeH = Math.max(28, 16 + noticeLines.length * noticeLineHeight);
                         ensureSpace(noticeH + 8);
                         currentPage.drawRectangle({ x: mSide, y: y - noticeH, width: contentWidth, height: noticeH, color: rgb(1, 0.97, 0.96) });
                         currentPage.drawRectangle({ x: mSide, y: y - noticeH, width: 4, height: noticeH, color: red });
-                        currentPage.drawText(b.title, { x: mSide + 12, y: y - 11, size: 9, font: fontBold });
-                        // Draw notice text with space after title - supports **bold** markdown
-                        const noticeText = b.text || '';
-                        let noticeX = mSide + 12 + fontBold.widthOfTextAtSize(b.title, 9) + 4;
-                        const noticeParts = noticeText.split(/(\*\*[^*]+\*\*)/g);
-                        noticeParts.forEach(part => {
-                            if (part.startsWith('**') && part.endsWith('**')) {
-                                const boldText = part.slice(2, -2);
-                                currentPage.drawText(boldText, { x: noticeX, y: y - 11, size: 9, font: fontBold });
-                                noticeX += fontBold.widthOfTextAtSize(boldText, 9);
-                            } else if (part) {
-                                currentPage.drawText(part, { x: noticeX, y: y - 11, size: 9, font: font });
-                                noticeX += font.widthOfTextAtSize(part, 9);
+
+                        let noticeY = y - 11;
+                        noticeLines.forEach((line, idx) => {
+                            let noticeX = mSide + 12;
+                            if (line.isFirst) {
+                                currentPage.drawText(b.title, { x: noticeX, y: noticeY, size: 9, font: fontBold });
+                                noticeX += noticeTitleWidth;
                             }
+                            // Render text with **bold** support
+                            const parts = line.text.split(/(\*\*[^*]+\*\*)/g);
+                            parts.forEach(part => {
+                                if (part.startsWith('**') && part.endsWith('**')) {
+                                    const boldText = part.slice(2, -2);
+                                    currentPage.drawText(boldText, { x: noticeX, y: noticeY, size: 9, font: fontBold });
+                                    noticeX += fontBold.widthOfTextAtSize(boldText, 9);
+                                } else if (part) {
+                                    currentPage.drawText(part, { x: noticeX, y: noticeY, size: 9, font: font });
+                                    noticeX += font.widthOfTextAtSize(part, 9);
+                                }
+                            });
+                            noticeY -= noticeLineHeight;
                         });
                         y -= noticeH + 8;
                         break;
@@ -1628,25 +1659,27 @@
                         const tfCount = tfFields.length;
                         const tfGap = 10;
                         const tfWidth = (contentWidth - (tfGap * (tfCount - 1))) / tfCount;
-                        ensureSpace(40);
+                        ensureSpace(45);
+                        y -= 6; // Add margin above labels
                         // Draw labels
                         tfFields.forEach((f, i) => {
                             currentPage.drawText(f.label + (b.required ? ' *' : ''), { x: mSide + i * (tfWidth + tfGap), y, size: 9, font: fontBold, color: gray });
                         });
-                        y -= 12;
+                        y -= 4; // Reduced gap between label and field
                         // Draw fields
                         tfFields.forEach((f, i) => {
                             const tfField = form.createTextField(f.fieldName + '_' + b.id);
                             tfField.addToPage(currentPage, { x: mSide + i * (tfWidth + tfGap), y: y - 16, width: tfWidth, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                         });
-                        y -= 30;
+                        y -= 28;
                         break;
 
                     case 'textarea':
-                        const taHeight = b.rows * 18 + 20;
+                        const taHeight = b.rows * 18 + 25;
                         ensureSpace(taHeight);
+                        y -= 6; // Add margin above label
                         currentPage.drawText(b.label + (b.required ? ' *' : ''), { x: mSide, y, size: 10, font: fontBold, color: gray });
-                        y -= 14;
+                        y -= 6; // Reduced gap between label and field
                         const ta = form.createTextField(b.fieldName + '_' + b.id);
                         ta.enableMultiline();
                         ta.addToPage(currentPage, { x: mSide, y: y - b.rows * 18, width: contentWidth, height: b.rows * 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
@@ -1668,10 +1701,14 @@
 
                         // Draw bordered box with label
                         currentPage.drawRectangle({ x: mSide, y: y - cbBoxHeight, width: contentWidth, height: cbBoxHeight, borderWidth: 1, borderColor: rgb(0.75, 0.75, 0.75) });
-                        // Label background
-                        const labelWidth = fontBold.widthOfTextAtSize(b.label, 9) + 8;
+                        // Label background (wider if required indicator)
+                        const cbLabelText = b.label + (b.required ? ' *' : '');
+                        const labelWidth = fontBold.widthOfTextAtSize(b.label, 9) + (b.required ? 12 : 0) + 8;
                         currentPage.drawRectangle({ x: mSide + 8, y: y - 5, width: labelWidth, height: 10, color: rgb(1, 1, 1) });
                         currentPage.drawText(b.label, { x: mSide + 12, y: y - 3, size: 9, font: fontBold, color: gray });
+                        if (b.required) {
+                            currentPage.drawText(' *', { x: mSide + 12 + fontBold.widthOfTextAtSize(b.label, 9), y: y - 3, size: 9, font: fontBold, color: red });
+                        }
 
                         let cbX = mSide + 10;
                         let cbY = y - 18;
