@@ -710,7 +710,7 @@
                         const rows = style.fieldRows || 1;
                         const fieldHeight = rows === 1 ? '18px' : (rows * 20) + 'px';
                         const fieldHtml = style.hasField ? `<div class="preview-field-${rows === 1 ? 'line' : 'multiline'}" style="flex:1;min-width:150px;margin:0;${rows > 1 ? 'height:' + fieldHeight : ''}"></div>` : '';
-                        return `<div style="display:flex;align-items:${rows > 1 ? 'flex-start' : 'flex-start'};gap:6px;${b.layout === 'vertical' ? 'margin-bottom:8px;' : ''}"><span class="preview-checkbox" style="flex-shrink:0;margin-top:2px;"></span><span style="font-size:11px;color:#4a4a4a;">${styled}</span>${fieldHtml}</div>`;
+                        return `<div style="display:flex;align-items:flex-start;gap:6px;${b.layout === 'vertical' ? 'margin-bottom:8px;' : ''}${!style.hasField ? 'max-width:100%;' : ''}"><span class="preview-checkbox" style="flex-shrink:0;margin-top:2px;"></span><span style="font-size:11px;color:#4a4a4a;word-wrap:break-word;overflow-wrap:break-word;${!style.hasField ? 'flex:1;' : ''}">${styled}</span>${fieldHtml}</div>`;
                     }).join('');
                     const cbLayout = b.layout === 'vertical' ? 'flex-direction:column;' : 'flex-direction:row;flex-wrap:wrap;gap:16px;';
                     const cbRequired = b.required ? '<span style="color:#BA0C2F;"> *</span>' : '';
