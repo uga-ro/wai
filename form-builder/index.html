@@ -783,11 +783,11 @@
                     </div>`;
 
                 case 'info-paragraph':
-                    // Parse **bold** markdown per-word
-                    const infoParagraphText = (b.text || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    // Parse markdown (bold, bullets, line breaks) for preview
+                    const infoParagraphHtml = markdownToHtml(b.text || '');
                     return `<div style="margin-bottom:12px;background:#f5f0eb;border-radius:4px;padding:10px 14px;">
                         <div style="font-size:10px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">${b.title}</div>
-                        <div style="font-size:11px;color:#4a4a4a;line-height:1.6;">${infoParagraphText}</div>
+                        <div style="font-size:11px;color:#4a4a4a;line-height:1.6;">${infoParagraphHtml}</div>
                     </div>`;
 
                 case 'signature':
@@ -974,9 +974,10 @@
                     html += field('Title', 'title', b.title);
                     html += `<div>
                         <label class="block text-xs text-gray-500 mb-1">Text</label>
-                        <div class="flex gap-1 mb-1">
+                        <div class="flex gap-1 mb-1 items-center">
                             <button onclick="toggleBoldEditor('infoParagraphEditor')" class="px-2 py-0.5 text-xs border rounded bg-white hover:bg-gray-100" title="Bold selected text"><strong>B</strong></button>
-                            <span class="text-xs text-gray-400 ml-1">Select text & click B</span>
+                            <button onclick="toggleBulletEditor('infoParagraphEditor')" class="px-2 py-0.5 text-xs border rounded bg-white hover:bg-gray-100" title="Bullet list">• List</button>
+                            <span class="text-xs text-gray-400 ml-1">Select text & click to format</span>
                         </div>
                         <div id="infoParagraphEditor" contenteditable="true" oninput="updateFromEditor('infoParagraphEditor', 'text')"
                             class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400 min-h-[80px] bg-white">${markdownToHtml(b.text || '')}</div>
@@ -1107,21 +1108,52 @@
         // Convert **markdown** to <strong>HTML</strong> for display
         function markdownToHtml(text) {
             if (!text) return '';
-            return text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            let html = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            const lines = html.split('\n');
+            let inList = false, result = [];
+            lines.forEach(line => {
+                if (line.trim().startsWith('- ')) {
+                    if (!inList) { result.push('<ul style="margin:4px 0 4px 16px;padding:0;">'); inList = true; }
+                    result.push('<li style="margin:2px 0;">' + line.trim().substring(2) + '</li>');
+                } else {
+                    if (inList) { result.push('</ul>'); inList = false; }
+                    if (line) result.push(line);
+                }
+            });
+            if (inList) result.push('</ul>');
+            html = result.join('<br>').replace(/<br><ul/g, '<ul').replace(/<\/ul><br>/g, '</ul>');
+            return html;
         }
 
         // Convert <strong>HTML</strong> back to **markdown** for storage
         function htmlToMarkdown(html) {
             if (!html) return '';
-            // Create a temp div to parse HTML
             const temp = document.createElement('div');
             temp.innerHTML = html;
-            // Replace <strong> and <b> tags with **markdown**
+            // Replace <strong> and <b> with **markdown**
             temp.querySelectorAll('strong, b').forEach(el => {
                 el.replaceWith('**' + el.textContent + '**');
             });
-            // Get text content and clean up
-            return temp.textContent || temp.innerText || '';
+            // Replace <li> with "- " prefix
+            temp.querySelectorAll('li').forEach(el => {
+                const text = document.createTextNode('- ' + el.textContent.trim());
+                el.replaceWith(text);
+            });
+            // Replace <ul> - preserve content with newlines
+            temp.querySelectorAll('ul').forEach(el => {
+                const items = el.textContent.trim().split('- ').filter(x => x.trim());
+                const text = document.createTextNode(items.map(x => '- ' + x.trim()).join('\n'));
+                el.replaceWith(text);
+            });
+            // Replace <br> and <div> with newlines
+            temp.querySelectorAll('br').forEach(el => el.replaceWith('\n'));
+            temp.querySelectorAll('div').forEach(el => {
+                const text = document.createTextNode('\n' + el.textContent);
+                el.replaceWith(text);
+            });
+            let result = temp.textContent || temp.innerText || '';
+            result = result.replace(/\n{3,}/g, '\n\n');
+            return result.trim();
         }
 
         // Toggle bold on selected text in contenteditable
@@ -1130,9 +1162,16 @@
             if (!editor) return;
             editor.focus();
             document.execCommand('bold', false, null);
-            // Trigger update
-            const prop = editorId === 'noticeEditor' ? 'text' : 'text';
-            updateFromEditor(editorId, prop);
+            updateFromEditor(editorId, 'text');
+        }
+
+        // Toggle bullet list on selected text in contenteditable
+        function toggleBulletEditor(editorId) {
+            const editor = document.getElementById(editorId);
+            if (!editor) return;
+            editor.focus();
+            document.execCommand('insertUnorderedList', false, null);
+            updateFromEditor(editorId, 'text');
         }
 
         // Update prop from contenteditable editor
@@ -1809,9 +1848,10 @@
 
                     case 'info-paragraph':
                         const infoText = b.text || '';
-                        // Estimate height based on text length (rough calculation)
-                        const infoLineHeight = 12;
-                        const infoEstimatedLines = Math.ceil(infoText.length / 70) + 1;
+                        // Calculate height based on lines and bullets
+                        const infoLineHeight = 14;
+                        const infoLines = infoText.split('\n');
+                        const infoEstimatedLines = infoLines.length + 1;
                         const infoBoxH = 30 + (infoEstimatedLines * infoLineHeight);
                         ensureSpace(infoBoxH + 20);
 
@@ -1822,19 +1862,29 @@
                         currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 10, font: fontBold, color: gray });
                         currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
 
-                        // Text with **bold** markdown support
-                        const infoParts = infoText.split(/(\*\*[^*]+\*\*)/g);
-                        let infoX = mSide + 10;
+                        // Render text with bold, bullets, and line breaks
                         let infoY = y - 34;
-                        infoParts.forEach(part => {
-                            if (part.startsWith('**') && part.endsWith('**')) {
-                                const boldText = part.slice(2, -2);
-                                currentPage.drawText(boldText, { x: infoX, y: infoY, size: 9, font: fontBold, color: gray });
-                                infoX += fontBold.widthOfTextAtSize(boldText, 9);
-                            } else if (part) {
-                                currentPage.drawText(part, { x: infoX, y: infoY, size: 9, font: font, color: gray });
-                                infoX += font.widthOfTextAtSize(part, 9);
+                        infoLines.forEach(line => {
+                            let infoX = mSide + 10;
+                            const isBullet = line.trim().startsWith('- ');
+                            if (isBullet) {
+                                currentPage.drawText('•', { x: infoX, y: infoY, size: 9, font, color: gray });
+                                infoX += 12;
+                                line = line.trim().substring(2);
                             }
+                            // Handle **bold** in this line
+                            const parts = line.split(/(\*\*[^*]+\*\*)/g);
+                            parts.forEach(part => {
+                                if (part.startsWith('**') && part.endsWith('**')) {
+                                    const boldText = part.slice(2, -2);
+                                    currentPage.drawText(boldText, { x: infoX, y: infoY, size: 9, font: fontBold, color: gray });
+                                    infoX += fontBold.widthOfTextAtSize(boldText, 9);
+                                } else if (part) {
+                                    currentPage.drawText(part, { x: infoX, y: infoY, size: 9, font, color: gray });
+                                    infoX += font.widthOfTextAtSize(part, 9);
+                                }
+                            });
+                            infoY -= infoLineHeight;
                         });
                         y -= infoBoxH + 8;
                         break;
