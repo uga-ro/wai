@@ -2098,11 +2098,40 @@
 
                     case 'info-paragraph':
                         const infoText = b.text || '';
-                        // Calculate height based on lines and bullets
                         const infoLineHeight = 14;
-                        const infoLines = infoText.split('\n');
-                        const infoEstimatedLines = infoLines.length + 1;
-                        const infoBoxH = 30 + (infoEstimatedLines * infoLineHeight);
+                        const infoMaxWidth = contentWidth - 20;
+                        const infoSourceLines = infoText.split('\n');
+
+                        // Helper to wrap a single line of text
+                        function wrapInfoLine(line, maxWidth, isBullet) {
+                            const indent = isBullet ? 12 : 0;
+                            const availableWidth = maxWidth - indent;
+                            const plainLine = line.replace(/\*\*/g, '');
+                            const words = plainLine.split(' ');
+                            let wrapped = [];
+                            let current = '';
+                            words.forEach(word => {
+                                const test = current ? current + ' ' + word : word;
+                                if (font.widthOfTextAtSize(test, 9) > availableWidth && current) {
+                                    wrapped.push(current);
+                                    current = word;
+                                } else {
+                                    current = test;
+                                }
+                            });
+                            if (current) wrapped.push(current);
+                            return wrapped.length || 1;
+                        }
+
+                        // Calculate total wrapped lines for height
+                        let infoTotalLines = 0;
+                        infoSourceLines.forEach(line => {
+                            const isBullet = line.trim().startsWith('- ');
+                            const cleanLine = isBullet ? line.trim().substring(2) : line;
+                            infoTotalLines += wrapInfoLine(cleanLine, infoMaxWidth, isBullet);
+                        });
+
+                        const infoBoxH = 30 + (infoTotalLines * infoLineHeight);
                         ensureSpace(infoBoxH + 20);
 
                         // Single light background box
@@ -2112,29 +2141,53 @@
                         currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 10, font: fontBold, color: gray });
                         currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
 
-                        // Render text with bold, bullets, and line breaks
+                        // Render text with word wrapping, bold, bullets, and line breaks
                         let infoY = y - 34;
-                        infoLines.forEach(line => {
-                            let infoX = mSide + 10;
-                            const isBullet = line.trim().startsWith('- ');
-                            if (isBullet) {
-                                currentPage.drawText('•', { x: infoX, y: infoY, size: 9, font, color: gray });
-                                infoX += 12;
-                                line = line.trim().substring(2);
-                            }
-                            // Handle **bold** in this line
-                            const parts = line.split(/(\*\*[^*]+\*\*)/g);
-                            parts.forEach(part => {
-                                if (part.startsWith('**') && part.endsWith('**')) {
-                                    const boldText = part.slice(2, -2);
-                                    currentPage.drawText(boldText, { x: infoX, y: infoY, size: 9, font: fontBold, color: gray });
-                                    infoX += fontBold.widthOfTextAtSize(boldText, 9);
-                                } else if (part) {
-                                    currentPage.drawText(part, { x: infoX, y: infoY, size: 9, font, color: gray });
-                                    infoX += font.widthOfTextAtSize(part, 9);
+                        infoSourceLines.forEach(srcLine => {
+                            const isBullet = srcLine.trim().startsWith('- ');
+                            let lineContent = isBullet ? srcLine.trim().substring(2) : srcLine;
+                            const baseX = mSide + 10;
+                            const indent = isBullet ? 12 : 0;
+                            const availableWidth = infoMaxWidth - indent;
+
+                            // Word wrap this line
+                            const words = lineContent.split(' ');
+                            let wrappedLines = [];
+                            let currentLine = '';
+                            words.forEach(word => {
+                                const plainWord = word.replace(/\*\*/g, '');
+                                const testLine = currentLine ? currentLine + ' ' + word : word;
+                                const plainTest = testLine.replace(/\*\*/g, '');
+                                if (font.widthOfTextAtSize(plainTest, 9) > availableWidth && currentLine) {
+                                    wrappedLines.push(currentLine);
+                                    currentLine = word;
+                                } else {
+                                    currentLine = testLine;
                                 }
                             });
-                            infoY -= infoLineHeight;
+                            if (currentLine) wrappedLines.push(currentLine);
+                            if (wrappedLines.length === 0) wrappedLines.push('');
+
+                            wrappedLines.forEach((wLine, wIdx) => {
+                                let infoX = baseX + indent;
+                                // Draw bullet only on first wrapped line
+                                if (isBullet && wIdx === 0) {
+                                    currentPage.drawText('•', { x: baseX, y: infoY, size: 9, font, color: gray });
+                                }
+                                // Handle **bold** in this wrapped line
+                                const parts = wLine.split(/(\*\*[^*]+\*\*)/g);
+                                parts.forEach(part => {
+                                    if (part.startsWith('**') && part.endsWith('**')) {
+                                        const boldText = part.slice(2, -2);
+                                        currentPage.drawText(boldText, { x: infoX, y: infoY, size: 9, font: fontBold, color: gray });
+                                        infoX += fontBold.widthOfTextAtSize(boldText, 9);
+                                    } else if (part) {
+                                        currentPage.drawText(part, { x: infoX, y: infoY, size: 9, font, color: gray });
+                                        infoX += font.widthOfTextAtSize(part, 9);
+                                    }
+                                });
+                                infoY -= infoLineHeight;
+                            });
                         });
                         y -= infoBoxH + 8;
                         break;
