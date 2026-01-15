@@ -145,6 +145,36 @@
         transition: all 0.25s ease;
     }
 
+    /* Form closed message */
+    .uga-form .form-closed-message {
+        text-align: center;
+        padding: 40px 24px;
+        background: linear-gradient(180deg, #fefefe 0%, #f8f8f8 100%);
+        border-radius: 12px;
+        border: 2px solid #ddd;
+    }
+    .uga-form .form-closed-message h3 {
+        color: #ba0c2f;
+        font-size: 1.4rem;
+        margin: 0 0 1rem;
+    }
+    .uga-form .form-closed-message p {
+        color: #4a4a4a;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+    .uga-form .preview-banner {
+        background: #ffeeba;
+        color: #856404;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+
     /* Success / thank-you message */
     .uga-form #status.success {
         color: #007d85;
@@ -312,6 +342,62 @@
 </div>
 
 <script>
+    /* ===== 0) SCHEDULED CLOSE LOGIC ===== */
+    const FORM_CLOSE_CONFIG = {
+        // Close date: January 19, 2026 at 11:59:59 PM EST (UTC-5)
+        // Using UTC time: Jan 20, 2026 04:59:59 UTC
+        closeDate: new Date('2026-01-20T04:59:59Z'),
+        closedTitle: 'Form Closed',
+        closedMessage: 'The fall 2026 centralized classroom scheduling preference form is closed. It will reopen for spring 2027 classroom scheduling at a future date.'
+    };
+
+    function isFormClosed() {
+        return new Date() >= FORM_CLOSE_CONFIG.closeDate;
+    }
+
+    function isPreviewMode() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('preview') === 'closed';
+    }
+
+    function showClosedMessage(isPreview = false) {
+        const formContainer = document.querySelector('.uga-form');
+        const form = document.getElementById('form-25live');
+
+        if (!formContainer || !form) return;
+
+        // Keep the title, replace everything else
+        const title = form.querySelector('h2');
+        const titleHTML = title ? title.outerHTML : '';
+
+        // Create closed message HTML
+        let html = '';
+
+        if (isPreview) {
+            html += '<div class="preview-banner"><strong>Preview Mode:</strong> This is how the form will appear after January 19, 2026 at 11:59 PM EST. Remove <code>?preview=closed</code> from the URL to see the live form.</div>';
+        }
+
+        html += titleHTML;
+        html += `
+            <div class="form-closed-message">
+                <p>${FORM_CLOSE_CONFIG.closedMessage}</p>
+            </div>
+        `;
+
+        // Replace form content
+        form.innerHTML = html;
+    }
+
+    // Check on page load (runs before DOMContentLoaded to avoid flash)
+    (function() {
+        if (isPreviewMode() || isFormClosed()) {
+            // Use DOMContentLoaded to ensure form exists
+            document.addEventListener('DOMContentLoaded', () => {
+                showClosedMessage(isPreviewMode() && !isFormClosed());
+            });
+        }
+    })();
+
     /* ===== 1) YOUR DATA (unchanged) ===== */
     const SUBJECTS = [
         "AAEC","ACCT","ADPR","ADSC","AENG","AERO","AESC","AFAM","AFST","AGCM","AGED","AIRS","ALDR","AMHA","AMSL","ANNU","ANTH","APTC","ARAB","ARED","ARGD","ARHI","ARID","ARST","ARTI","ARTS","ASTR","ATSC","ATTR","BCHE","BCMB","BENG","BHSI","BINF","BIOE","BIOL","BIOS","BMSC","BTEC","BUSN","CBIO","CHEM","CHFD","CHNS","CLAS","CMLT","CMSD","COFA","COMM","CRSS","CSCI","CSEE","CVLE","DANC","DESD","DIGI","DMAN","EBUS","ECHD","ECOL","ECON","ECSE","EDAP","EDEC","EDEL","EDES","EDHI","EDIT","EDLP","EDMG","EDSE","EDUC","EETH","EFND","EHSC","ELEE","EMAT","EMBA","EMKT","EMST","EMUS","ENED","ENGG","ENGL","ENGR","ENTO","ENTR","ENVE","ENVM","EPID","EPSY","ERSH","ESCI","ESOC","ETAP","ETES","FACS","FANR","FCID","FDNS","FDST","FHCE","FILM","FINA","FISH","FORS","FREN","FRES","GENE","GEOG","GEOL","GISC","GLOB","GREK","GRMN","GRNT","GRSC","HAUS","HDFS","HEBR","HFIM","HIPR","HIST","HNDI","HONS","HORT","HPAM","HPRB","ICON","IDEA","IDIS","IHDD","ILAD","INDO","INFO","INTB","INTL","ITAL","JOUR","JPNS","JRLC","JRMC","JURI","KINS","KREN","LACS","LAMS","LAND","LATN","LEAP","LEGL","LING","LLED","LLOD","MARK","MARS","MATH","MBUS","MCHE","MGMT","MIBO","MILS","MIST","MNML","MNPO","MSIT","MUSI","NAMS","NEUR","NMIX","NUTR","PADP","PASH","PATH","PBGG","PBHL","PBIO","PEDB","PERS","PHAR","PHIL","PHRM","PHYS","PLAN","PMCY","POLS","POPH","PORT","POUL","PRTM","PSYC","PTSP","QUAL","QUEC","RBIO","REAL","RELI","RMIN","ROML","RUSS","SAMS","SEMI","SLAV","SOCI","SOWK","SPAN","SPED","SPTM","STAT","SUST","SWAH","THEA","TURK","TXMI","UNIV","URDU","VBDI","VETM","VIET","VPAT","VPHY","WASH","WASR","WFED","WILD","WIPP","WMST","YORB","ZULU","ZZZZ"
@@ -359,6 +445,9 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Skip form population if form is closed or in preview mode
+        if (isFormClosed() || isPreviewMode()) return;
+
         populateSelect(document.getElementById('subject'), SUBJECTS);
         populateSelect(document.getElementById('building1'), BUILDINGS);
         populateSelect(document.getElementById('building2'), BUILDINGS);

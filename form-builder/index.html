@@ -282,6 +282,10 @@
                 <!-- Custom Blocks -->
                 <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Custom Blocks</p>
                 <div class="space-y-1">
+                    <button onclick="addBlock('section-title')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                        <i data-lucide="minus" class="w-4 h-4 text-gray-400"></i>
+                        Section Title Bar
+                    </button>
                     <button onclick="addBlock('info-paragraph')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
                         <i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i>
                         Information Paragraph
@@ -316,6 +320,19 @@
                         <div id="checkboxMenu" class="hidden pl-6 py-1 space-y-1">
                             <button onclick="addCheckboxGroup('horizontal')" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">Horizontal</button>
                             <button onclick="addCheckboxGroup('vertical')" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">Vertical (stacked)</button>
+                        </div>
+                    </div>
+                    <div class="dropdown-group">
+                        <button onclick="toggleDropdownMenu()" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                            <i data-lucide="chevron-down-square" class="w-4 h-4 text-gray-400"></i>
+                            Dropdown Field
+                            <i data-lucide="chevron-right" class="w-3 h-3 text-gray-400 ml-auto transition-transform" id="dropdownChevron"></i>
+                        </button>
+                        <div id="dropdownMenu" class="hidden pl-6 py-1 space-y-1">
+                            <button onclick="addDropdownFields(1)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">1 Dropdown</button>
+                            <button onclick="addDropdownFields(2)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">2 Dropdowns (row)</button>
+                            <button onclick="addDropdownFields(3)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">3 Dropdowns (row)</button>
+                            <button onclick="addDropdownFields(4)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">4 Dropdowns (row)</button>
                         </div>
                     </div>
                 </div>
@@ -504,10 +521,12 @@
 
         const templates = {
             'section': { type: 'section', title: 'Section Title' },
+            'section-title': { type: 'section-title', title: 'SECTION TITLE' },
             'notice': { type: 'notice', title: 'Notice:', text: 'Enter notice text here.' },
             'text-field': { type: 'text-field', fields: [{ label: 'Field Label', fieldName: 'field_1' }], required: false },
             'textarea': { type: 'textarea', label: 'Field Label', fieldName: 'field', rows: 2, required: false },
             'checkbox': { type: 'checkbox', label: 'Options', layout: 'vertical', options: [{ text: 'Option 1', bold: false, hasField: false, fieldRows: 1 }, { text: 'Option 2', bold: false, hasField: false, fieldRows: 1 }], fieldName: 'checkbox', required: false },
+            'dropdown': { type: 'dropdown', dropdowns: [{ label: 'Dropdown', fieldName: 'dropdown_1', options: ['Option 1', 'Option 2', 'Option 3'] }], required: false },
             'address': { type: 'address', title: 'Address', fieldPrefix: 'addr', includePhone: false, includeTypeSelector: false },
             'student-info': { type: 'student-info', title: 'Student Information', fieldPrefix: 'student' },
             'signature': { type: 'signature', label: 'Signature', fieldName: 'sig', includeDate: true, includePhotoId: false },
@@ -576,7 +595,30 @@
                     { text: 'Option 1', bold: false, italic: false, underline: false },
                     { text: 'Option 2', bold: false, italic: false, underline: false }
                 ],
-                fieldName: 'checkbox'
+                fieldName: 'checkbox',
+                required: false
+            };
+            blocks.push(block);
+            selectedId = block.id;
+            render();
+        }
+
+        function toggleDropdownMenu() {
+            const menu = document.getElementById('dropdownMenu');
+            const chevron = document.getElementById('dropdownChevron');
+            menu.classList.toggle('hidden');
+            chevron.style.transform = menu.classList.contains('hidden') ? '' : 'rotate(90deg)';
+        }
+
+        function addDropdownFields(count) {
+            const dropdowns = [];
+            for (let i = 1; i <= count; i++) {
+                dropdowns.push({ label: 'Dropdown ' + i, fieldName: 'dropdown_' + i, options: ['Option 1', 'Option 2', 'Option 3'] });
+            }
+            const block = {
+                type: 'dropdown',
+                id: ++idCounter,
+                dropdowns: dropdowns
             };
             blocks.push(block);
             selectedId = block.id;
@@ -670,6 +712,11 @@
                         <div class="preview-section-header">${b.title}</div>
                     </div>`;
 
+                case 'section-title':
+                    return `<div style="background:#666;padding:6px 12px;margin-bottom:10px;">
+                        <div style="font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#fff;">${b.title}</div>
+                    </div>`;
+
                 case 'notice':
                     // Parse **bold** markdown per-word in notice text
                     const noticeTextFormatted = (b.text || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
@@ -710,16 +757,44 @@
                         const rows = style.fieldRows || 1;
                         const fieldHeight = rows === 1 ? '18px' : (rows * 20) + 'px';
                         const fieldHtml = style.hasField ? `<div class="preview-field-${rows === 1 ? 'line' : 'multiline'}" style="flex:1;min-width:150px;margin:0;${rows > 1 ? 'height:' + fieldHeight : ''}"></div>` : '';
-                        return `<div style="display:flex;align-items:flex-start;gap:6px;width:100%;min-width:0;${b.layout === 'vertical' ? 'margin-bottom:8px;' : ''}"><span class="preview-checkbox" style="flex-shrink:0;margin-top:2px;"></span><span style="font-size:11px;color:#4a4a4a;word-wrap:break-word;overflow-wrap:break-word;min-width:0;flex:1;">${styled}</span>${fieldHtml}</div>`;
+                        // In horizontal layout, don't force full width; in vertical, allow full width
+                        const optionWidth = b.layout === 'vertical' ? 'width:100%;' : '';
+                        return `<div style="display:flex;align-items:flex-start;gap:6px;${optionWidth}min-width:0;${b.layout === 'vertical' ? 'margin-bottom:8px;' : ''}"><span class="preview-checkbox" style="flex-shrink:0;margin-top:2px;"></span><span style="font-size:11px;color:#4a4a4a;word-wrap:break-word;overflow-wrap:break-word;min-width:0;${b.layout === 'vertical' ? 'flex:1;' : ''}">${styled}</span>${fieldHtml}</div>`;
                     }).join('');
                     const cbLayout = b.layout === 'vertical' ? 'flex-direction:column;align-items:stretch;' : 'flex-direction:row;flex-wrap:wrap;gap:16px;';
                     const cbRequired = b.required ? '<span style="color:#BA0C2F;"> *</span>' : '';
                     return `<div class="mb-3">
-                        <div style="border:1px solid #ccc;border-radius:4px;padding:10px 12px;position:relative;margin-top:8px;overflow:hidden;">
-                            <div style="position:absolute;top:-8px;left:10px;background:#fff;padding:0 6px;font-size:11px;font-weight:600;color:#666;">${b.label}${cbRequired}</div>
-                            <div style="display:flex;${cbLayout}margin-top:4px;width:100%;">${cbOpts}</div>
+                        <div style="border:1px solid #ccc;border-radius:4px;padding:16px 12px 10px 12px;position:relative;margin-top:8px;">
+                            <div style="position:absolute;top:-9px;left:10px;background:#fff;padding:0 6px;font-size:11px;font-weight:600;color:#666;line-height:1;">${b.label}${cbRequired}</div>
+                            <div style="display:flex;${cbLayout}width:100%;">${cbOpts}</div>
                         </div>
                     </div>`;
+
+                case 'dropdown':
+                    const ddCount = b.dropdowns ? b.dropdowns.length : 1;
+                    if (ddCount === 1) {
+                        const dd = b.dropdowns ? b.dropdowns[0] : { label: 'Dropdown', options: [] };
+                        const optionsHtml = (dd.options || []).map(o => `<option>${o}</option>`).join('');
+                        return `<div class="mb-1">
+                            <div class="preview-field-label">${dd.label}${b.required ? ' *' : ''}</div>
+                            <select class="preview-field-line" style="height:28px;font-size:11px;padding:0 8px;color:#666;cursor:pointer;" disabled>
+                                <option value="">Select...</option>
+                                ${optionsHtml}
+                            </select>
+                        </div>`;
+                    } else {
+                        const cols = b.dropdowns.map(dd => {
+                            const optionsHtml = (dd.options || []).map(o => `<option>${o}</option>`).join('');
+                            return `<div>
+                                <div class="preview-field-label">${dd.label}${b.required ? ' *' : ''}</div>
+                                <select class="preview-field-line" style="height:28px;font-size:11px;padding:0 8px;color:#666;cursor:pointer;" disabled>
+                                    <option value="">Select...</option>
+                                    ${optionsHtml}
+                                </select>
+                            </div>`;
+                        }).join('');
+                        return `<div class="mb-1"><div style="display:grid;grid-template-columns:repeat(${ddCount}, 1fr);gap:10px;">${cols}</div></div>`;
+                    }
 
                 case 'address':
                     const typeSelectorHtml = b.includeTypeSelector ? `
@@ -883,6 +958,10 @@
                     html += field('Title', 'title', b.title);
                     if (b.fieldPrefix !== undefined) html += field('Field Prefix', 'fieldPrefix', b.fieldPrefix);
                     break;
+                case 'section-title':
+                    html += field('Title', 'title', b.title);
+                    html += `<p class="text-xs text-gray-400 mt-1">Text will display uppercase in a grey bar</p>`;
+                    break;
                 case 'address':
                     html += field('Title', 'title', b.title);
                     html += field('Field Prefix', 'fieldPrefix', b.fieldPrefix);
@@ -967,6 +1046,32 @@
                     });
                     html += `<button onclick="addCheckboxOption()" class="w-full py-1 text-xs border border-dashed rounded text-gray-500 hover:bg-gray-50">+ Add Option</button>`;
                     break;
+                case 'dropdown':
+                    if (b.dropdowns && b.dropdowns.length > 0) {
+                        html += `<p class="text-xs text-gray-500 font-medium">${b.dropdowns.length} Dropdown${b.dropdowns.length > 1 ? 's' : ''} in Row</p>`;
+                        b.dropdowns.forEach((dd, i) => {
+                            html += `<div class="p-2 bg-gray-50 rounded border mb-2">
+                                <p class="text-xs text-gray-400 mb-1">Dropdown ${i + 1}</p>
+                                <div class="mb-2">
+                                    <label class="block text-xs text-gray-500 mb-1">Label</label>
+                                    <input type="text" value="${dd.label}" onchange="updateDropdownField(${i}, 'label', this.value)"
+                                           class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="block text-xs text-gray-500 mb-1">Field Name</label>
+                                    <input type="text" value="${dd.fieldName}" onchange="updateDropdownField(${i}, 'fieldName', this.value)"
+                                           class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">Options (one per line)</label>
+                                    <textarea rows="4" onchange="updateDropdownOptions(${i}, this.value)"
+                                           class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400">${(dd.options || []).join('\n')}</textarea>
+                                </div>
+                            </div>`;
+                        });
+                        html += checkbox('Required', 'required', b.required);
+                    }
+                    break;
                 case 'signature':
                     html += field('Label', 'label', b.label);
                     html += checkbox('Include Date', 'includeDate', b.includeDate);
@@ -1045,6 +1150,20 @@
             const b = blocks.find(x => x.id === selectedId);
             if (!b || !b.fields || !b.fields[index]) return;
             b.fields[index][prop] = value;
+            renderPreview();
+        }
+
+        function updateDropdownField(index, prop, value) {
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b || !b.dropdowns || !b.dropdowns[index]) return;
+            b.dropdowns[index][prop] = value;
+            renderPreview();
+        }
+
+        function updateDropdownOptions(index, value) {
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b || !b.dropdowns || !b.dropdowns[index]) return;
+            b.dropdowns[index].options = value.split('\n').filter(x => x.trim());
             renderPreview();
         }
 
@@ -1602,6 +1721,15 @@
                         y -= sectionH + 10;
                         break;
 
+                    case 'section-title':
+                        const stH = 22;
+                        ensureSpace(stH + 8);
+                        // Grey bar with white text
+                        currentPage.drawRectangle({ x: mSide, y: y - stH, width: contentWidth, height: stH, color: rgb(0.4, 0.4, 0.4) });
+                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 15, size: 10, font: font, color: rgb(1, 1, 1) });
+                        y -= stH + 8;
+                        break;
+
                     case 'notice':
                         // Word-wrap notice text
                         const noticeText = b.text || '';
@@ -1811,6 +1939,45 @@
                             }
                         });
                         y -= cbBoxHeight + 8;
+                        break;
+
+                    case 'dropdown':
+                        const ddFields = b.dropdowns || [];
+                        const ddFieldCount = ddFields.length;
+                        const ddFieldH = 38;
+                        ensureSpace(ddFieldH + 6);
+
+                        if (ddFieldCount === 1) {
+                            const dd = ddFields[0];
+                            y -= 6;
+                            currentPage.drawText(dd.label + (b.required ? ' *' : ''), { x: mSide, y, size: 10, font: fontBold, color: gray });
+                            if (b.required) {
+                                currentPage.drawText(' *', { x: mSide + fontBold.widthOfTextAtSize(dd.label, 10), y, size: 10, font: fontBold, color: red });
+                            }
+                            y -= 6;
+                            const ddrop = form.createDropdown(dd.fieldName + '_' + b.id);
+                            ddrop.addOptions(dd.options || []);
+                            ddrop.addToPage(currentPage, { x: mSide, y: y - 18, width: contentWidth, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            y -= 26;
+                        } else {
+                            const ddColW = (contentWidth - (ddFieldCount - 1) * 10) / ddFieldCount;
+                            y -= 6;
+                            ddFields.forEach((dd, i) => {
+                                const xOff = mSide + i * (ddColW + 10);
+                                currentPage.drawText(dd.label, { x: xOff, y, size: 10, font: fontBold, color: gray });
+                                if (b.required) {
+                                    currentPage.drawText(' *', { x: xOff + fontBold.widthOfTextAtSize(dd.label, 10), y, size: 10, font: fontBold, color: red });
+                                }
+                            });
+                            y -= 6;
+                            ddFields.forEach((dd, i) => {
+                                const xOff = mSide + i * (ddColW + 10);
+                                const ddrop = form.createDropdown(dd.fieldName + '_' + b.id);
+                                ddrop.addOptions(dd.options || []);
+                                ddrop.addToPage(currentPage, { x: xOff, y: y - 18, width: ddColW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            });
+                            y -= 26;
+                        }
                         break;
 
                     case 'address':
