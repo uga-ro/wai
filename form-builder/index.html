@@ -1803,10 +1803,41 @@
                         break;
 
                     case 'textarea':
-                        const taHeight = b.rows * 18 + 25;
+                        // Wrap the label text
+                        const taLabelText = b.label + (b.required ? ' *' : '');
+                        const taLabelMaxWidth = contentWidth;
+                        const taLabelWords = b.label.split(' ');
+                        let taLabelLines = [];
+                        let taLabelCurrent = '';
+                        taLabelWords.forEach(word => {
+                            const test = taLabelCurrent ? taLabelCurrent + ' ' + word : word;
+                            if (fontBold.widthOfTextAtSize(test, 10) > taLabelMaxWidth && taLabelCurrent) {
+                                taLabelLines.push(taLabelCurrent);
+                                taLabelCurrent = word;
+                            } else {
+                                taLabelCurrent = test;
+                            }
+                        });
+                        if (taLabelCurrent) taLabelLines.push(taLabelCurrent);
+                        if (taLabelLines.length === 0) taLabelLines.push('');
+
+                        const taLabelHeight = taLabelLines.length * 14;
+                        const taHeight = b.rows * 18 + taLabelHeight + 16;
                         ensureSpace(taHeight);
                         y -= 6; // Add margin above label
-                        currentPage.drawText(b.label + (b.required ? ' *' : ''), { x: mSide, y, size: 10, font: fontBold, color: gray });
+
+                        // Render wrapped label lines
+                        taLabelLines.forEach((line, idx) => {
+                            let labelX = mSide;
+                            currentPage.drawText(line, { x: labelX, y, size: 10, font: fontBold, color: gray });
+                            // Add required asterisk to last line
+                            if (b.required && idx === taLabelLines.length - 1) {
+                                currentPage.drawText(' *', { x: labelX + fontBold.widthOfTextAtSize(line, 10), y, size: 10, font: fontBold, color: red });
+                            }
+                            y -= 14;
+                        });
+
+                        y += 14; // Undo last line decrement
                         y -= 6; // Reduced gap between label and field
                         const ta = form.createTextField(b.fieldName + '_' + b.id);
                         ta.enableMultiline();
@@ -1867,15 +1898,16 @@
                         let cbY = y - 18;
                         const standardFieldWidth = contentWidth - 150; // Standardized width
 
-                        // Helper to wrap checkbox text into lines
+                        // Helper to wrap checkbox text into lines (preserves **bold** markers)
                         function wrapCheckboxText(text, maxWidth, useFont) {
-                            const plainText = text.replace(/\*\*/g, '');
-                            const words = plainText.split(' ');
+                            const words = text.split(' ');
                             let lines = [];
                             let currentLine = '';
                             words.forEach(word => {
                                 const testLine = currentLine ? currentLine + ' ' + word : word;
-                                const lineWidth = useFont.widthOfTextAtSize(testLine, 9);
+                                // Calculate width without bold markers
+                                const plainTest = testLine.replace(/\*\*/g, '');
+                                const lineWidth = useFont.widthOfTextAtSize(plainTest, 9);
                                 if (lineWidth > maxWidth && currentLine) {
                                     lines.push(currentLine);
                                     currentLine = word;
@@ -1904,21 +1936,32 @@
                             const wrappedLines = wrapCheckboxText(text, availableWidth, useFont);
                             const lineHeight = 12;
 
-                            // Render each wrapped line
+                            // Render each wrapped line with inline bold support
                             let lineY = cbY - 8;
                             wrappedLines.forEach((line, lineIdx) => {
                                 let textX = textStartX;
                                 if (isBold) {
+                                    // Entire option is bold
                                     currentPage.drawText(line, { x: textX, y: lineY, size: 9, font: fontBold, color: gray });
                                 } else {
-                                    // For wrapped lines, just render plain text (bold markers removed during wrapping)
-                                    currentPage.drawText(line, { x: textX, y: lineY, size: 9, font: font, color: gray });
+                                    // Check for inline **bold** markers
+                                    const parts = line.split(/(\*\*[^*]+\*\*)/g);
+                                    parts.forEach(part => {
+                                        if (part.startsWith('**') && part.endsWith('**')) {
+                                            const boldText = part.slice(2, -2);
+                                            currentPage.drawText(boldText, { x: textX, y: lineY, size: 9, font: fontBold, color: gray });
+                                            textX += fontBold.widthOfTextAtSize(boldText, 9);
+                                        } else if (part) {
+                                            currentPage.drawText(part, { x: textX, y: lineY, size: 9, font: font, color: gray });
+                                            textX += font.widthOfTextAtSize(part, 9);
+                                        }
+                                    });
                                 }
                                 lineY -= lineHeight;
                             });
 
-                            // Calculate total width of first line for field positioning
-                            const firstLineWidth = useFont.widthOfTextAtSize(wrappedLines[0] || '', 9);
+                            // Calculate total width of first line for field positioning (strip bold markers)
+                            const firstLineWidth = useFont.widthOfTextAtSize((wrappedLines[0] || '').replace(/\*\*/g, ''), 9);
 
                             // Add fillable field if enabled
                             if (hasField) {
