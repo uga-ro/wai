@@ -2099,6 +2099,7 @@
                     case 'info-paragraph':
                         const infoText = b.text || '';
                         const infoLineHeight = 14;
+                        const infoTitleLineHeight = 14;
                         const infoMaxWidth = contentWidth - 20;
                         const infoSourceLines = infoText.split('\n');
 
@@ -2123,6 +2124,28 @@
                             return wrapped.length || 1;
                         }
 
+                        // Helper to wrap title text and return array of lines
+                        function wrapInfoTitle(title, maxWidth) {
+                            const words = title.split(' ');
+                            let lines = [];
+                            let current = '';
+                            words.forEach(word => {
+                                const test = current ? current + ' ' + word : word;
+                                if (fontBold.widthOfTextAtSize(test, 10) > maxWidth && current) {
+                                    lines.push(current);
+                                    current = word;
+                                } else {
+                                    current = test;
+                                }
+                            });
+                            if (current) lines.push(current);
+                            return lines.length ? lines : [''];
+                        }
+
+                        // Wrap the title
+                        const infoTitleLines = wrapInfoTitle(b.title.toUpperCase(), infoMaxWidth);
+                        const infoTitleHeight = infoTitleLines.length * infoTitleLineHeight;
+
                         // Calculate total wrapped lines for height
                         let infoTotalLines = 0;
                         infoSourceLines.forEach(line => {
@@ -2131,18 +2154,25 @@
                             infoTotalLines += wrapInfoLine(cleanLine, infoMaxWidth, isBullet);
                         });
 
-                        const infoBoxH = 30 + (infoTotalLines * infoLineHeight);
+                        const infoBoxH = 20 + infoTitleHeight + 10 + (infoTotalLines * infoLineHeight);
                         ensureSpace(infoBoxH + 20);
 
                         // Single light background box
                         currentPage.drawRectangle({ x: mSide, y: y - infoBoxH, width: contentWidth, height: infoBoxH, color: rgb(0.96, 0.94, 0.92) });
 
-                        // Header text (dark, uppercase) with underline
-                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 10, font: fontBold, color: gray });
-                        currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
+                        // Header text (dark, uppercase) with wrapping
+                        let infoTitleY = y - 14;
+                        infoTitleLines.forEach(titleLine => {
+                            currentPage.drawText(titleLine, { x: mSide + 10, y: infoTitleY, size: 10, font: fontBold, color: gray });
+                            infoTitleY -= infoTitleLineHeight;
+                        });
+
+                        // Underline after title
+                        const underlineY = y - 14 - infoTitleHeight - 4;
+                        currentPage.drawLine({ start: { x: mSide + 10, y: underlineY }, end: { x: pageWidth - mSide - 10, y: underlineY }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
 
                         // Render text with word wrapping, bold, bullets, and line breaks
-                        let infoY = y - 34;
+                        let infoY = underlineY - 14;
                         infoSourceLines.forEach(srcLine => {
                             const isBullet = srcLine.trim().startsWith('- ');
                             let lineContent = isBullet ? srcLine.trim().substring(2) : srcLine;
