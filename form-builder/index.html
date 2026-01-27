@@ -812,10 +812,23 @@
                         </div>` : '';
                     const phoneHtml = b.includePhone ? `
                         <div style="margin-top:8px;">
-                            <div class="preview-field-label">Phone <span style="color:#BA0C2F;">*</span> <span style="font-weight:normal;font-style:italic;color:#888;font-size:9px;">(include area code)</span></div>
-                            <div style="display:flex;align-items:center;gap:10px;">
-                                <div class="preview-field-line" style="flex:1;margin:0;"></div>
-                                <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4a4a4a;white-space:nowrap;">
+                            <div style="display:flex;align-items:end;gap:10px;">
+                                <div style="flex:0 0 auto;">
+                                    <div class="preview-field-label">Country Code</div>
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <div class="preview-field-line" style="margin:0;width:50px;"></div>
+                                        <span style="font-style:italic;color:#888;font-size:9px;white-space:nowrap;">(non-US)</span>
+                                    </div>
+                                </div>
+                                <div style="flex:0 0 auto;">
+                                    <div class="preview-field-label">Area Code <span style="color:#BA0C2F;">*</span></div>
+                                    <div class="preview-field-line" style="margin:0;width:70px;"></div>
+                                </div>
+                                <div style="flex:1;">
+                                    <div class="preview-field-label">Phone Number <span style="color:#BA0C2F;">*</span></div>
+                                    <div class="preview-field-line" style="margin:0;"></div>
+                                </div>
+                                <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4a4a4a;white-space:nowrap;padding-bottom:2px;">
                                     <span class="preview-checkbox"></span> Make primary phone
                                 </label>
                             </div>
@@ -848,7 +861,7 @@
                         <!-- Row 2: UGA ID + Email -->
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                             <div>
-                                <div class="preview-field-label">UGA ID (810X) Number <span style="color:#BA0C2F;">*</span> <span style="font-weight:normal;font-style:italic;color:#888;font-size:9px;">(or Date of Birth if unavailable)</span></div>
+                                <div class="preview-field-label">UGA ID (810X) Number <span style="color:#BA0C2F;">*</span></div>
                                 <div class="preview-field-line" style="margin-top:4px;"></div>
                             </div>
                             <div>
@@ -2078,19 +2091,32 @@
                         form.createTextField(b.fieldPrefix + '_country').addToPage(currentPage, { x: mSide + 10 + cityW + stateW + gap2*2, y: y - 16, width: countryW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                         form.createTextField(b.fieldPrefix + '_zip').addToPage(currentPage, { x: mSide + 10 + cityW + stateW + countryW + gap2*3, y: y - 16, width: zipW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                         y -= 26;
-                        // Phone field (optional)
+                        // Phone fields (optional)
                         if (b.includePhone) {
-                            const phoneLabelW = fontBold.widthOfTextAtSize('Phone', 9);
-                            currentPage.drawText('Phone', { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
-                            currentPage.drawText(' *', { x: mSide + 10 + phoneLabelW, y, size: 9, font: fontBold, color: red });
-                            currentPage.drawText(' (include area code)', { x: mSide + 10 + phoneLabelW + 8, y, size: 9, font, color: gray });
+                            // Country Code label
+                            const countryCodeLabel = 'Country Code';
+                            currentPage.drawText(countryCodeLabel, { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
+                            currentPage.drawText(' (non-US)', { x: mSide + 10 + fontBold.widthOfTextAtSize(countryCodeLabel, 9), y, size: 9, font, color: gray });
+                            // Area Code label
+                            const areaCodeX = mSide + 10 + 80;
+                            currentPage.drawText('Area Code', { x: areaCodeX, y, size: 9, font: fontBold, color: gray });
+                            currentPage.drawText(' *', { x: areaCodeX + fontBold.widthOfTextAtSize('Area Code', 9), y, size: 9, font: fontBold, color: red });
+                            // Phone Number label
+                            const phoneNumX = areaCodeX + 80;
+                            currentPage.drawText('Phone Number', { x: phoneNumX, y, size: 9, font: fontBold, color: gray });
+                            currentPage.drawText(' *', { x: phoneNumX + fontBold.widthOfTextAtSize('Phone Number', 9), y, size: 9, font: fontBold, color: red });
                             y -= 12;
-                            const phoneFieldW = addrInnerW * 0.5;
-                            form.createTextField(b.fieldPrefix + '_phone').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: phoneFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            // Phone input fields
+                            const countryCodeW = 70;
+                            const areaCodeW = 70;
+                            const phoneNumW = addrInnerW - countryCodeW - areaCodeW - 130;
+                            form.createTextField(b.fieldPrefix + '_country_code').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: countryCodeW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            form.createTextField(b.fieldPrefix + '_area_code').addToPage(currentPage, { x: areaCodeX, y: y - 16, width: areaCodeW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            form.createTextField(b.fieldPrefix + '_phone').addToPage(currentPage, { x: phoneNumX, y: y - 16, width: phoneNumW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                             // Make primary phone checkbox
                             const phoneCb = form.createCheckBox(b.fieldPrefix + '_primary_phone');
-                            phoneCb.addToPage(currentPage, { x: mSide + 10 + phoneFieldW + 15, y: y - 12, width: 12, height: 12 });
-                            currentPage.drawText('Make primary phone', { x: mSide + 10 + phoneFieldW + 30, y: y - 10, size: 9, font, color: gray });
+                            phoneCb.addToPage(currentPage, { x: phoneNumX + phoneNumW + 15, y: y - 12, width: 12, height: 12 });
+                            currentPage.drawText('Make primary phone', { x: phoneNumX + phoneNumW + 30, y: y - 10, size: 9, font, color: gray });
                             y -= 26;
                         }
                         y -= 12;
@@ -2127,7 +2153,6 @@
                         currentPage.drawText(ugaIdLabel, { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
                         const ugaIdLabelW = fontBold.widthOfTextAtSize(ugaIdLabel, 9);
                         currentPage.drawText(' *', { x: mSide + 10 + ugaIdLabelW, y, size: 9, font: fontBold, color: red });
-                        currentPage.drawText(' (or Date of Birth if unavailable)', { x: mSide + 10 + ugaIdLabelW + 8, y, size: 9, font, color: gray });
                         // Contact Email Address with required *
                         currentPage.drawText('Contact Email Address', { x: mSide + 10 + siHalfW + 12, y, size: 9, font: fontBold, color: gray });
                         currentPage.drawText(' *', { x: mSide + 10 + siHalfW + 12 + fontBold.widthOfTextAtSize('Contact Email Address', 9), y, size: 9, font: fontBold, color: red });
