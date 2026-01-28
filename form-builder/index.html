@@ -390,6 +390,17 @@
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
+            <!-- Folder navigation breadcrumb -->
+            <div class="px-4 py-2 bg-gray-50 border-b flex items-center gap-2">
+                <div id="folderBreadcrumb" class="flex items-center gap-1 text-sm flex-1">
+                    <button onclick="navigateToFolder(null)" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
+                        <i data-lucide="home" class="w-4 h-4"></i> All Forms
+                    </button>
+                </div>
+                <button onclick="createNewFolder()" class="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-white flex items-center gap-1" title="Create new folder">
+                    <i data-lucide="folder-plus" class="w-4 h-4"></i> New Folder
+                </button>
+            </div>
             <div class="p-4 overflow-y-auto flex-1">
                 <div id="libraryList" class="space-y-2">
                     <p class="text-gray-400 text-sm text-center py-8">Loading...</p>
@@ -460,6 +471,8 @@
         let selectedId = null; // 'letterhead' or block id
         let idCounter = 0;
         let currentTemplateId = null; // Track current server template ID
+        let currentFormFolder = null; // Track folder of currently loaded form
+        let currentLibraryFolder = null; // Track current folder in library navigation
         let modalResolve = null; // For modal promise resolution
 
         // Custom modal functions to replace browser popups
@@ -1364,6 +1377,7 @@
             selectedId = null;
             idCounter = 0;
             currentTemplateId = null;
+            currentFormFolder = null;
             letterheadTitle = 'Title';
             document.getElementById('formTitle').value = 'Untitled Form';
             render();
@@ -1381,6 +1395,23 @@
             try {
                 let response;
                 let isNew = !currentTemplateId;
+                let folderToSave = currentFormFolder;
+
+                // For new forms, ask which folder to save to
+                if (isNew) {
+                    // Get all available folders
+                    const foldersResponse = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?select=folder&folder=not.is.null`, {
+                        headers: getApiHeaders(false),
+                        cache: 'no-store'
+                    });
+                    const foldersData = await foldersResponse.json();
+                    const folders = [...new Set(foldersData.map(r => r.folder).filter(f => f))].sort();
+
+                    // Show folder picker (default to current library folder if browsing)
+                    folderToSave = await showFolderPicker(folders, 'Save form to folder:');
+                    if (folderToSave === undefined) return; // Cancelled
+                    currentFormFolder = folderToSave;
+                }
 
                 if (currentTemplateId) {
                     // Update existing record
@@ -1391,6 +1422,7 @@
                         body: JSON.stringify({
                             title: title,
                             letterhead_title: letterheadTitle,
+                            folder: folderToSave,
                             form_data: formData
                         })
                     });
@@ -1403,6 +1435,7 @@
                         body: JSON.stringify({
                             title: title,
                             letterhead_title: letterheadTitle,
+                            folder: folderToSave,
                             form_data: formData
                         })
                     });
@@ -1448,6 +1481,7 @@
         // Library modal functions
         function openLibrary() {
             document.getElementById('libraryModal').classList.remove('hidden');
+            currentLibraryFolder = null; // Start at root
             loadLibraryList();
             lucide.createIcons();
         }
@@ -1459,6 +1493,9 @@
         async function loadLibraryList() {
             const listEl = document.getElementById('libraryList');
             listEl.innerHTML = '<p class="text-gray-400 text-sm text-center py-8">Loading...</p>';
+
+            // Update breadcrumb
+            updateFolderBreadcrumb();
 
             try {
                 const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?order=updated_at.desc`, {
@@ -1473,12 +1510,64 @@
                 const records = await response.json();
 
                 if (records && records.length > 0) {
-                    const templates = records.map(r => ({
-                        id: r.id,
-                        title: r.title || 'Untitled',
-                        modified: r.updated_at ? new Date(r.updated_at).toLocaleString() : 'Unknown'
-                    }));
-                    renderLibraryList(listEl, templates);
+                    // Map all records with folder info, filtering out folder placeholders
+                    const allTemplates = records
+                        .filter(r => r.title !== '__folder_placeholder__')
+                        .map(r => ({
+                            id: r.id,
+                            title: r.title || 'Untitled',
+                            folder: r.folder || null,
+                            modified: r.updated_at ? new Date(r.updated_at).toLocaleString() : 'Unknown'
+                        }));
+
+                    // Also get folders from placeholder records
+                    const placeholderFolders = records
+                        .filter(r => r.title === '__folder_placeholder__')
+                        .map(r => r.folder)
+                        .filter(f => f);
+
+                    // Get unique folders at current level
+                    const folders = new Set();
+                    const templates = [];
+
+                    // Add folders from placeholders
+                    placeholderFolders.forEach(folder => {
+                        if (currentLibraryFolder === null) {
+                            const topFolder = folder.split('/')[0];
+                            folders.add(topFolder);
+                        } else if (folder.startsWith(currentLibraryFolder + '/')) {
+                            const remaining = folder.substring(currentLibraryFolder.length + 1);
+                            const nextFolder = remaining.split('/')[0];
+                            folders.add(nextFolder);
+                        }
+                    });
+
+                    allTemplates.forEach(t => {
+                        if (currentLibraryFolder === null) {
+                            // At root level
+                            if (t.folder) {
+                                // Get top-level folder name
+                                const topFolder = t.folder.split('/')[0];
+                                folders.add(topFolder);
+                            } else {
+                                // Forms without a folder show at root
+                                templates.push(t);
+                            }
+                        } else {
+                            // Inside a folder
+                            if (t.folder === currentLibraryFolder) {
+                                // Exact match - show this form
+                                templates.push(t);
+                            } else if (t.folder && t.folder.startsWith(currentLibraryFolder + '/')) {
+                                // Subfolder - get next level folder name
+                                const remaining = t.folder.substring(currentLibraryFolder.length + 1);
+                                const nextFolder = remaining.split('/')[0];
+                                folders.add(nextFolder);
+                            }
+                        }
+                    });
+
+                    renderLibraryList(listEl, templates, Array.from(folders).sort());
                 } else {
                     listEl.innerHTML = '<p class="text-gray-400 text-sm text-center py-8">No saved forms yet. Create a form and click Save to add it to your library.</p>';
                 }
@@ -1488,26 +1577,317 @@
             }
         }
 
-        function renderLibraryList(listEl, templates) {
-            listEl.innerHTML = templates.map(t => `
-                <div class="flex items-center justify-between p-3 border rounded hover:bg-gray-50 group">
-                    <div class="flex-1 cursor-pointer" onclick="loadFromLibrary('${t.id}')">
-                        <div class="font-medium text-gray-800">${escapeHtml(t.title)}</div>
-                        <div class="text-xs text-gray-400">Last modified: ${t.modified}</div>
+        function updateFolderBreadcrumb() {
+            const breadcrumbEl = document.getElementById('folderBreadcrumb');
+            if (!currentLibraryFolder) {
+                breadcrumbEl.innerHTML = `
+                    <button onclick="navigateToFolder(null)" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
+                        <i data-lucide="home" class="w-4 h-4"></i> All Forms
+                    </button>
+                `;
+            } else {
+                const parts = currentLibraryFolder.split('/');
+                let html = `
+                    <button onclick="navigateToFolder(null)" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
+                        <i data-lucide="home" class="w-4 h-4"></i>
+                    </button>
+                `;
+                let path = '';
+                parts.forEach((part, index) => {
+                    path = path ? path + '/' + part : part;
+                    const isLast = index === parts.length - 1;
+                    html += `<span class="text-gray-400">/</span>`;
+                    if (isLast) {
+                        html += `<span class="text-gray-700 font-medium">${escapeHtml(part)}</span>`;
+                    } else {
+                        html += `<button onclick="navigateToFolder('${escapeHtml(path)}')" class="text-blue-600 hover:text-blue-800 hover:underline">${escapeHtml(part)}</button>`;
+                    }
+                });
+                breadcrumbEl.innerHTML = html;
+            }
+            lucide.createIcons();
+        }
+
+        function navigateToFolder(folder) {
+            currentLibraryFolder = folder;
+            loadLibraryList();
+        }
+
+        async function createNewFolder() {
+            const folderName = await showPrompt('Enter folder name:', 'New Folder');
+            if (!folderName) return;
+
+            // Validate folder name (no slashes, reasonable characters)
+            if (folderName.includes('/') || folderName.includes('\\')) {
+                await showAlert('Folder name cannot contain slashes.', 'Invalid Name');
+                return;
+            }
+
+            const fullPath = currentLibraryFolder ? currentLibraryFolder + '/' + folderName : folderName;
+
+            // Create a placeholder form to establish the folder
+            // We'll create a hidden "__folder_placeholder__" form that won't show in the UI
+            try {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}`, {
+                    method: 'POST',
+                    headers: getApiHeaders(true),
+                    cache: 'no-store',
+                    body: JSON.stringify({
+                        title: '__folder_placeholder__',
+                        letterhead_title: '',
+                        folder: fullPath,
+                        form_data: { blocks: [], title: '__folder_placeholder__', letterheadTitle: '' }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                await showSuccess(`Folder "${folderName}" created!`);
+                loadLibraryList();
+            } catch (err) {
+                await showAlert('Error creating folder: ' + err.message, 'Error');
+                console.error('Create folder error:', err);
+            }
+        }
+
+        async function renameFolder(oldPath, oldName) {
+            const newName = await showPrompt('Enter new folder name:', 'Rename Folder', oldName);
+            if (!newName || newName === oldName) return;
+
+            if (newName.includes('/') || newName.includes('\\')) {
+                await showAlert('Folder name cannot contain slashes.', 'Invalid Name');
+                return;
+            }
+
+            // Build new path
+            const pathParts = oldPath.split('/');
+            pathParts[pathParts.length - 1] = newName;
+            const newPath = pathParts.join('/');
+
+            try {
+                // Fetch all forms that have this folder or are in subfolders
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?or=(folder.eq.${encodeURIComponent(oldPath)},folder.like.${encodeURIComponent(oldPath + '/%')})`, {
+                    headers: getApiHeaders(false),
+                    cache: 'no-store'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const records = await response.json();
+
+                // Update each record with new folder path
+                for (const record of records) {
+                    const updatedFolder = record.folder === oldPath
+                        ? newPath
+                        : newPath + record.folder.substring(oldPath.length);
+
+                    await fetch(`${RODS_API_BASE}/${RODS_TABLE}?id=eq.${record.id}`, {
+                        method: 'PATCH',
+                        headers: getApiHeaders(true),
+                        cache: 'no-store',
+                        body: JSON.stringify({ folder: updatedFolder })
+                    });
+                }
+
+                await showSuccess(`Folder renamed to "${newName}"!`);
+
+                // Update current folder if we were inside the renamed folder
+                if (currentLibraryFolder === oldPath) {
+                    currentLibraryFolder = newPath;
+                } else if (currentLibraryFolder && currentLibraryFolder.startsWith(oldPath + '/')) {
+                    currentLibraryFolder = newPath + currentLibraryFolder.substring(oldPath.length);
+                }
+
+                loadLibraryList();
+            } catch (err) {
+                await showAlert('Error renaming folder: ' + err.message, 'Error');
+                console.error('Rename folder error:', err);
+            }
+        }
+
+        async function moveFormToFolder(id, title) {
+            // Get all available folders
+            try {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?select=folder&folder=not.is.null`, {
+                    headers: getApiHeaders(false),
+                    cache: 'no-store'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const records = await response.json();
+                const folders = [...new Set(records.map(r => r.folder).filter(f => f))].sort();
+
+                // Show folder selection modal
+                const selectedFolder = await showFolderPicker(folders, `Move "${title}" to folder:`);
+                if (selectedFolder === undefined) return; // Cancelled
+
+                // Update the form's folder
+                await fetch(`${RODS_API_BASE}/${RODS_TABLE}?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: getApiHeaders(true),
+                    cache: 'no-store',
+                    body: JSON.stringify({ folder: selectedFolder || null })
+                });
+
+                await showSuccess(selectedFolder ? `Moved to "${selectedFolder}"` : 'Moved to root');
+                loadLibraryList();
+            } catch (err) {
+                await showAlert('Error moving form: ' + err.message, 'Error');
+                console.error('Move form error:', err);
+            }
+        }
+
+        // Prompt helper for input dialogs
+        function showPrompt(message, title, defaultValue = '') {
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+                        <h3 class="font-semibold text-lg mb-2">${escapeHtml(title)}</h3>
+                        <p class="text-gray-600 mb-4">${escapeHtml(message)}</p>
+                        <input type="text" id="promptInput" class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4" value="${escapeHtml(defaultValue)}">
+                        <div class="flex justify-end gap-2">
+                            <button id="promptCancel" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                            <button id="promptOk" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">OK</button>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onclick="loadFromLibrary('${t.id}')" class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded" title="Open">
-                            <i data-lucide="folder-open" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="downloadFromLibrary('${t.id}')" class="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded" title="Download">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="deleteFromLibrary('${t.id}', '${escapeHtml(t.title)}')" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded" title="Delete">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
+                `;
+                document.body.appendChild(modal);
+
+                const input = modal.querySelector('#promptInput');
+                input.focus();
+                input.select();
+
+                const cleanup = (value) => {
+                    document.body.removeChild(modal);
+                    resolve(value);
+                };
+
+                modal.querySelector('#promptCancel').onclick = () => cleanup(null);
+                modal.querySelector('#promptOk').onclick = () => cleanup(input.value.trim());
+                input.onkeydown = (e) => {
+                    if (e.key === 'Enter') cleanup(input.value.trim());
+                    if (e.key === 'Escape') cleanup(null);
+                };
+            });
+        }
+
+        // Folder picker modal
+        function showFolderPicker(folders, message) {
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center';
+
+                const folderOptions = folders.map(f => `
+                    <button class="w-full text-left px-3 py-2 hover:bg-blue-50 rounded flex items-center gap-2" data-folder="${escapeHtml(f)}">
+                        <i data-lucide="folder" class="w-4 h-4 text-blue-500"></i>
+                        ${escapeHtml(f)}
+                    </button>
+                `).join('');
+
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4 max-h-[70vh] flex flex-col">
+                        <div class="p-4 border-b">
+                            <h3 class="font-semibold text-lg">${escapeHtml(message)}</h3>
+                        </div>
+                        <div class="p-2 overflow-y-auto flex-1">
+                            <button class="w-full text-left px-3 py-2 hover:bg-gray-50 rounded flex items-center gap-2 border-b mb-2" data-folder="">
+                                <i data-lucide="home" class="w-4 h-4 text-gray-500"></i>
+                                Root (no folder)
+                            </button>
+                            ${folderOptions || '<p class="text-gray-400 text-sm text-center py-4">No folders yet. Create one first.</p>'}
+                        </div>
+                        <div class="p-4 border-t bg-gray-50 flex justify-between">
+                            <button id="folderPickerNew" class="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-white flex items-center gap-1">
+                                <i data-lucide="folder-plus" class="w-4 h-4"></i> New Folder
+                            </button>
+                            <button id="folderPickerCancel" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+                document.body.appendChild(modal);
+                lucide.createIcons();
+
+                const cleanup = (value) => {
+                    document.body.removeChild(modal);
+                    resolve(value);
+                };
+
+                modal.querySelectorAll('[data-folder]').forEach(btn => {
+                    btn.onclick = () => cleanup(btn.dataset.folder || null);
+                });
+                modal.querySelector('#folderPickerCancel').onclick = () => cleanup(undefined);
+                modal.querySelector('#folderPickerNew').onclick = async () => {
+                    const newFolder = await showPrompt('Enter new folder name:', 'New Folder');
+                    if (newFolder && !newFolder.includes('/') && !newFolder.includes('\\')) {
+                        cleanup(newFolder);
+                    }
+                };
+            });
+        }
+
+        function renderLibraryList(listEl, templates, folders = []) {
+            let html = '';
+
+            // Render folders first
+            if (folders.length > 0) {
+                html += folders.map(folder => {
+                    const fullPath = currentLibraryFolder ? currentLibraryFolder + '/' + folder : folder;
+                    return `
+                    <div class="flex items-center justify-between p-3 border rounded hover:bg-blue-50 group cursor-pointer" onclick="navigateToFolder('${escapeHtml(fullPath)}')">
+                        <div class="flex items-center gap-2 flex-1">
+                            <i data-lucide="folder" class="w-5 h-5 text-blue-500"></i>
+                            <div class="font-medium text-gray-800">${escapeHtml(folder)}</div>
+                        </div>
+                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="event.stopPropagation(); renameFolder('${escapeHtml(fullPath)}', '${escapeHtml(folder)}')" class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded" title="Rename folder">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            }
+
+            // Render forms
+            if (templates.length > 0) {
+                html += templates.map(t => `
+                    <div class="flex items-center justify-between p-3 border rounded hover:bg-gray-50 group">
+                        <div class="flex-1 cursor-pointer" onclick="loadFromLibrary('${t.id}')">
+                            <div class="font-medium text-gray-800">${escapeHtml(t.title)}</div>
+                            <div class="text-xs text-gray-400">Last modified: ${t.modified}</div>
+                        </div>
+                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="moveFormToFolder('${t.id}', '${escapeHtml(t.title)}')" class="p-1.5 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded" title="Move to folder">
+                                <i data-lucide="folder-input" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="loadFromLibrary('${t.id}')" class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded" title="Open">
+                                <i data-lucide="folder-open" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="downloadFromLibrary('${t.id}')" class="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded" title="Download">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteFromLibrary('${t.id}', '${escapeHtml(t.title)}')" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded" title="Delete">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            if (!html) {
+                html = '<p class="text-gray-400 text-sm text-center py-8">This folder is empty.</p>';
+            }
+
+            listEl.innerHTML = html;
             lucide.createIcons();
         }
 
@@ -1538,6 +1918,7 @@
                     blocks = formData.blocks || [];
                     idCounter = Math.max(0, ...blocks.map(b => b.id || 0));
                     currentTemplateId = record.id;
+                    currentFormFolder = record.folder || null;
                     selectedId = null;
                     render();
                     closeLibrary();
@@ -1619,6 +2000,7 @@
                 blocks = data.blocks || [];
                 idCounter = Math.max(0, ...blocks.map(b => b.id || 0));
                 currentTemplateId = null; // Imported files get a new ID when saved
+                currentFormFolder = null; // Imported files start with no folder
                 selectedId = null;
                 render();
                 closeLibrary();
