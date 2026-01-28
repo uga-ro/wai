@@ -536,12 +536,6 @@
             return headers;
         }
 
-        // Cache buster to bypass server-side caching
-        function cacheBust(url) {
-            const separator = url.includes('?') ? '&' : '?';
-            return `${url}${separator}_cb=${Date.now()}`;
-        }
-
         const templates = {
             'section': { type: 'section', title: 'Section Title' },
             'section-title': { type: 'section-title', title: 'SECTION TITLE' },
@@ -1406,7 +1400,7 @@
                 // For new forms, ask which folder to save to
                 if (isNew) {
                     // Get all available folders
-                    const foldersResponse = await fetch(cacheBust(`${RODS_API_BASE}/${RODS_TABLE}?select=folder&folder=not.is.null`), {
+                    const foldersResponse = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?select=folder&folder=not.is.null`, {
                         headers: getApiHeaders(false),
                         cache: 'no-store'
                     });
@@ -1504,7 +1498,7 @@
             updateFolderBreadcrumb();
 
             try {
-                const response = await fetch(cacheBust(`${RODS_API_BASE}/${RODS_TABLE}?order=updated_at.desc`), {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?order=updated_at.desc`, {
                     headers: getApiHeaders(false),
                     cache: 'no-store'
                 });
@@ -1674,7 +1668,7 @@
 
             try {
                 // Fetch all forms that have this folder or are in subfolders
-                const response = await fetch(cacheBust(`${RODS_API_BASE}/${RODS_TABLE}?or=(folder.eq.${encodeURIComponent(oldPath)},folder.like.${encodeURIComponent(oldPath + '/%')})`), {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?or=(folder.eq.${encodeURIComponent(oldPath)},folder.like.${encodeURIComponent(oldPath + '/%')})`, {
                     headers: getApiHeaders(false),
                     cache: 'no-store'
                 });
@@ -1718,7 +1712,7 @@
         async function moveFormToFolder(id, title) {
             // Get all available folders
             try {
-                const response = await fetch(cacheBust(`${RODS_API_BASE}/${RODS_TABLE}?select=folder&folder=not.is.null`), {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?select=folder&folder=not.is.null`, {
                     headers: getApiHeaders(false),
                     cache: 'no-store'
                 });
@@ -1904,7 +1898,7 @@
             }
 
             try {
-                const response = await fetch(cacheBust(`${RODS_API_BASE}/${RODS_TABLE}?id=eq.${id}`), {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?id=eq.${id}`, {
                     headers: getApiHeaders(false),
                     cache: 'no-store'
                 });
@@ -1939,7 +1933,7 @@
 
         async function downloadFromLibrary(id) {
             try {
-                const response = await fetch(cacheBust(`${RODS_API_BASE}/${RODS_TABLE}?id=eq.${id}`), {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?id=eq.${id}`, {
                     headers: getApiHeaders(false),
                     cache: 'no-store'
                 });
