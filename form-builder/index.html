@@ -277,6 +277,10 @@
                         <i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i>
                         Revision Date
                     </button>
+                    <button onclick="addBlock('course-info')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
+                        <i data-lucide="book-open" class="w-4 h-4 text-gray-400"></i>
+                        Course Information
+                    </button>
                 </div>
 
                 <!-- Custom Blocks -->
@@ -529,6 +533,7 @@
             'dropdown': { type: 'dropdown', dropdowns: [{ label: 'Dropdown', fieldName: 'dropdown_1', options: ['Option 1', 'Option 2', 'Option 3'] }], required: false },
             'address': { type: 'address', title: 'Address', fieldPrefix: 'addr', includePhone: false, includeTypeSelector: false },
             'student-info': { type: 'student-info', title: 'Student Information', fieldPrefix: 'student' },
+            'course-info': { type: 'course-info', title: 'Course Information', fieldPrefix: 'course' },
             'signature': { type: 'signature', label: 'Signature', fieldName: 'sig', includeDate: true, includePhotoId: false },
             'office-use': { type: 'office-use', title: 'Office Use Only', includeApprovalCheckboxes: false, lines: ['System Updated By', 'Date'] },
             'footer': { type: 'footer', revisedMonth: 'January', revisedYear: '2026' },
@@ -871,6 +876,18 @@
                         </div>
                     </div>`;
 
+                case 'course-info':
+                    return `<div class="preview-section">
+                        <div class="preview-section-header">${b.title}</div>
+                        <!-- Row: CRN, Course Prefix, Course Number, Credit Hours -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">
+                            <div><div class="preview-field-label">CRN <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
+                            <div><div class="preview-field-label">Course Prefix <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
+                            <div><div class="preview-field-label">Course Number <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
+                            <div><div class="preview-field-label">Credit Hours <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
+                        </div>
+                    </div>`;
+
                 case 'info-paragraph':
                     // Parse markdown (bold, bullets, line breaks) for preview
                     const infoParagraphHtml = markdownToHtml(b.text || '');
@@ -968,6 +985,7 @@
             switch(b.type) {
                 case 'section':
                 case 'student-info':
+                case 'course-info':
                     html += field('Title', 'title', b.title);
                     if (b.fieldPrefix !== undefined) html += field('Field Prefix', 'fieldPrefix', b.fieldPrefix);
                     break;
@@ -2161,6 +2179,32 @@
                         form.createTextField(b.fieldPrefix + '_ugaid').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: siHalfW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                         // Email field on right
                         form.createTextField(b.fieldPrefix + '_email').addToPage(currentPage, { x: mSide + 10 + siHalfW + 12, y: y - 16, width: siHalfW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        y -= 38;
+                        break;
+
+                    case 'course-info':
+                        const ciH = 70;
+                        ensureSpace(ciH + 16);
+                        currentPage.drawRectangle({ x: mSide, y: y - ciH, width: contentWidth, height: ciH, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
+                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
+                        currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                        y -= 30;
+                        const ciInnerW = contentWidth - 20;
+                        const ciFieldW = (ciInnerW - 18) / 4;
+                        const ciGap = 6;
+                        currentPage.drawText('CRN', { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + fontBold.widthOfTextAtSize('CRN', 9), y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText('Course Prefix', { x: mSide + 10 + ciFieldW + ciGap, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + ciFieldW + ciGap + fontBold.widthOfTextAtSize('Course Prefix', 9), y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText('Course Number', { x: mSide + 10 + (ciFieldW + ciGap) * 2, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + (ciFieldW + ciGap) * 2 + fontBold.widthOfTextAtSize('Course Number', 9), y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText('Credit Hours', { x: mSide + 10 + (ciFieldW + ciGap) * 3, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + 10 + (ciFieldW + ciGap) * 3 + fontBold.widthOfTextAtSize('Credit Hours', 9), y, size: 9, font: fontBold, color: red });
+                        y -= 12;
+                        form.createTextField(b.fieldPrefix + '_crn').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: ciFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_prefix').addToPage(currentPage, { x: mSide + 10 + ciFieldW + ciGap, y: y - 16, width: ciFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_number').addToPage(currentPage, { x: mSide + 10 + (ciFieldW + ciGap) * 2, y: y - 16, width: ciFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_hours').addToPage(currentPage, { x: mSide + 10 + (ciFieldW + ciGap) * 3, y: y - 16, width: ciFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                         y -= 38;
                         break;
 
