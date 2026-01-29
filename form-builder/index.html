@@ -305,10 +305,10 @@
                             <i data-lucide="chevron-right" class="w-3 h-3 text-gray-400 ml-auto transition-transform" id="textFieldChevron"></i>
                         </button>
                         <div id="textFieldMenu" class="hidden pl-6 py-1 space-y-1">
-                            <button onclick="addTextFields(1)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">1 Field</button>
-                            <button onclick="addTextFields(2)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">2 Fields (row)</button>
-                            <button onclick="addTextFields(3)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">3 Fields (row)</button>
-                            <button onclick="addTextFields(4)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">4 Fields (row)</button>
+                            <button onclick="addTextFields(1)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">1 Column</button>
+                            <button onclick="addTextFields(2)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">2 Columns</button>
+                            <button onclick="addTextFields(3)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">3 Columns</button>
+                            <button onclick="addTextFields(4)" class="block-btn w-full text-left px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100">4 Columns</button>
                         </div>
                     </div>
                     <button onclick="addBlock('textarea')" class="block-btn w-full text-left px-2.5 py-2 rounded text-sm flex items-center gap-2 border border-transparent hover:border-gray-200">
@@ -580,20 +580,65 @@
             chevron.style.transform = menu.classList.contains('hidden') ? '' : 'rotate(90deg)';
         }
 
-        function addTextFields(count) {
-            const fields = [];
-            for (let i = 1; i <= count; i++) {
-                fields.push({ label: 'Field ' + i, fieldName: 'field_' + i });
+        function addTextFields(columns) {
+            const row = [];
+            for (let i = 1; i <= columns; i++) {
+                row.push({ label: 'Field ' + i, fieldName: 'field_' + i });
             }
             const block = {
                 type: 'text-field',
                 id: ++idCounter,
-                fields: fields,
-                required: false
+                columns: columns,
+                rows: [row],
+                required: false,
+                showSection: false,
+                sectionTitle: 'Section Title'
             };
             blocks.push(block);
             selectedId = block.id;
             render();
+        }
+
+        function addTextFieldRow() {
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b || b.type !== 'text-field') return;
+            migrateTextFieldBlock(b);
+            const newRow = [];
+            const rowNum = b.rows.length + 1;
+            for (let i = 1; i <= b.columns; i++) {
+                newRow.push({ label: 'Field ' + ((rowNum - 1) * b.columns + i), fieldName: 'field_' + rowNum + '_' + i });
+            }
+            b.rows.push(newRow);
+            render();
+        }
+
+        function removeTextFieldRow(rowIndex) {
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b || b.type !== 'text-field') return;
+            migrateTextFieldBlock(b);
+            if (b.rows.length <= 1) return;
+            b.rows.splice(rowIndex, 1);
+            render();
+        }
+
+        function migrateTextFieldBlock(b) {
+            // Migrate old format (fields array) to new format (rows array)
+            if (b.type === 'text-field' && !b.rows && b.fields) {
+                b.rows = [b.fields];
+                b.columns = b.fields.length;
+                b.showSection = b.showSection || false;
+                b.sectionTitle = b.sectionTitle || 'Section Title';
+                delete b.fields;
+            }
+        }
+
+        function updateTextFieldCell(rowIndex, colIndex, prop, value) {
+            const b = blocks.find(x => x.id === selectedId);
+            if (!b) return;
+            migrateTextFieldBlock(b);
+            if (!b.rows || !b.rows[rowIndex] || !b.rows[rowIndex][colIndex]) return;
+            b.rows[rowIndex][colIndex][prop] = value;
+            renderPreview();
         }
 
         function toggleCheckboxMenu() {
@@ -741,16 +786,32 @@
                     return `<div class="preview-notice"><strong>${b.title}</strong> ${noticeTextFormatted}</div>`;
 
                 case 'text-field':
-                    const fieldCount = b.fields ? b.fields.length : 1;
-                    if (fieldCount === 1) {
-                        const f = b.fields ? b.fields[0] : { label: b.label || 'Field' };
-                        return `<div class="mb-1">
-                            <div class="preview-field-label">${f.label}${b.required ? ' *' : ''}</div>
-                            <div class="preview-field-line"></div>
+                    // Handle both old format (fields array) and new format (rows array)
+                    const tfRows = b.rows || [b.fields || [{ label: b.label || 'Field' }]];
+                    const tfCols = b.columns || (b.fields ? b.fields.length : 1);
+                    const reqStar = b.required ? ' <span style="color:#BA0C2F;">*</span>' : '';
+
+                    let tfRowsHtml = tfRows.map(row => {
+                        if (tfCols === 1) {
+                            const f = row[0] || { label: 'Field' };
+                            return `<div style="margin-bottom:8px;">
+                                <div class="preview-field-label">${f.label}${reqStar}</div>
+                                <div class="preview-field-line"></div>
+                            </div>`;
+                        } else {
+                            const cols = row.map(f => `<div><div class="preview-field-label">${f.label}${reqStar}</div><div class="preview-field-line"></div></div>`).join('');
+                            return `<div style="display:grid;grid-template-columns:repeat(${tfCols}, 1fr);gap:10px;margin-bottom:8px;">${cols}</div>`;
+                        }
+                    }).join('');
+
+                    if (b.showSection) {
+                        const titleHtml = b.hideTitle ? '' : `<div class="preview-section-header">${b.sectionTitle || 'Section Title'}</div>`;
+                        return `<div class="preview-section">
+                            ${titleHtml}
+                            ${tfRowsHtml}
                         </div>`;
                     } else {
-                        const cols = b.fields.map(f => `<div><div class="preview-field-label">${f.label}${b.required ? ' *' : ''}</div><div class="preview-field-line"></div></div>`).join('');
-                        return `<div class="mb-1"><div style="display:grid;grid-template-columns:repeat(${fieldCount}, 1fr);gap:10px;">${cols}</div></div>`;
+                        return `<div class="mb-1">${tfRowsHtml}</div>`;
                     }
 
                 case 'textarea':
@@ -1026,25 +1087,52 @@
                     </div>`;
                     break;
                 case 'text-field':
-                    if (b.fields && b.fields.length > 0) {
-                        html += `<p class="text-xs text-gray-500 font-medium">${b.fields.length} Field${b.fields.length > 1 ? 's' : ''} in Row</p>`;
-                        b.fields.forEach((f, i) => {
-                            html += `<div class="p-2 bg-gray-50 rounded border">
-                                <p class="text-xs text-gray-400 mb-1">Field ${i + 1}</p>
+                    // Handle both old format (fields array) and new format (rows array)
+                    const tfRows = b.rows || [b.fields || []];
+                    const tfColumns = b.columns || (b.fields ? b.fields.length : 1);
+
+                    // Section box toggle
+                    html += checkbox('Show Section Box', 'showSection', b.showSection);
+                    if (b.showSection) {
+                        html += checkbox('Hide Title', 'hideTitle', b.hideTitle);
+                        if (!b.hideTitle) {
+                            html += field('Section Title', 'sectionTitle', b.sectionTitle || 'Section Title');
+                        }
+                    }
+                    html += `<hr class="my-2">`;
+
+                    // Grid info
+                    html += `<div class="flex items-center justify-between mb-2">
+                        <p class="text-xs text-gray-500 font-medium">${tfColumns} Column${tfColumns > 1 ? 's' : ''} × ${tfRows.length} Row${tfRows.length > 1 ? 's' : ''}</p>
+                        <button onclick="addTextFieldRow()" class="text-xs text-blue-600 hover:text-blue-800">+ Add Row</button>
+                    </div>`;
+
+                    // Render each row
+                    tfRows.forEach((row, rowIdx) => {
+                        html += `<div class="mb-3 p-2 bg-gray-100 rounded border">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-xs text-gray-500 font-medium">Row ${rowIdx + 1}</p>
+                                ${tfRows.length > 1 ? `<button onclick="removeTextFieldRow(${rowIdx})" class="text-xs text-red-500 hover:text-red-700">Remove</button>` : ''}
+                            </div>`;
+                        row.forEach((f, colIdx) => {
+                            html += `<div class="p-2 bg-white rounded border mb-1">
+                                <p class="text-xs text-gray-400 mb-1">Field ${colIdx + 1}</p>
                                 <div class="mb-2">
                                     <label class="block text-xs text-gray-500 mb-1">Label</label>
-                                    <input type="text" value="${f.label}" onchange="updateTextField(${i}, 'label', this.value)"
+                                    <input type="text" value="${f.label}" onchange="updateTextFieldCell(${rowIdx}, ${colIdx}, 'label', this.value)"
                                            class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400">
                                 </div>
                                 <div>
                                     <label class="block text-xs text-gray-500 mb-1">Field Name</label>
-                                    <input type="text" value="${f.fieldName}" onchange="updateTextField(${i}, 'fieldName', this.value)"
+                                    <input type="text" value="${f.fieldName}" onchange="updateTextFieldCell(${rowIdx}, ${colIdx}, 'fieldName', this.value)"
                                            class="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-gray-400">
                                 </div>
                             </div>`;
                         });
-                        html += checkbox('Required', 'required', b.required);
-                    }
+                        html += `</div>`;
+                    });
+
+                    html += checkbox('Required', 'required', b.required);
                     break;
                 case 'textarea':
                     html += field('Label', 'label', b.label);
@@ -1187,13 +1275,6 @@
             if (isArray) value = value.split('\n').filter(x => x.trim());
             if (prop === 'rows') value = parseInt(value) || 2;
             b[prop] = value;
-            renderPreview();
-        }
-
-        function updateTextField(index, prop, value) {
-            const b = blocks.find(x => x.id === selectedId);
-            if (!b || !b.fields || !b.fields[index]) return;
-            b.fields[index][prop] = value;
             renderPreview();
         }
 
@@ -2196,23 +2277,110 @@
                         break;
 
                     case 'text-field':
-                        const tfFields = b.fields || [{ label: b.label || 'Field', fieldName: b.fieldName || 'field' }];
-                        const tfCount = tfFields.length;
+                        // Handle both old format (fields array) and new format (rows array)
+                        const tfAllRows = b.rows || [b.fields || [{ label: b.label || 'Field', fieldName: b.fieldName || 'field' }]];
+                        const tfColCount = b.columns || (b.fields ? b.fields.length : 1);
                         const tfGap = 10;
-                        const tfWidth = (contentWidth - (tfGap * (tfCount - 1))) / tfCount;
-                        ensureSpace(45);
-                        y -= 6; // Add margin above labels
-                        // Draw labels
-                        tfFields.forEach((f, i) => {
-                            currentPage.drawText(f.label + (b.required ? ' *' : ''), { x: mSide + i * (tfWidth + tfGap), y, size: 9, font: fontBold, color: gray });
+                        const tfHeaderHeight = (b.showSection && !b.hideTitle) ? 26 : 0;
+                        const tfInnerX = b.showSection ? mSide + 10 : mSide;
+                        const tfInnerW = b.showSection ? contentWidth - 20 : contentWidth;
+                        const tfFieldW = (tfInnerW - (tfGap * (tfColCount - 1))) / tfColCount;
+
+                        // Helper function to wrap label text
+                        function wrapLabel(label, maxWidth) {
+                            const words = label.split(' ');
+                            const lines = [];
+                            let currentLine = '';
+                            words.forEach(word => {
+                                // If word itself is too long, break it by characters
+                                if (fontBold.widthOfTextAtSize(word, 9) > maxWidth) {
+                                    if (currentLine) {
+                                        lines.push(currentLine);
+                                        currentLine = '';
+                                    }
+                                    let chars = '';
+                                    for (let c of word) {
+                                        if (fontBold.widthOfTextAtSize(chars + c, 9) > maxWidth && chars) {
+                                            lines.push(chars);
+                                            chars = c;
+                                        } else {
+                                            chars += c;
+                                        }
+                                    }
+                                    if (chars) currentLine = chars;
+                                } else {
+                                    const test = currentLine ? currentLine + ' ' + word : word;
+                                    if (fontBold.widthOfTextAtSize(test, 9) > maxWidth && currentLine) {
+                                        lines.push(currentLine);
+                                        currentLine = word;
+                                    } else {
+                                        currentLine = test;
+                                    }
+                                }
+                            });
+                            if (currentLine) lines.push(currentLine);
+                            return lines.length > 0 ? lines : [''];
+                        }
+
+                        // Pre-calculate wrapped labels and row heights
+                        const tfRowData = tfAllRows.map(row => {
+                            const wrappedLabels = row.map(f => wrapLabel(f.label, tfFieldW - 10)); // -10 for some padding
+                            const maxLines = Math.max(...wrappedLabels.map(l => l.length));
+                            const labelHeight = maxLines * 11; // 11px per line
+                            return { row, wrappedLabels, maxLines, labelHeight, rowHeight: labelHeight + 24 }; // 24 = gap + field height
                         });
-                        y -= 4; // Reduced gap between label and field
-                        // Draw fields
-                        tfFields.forEach((f, i) => {
-                            const tfField = form.createTextField(f.fieldName + '_' + b.id);
-                            tfField.addToPage(currentPage, { x: mSide + i * (tfWidth + tfGap), y: y - 16, width: tfWidth, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+
+                        const tfTotalRowsHeight = tfRowData.reduce((sum, rd) => sum + rd.rowHeight + 6, 0); // +6 for margin above each row
+                        const tfTotalHeight = tfHeaderHeight + tfTotalRowsHeight + (b.showSection ? 10 : 0);
+
+                        ensureSpace(tfTotalHeight + 8);
+
+                        if (b.showSection) {
+                            // Draw section box
+                            currentPage.drawRectangle({ x: mSide, y: y - tfTotalHeight, width: contentWidth, height: tfTotalHeight, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
+                            // Draw section title (unless hidden)
+                            if (!b.hideTitle) {
+                                currentPage.drawText((b.sectionTitle || 'Section Title').toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
+                                currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                                y -= tfHeaderHeight;
+                            }
+                        }
+
+                        // Render each row
+                        tfRowData.forEach(({ row, wrappedLabels, maxLines, labelHeight }, rowIdx) => {
+                            y -= 6; // Margin above labels
+                            const labelStartY = y;
+
+                            // Draw wrapped labels for each field
+                            row.forEach((f, colIdx) => {
+                                const labelX = tfInnerX + colIdx * (tfFieldW + tfGap);
+                                const lines = wrappedLabels[colIdx];
+                                let labelY = labelStartY;
+                                lines.forEach((line, lineIdx) => {
+                                    currentPage.drawText(line, { x: labelX, y: labelY, size: 9, font: fontBold, color: gray });
+                                    // Add required asterisk to last line of this label
+                                    if (b.required && lineIdx === lines.length - 1) {
+                                        currentPage.drawText(' *', { x: labelX + fontBold.widthOfTextAtSize(line, 9), y: labelY, size: 9, font: fontBold, color: red });
+                                    }
+                                    labelY -= 11;
+                                });
+                            });
+
+                            y -= labelHeight; // Move past all label lines
+                            y -= 4; // Gap between label and field
+
+                            // Draw fields
+                            row.forEach((f, colIdx) => {
+                                const fieldX = tfInnerX + colIdx * (tfFieldW + tfGap);
+                                const tfField = form.createTextField(f.fieldName + '_' + b.id + '_r' + rowIdx);
+                                tfField.addToPage(currentPage, { x: fieldX, y: y - 16, width: tfFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            });
+                            y -= 20;
                         });
-                        y -= 28;
+
+                        if (b.showSection) {
+                            y -= 10; // Bottom padding for section box
+                        }
                         break;
 
                     case 'textarea':
