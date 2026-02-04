@@ -681,7 +681,9 @@
             const block = {
                 type: 'dropdown',
                 id: ++idCounter,
-                dropdowns: dropdowns
+                dropdowns: dropdowns,
+                showSection: false,
+                sectionTitle: 'Section Title'
             };
             blocks.push(block);
             selectedId = block.id;
@@ -851,10 +853,11 @@
 
                 case 'dropdown':
                     const ddCount = b.dropdowns ? b.dropdowns.length : 1;
+                    let ddContentHtml;
                     if (ddCount === 1) {
                         const dd = b.dropdowns ? b.dropdowns[0] : { label: 'Dropdown', options: [] };
                         const optionsHtml = (dd.options || []).map(o => `<option>${o}</option>`).join('');
-                        return `<div class="mb-1">
+                        ddContentHtml = `<div>
                             <div class="preview-field-label">${dd.label}${b.required ? ' *' : ''}</div>
                             <select class="preview-field-line" style="height:28px;font-size:11px;padding:0 8px;color:#666;cursor:pointer;" disabled>
                                 <option value="">Select...</option>
@@ -872,7 +875,17 @@
                                 </select>
                             </div>`;
                         }).join('');
-                        return `<div class="mb-1"><div style="display:grid;grid-template-columns:repeat(${ddCount}, 1fr);gap:10px;">${cols}</div></div>`;
+                        ddContentHtml = `<div style="display:grid;grid-template-columns:repeat(${ddCount}, 1fr);gap:10px;">${cols}</div>`;
+                    }
+
+                    if (b.showSection) {
+                        const ddTitleHtml = b.hideTitle ? '' : `<div class="preview-section-header">${b.sectionTitle || 'Section Title'}</div>`;
+                        return `<div class="preview-section">
+                            ${ddTitleHtml}
+                            ${ddContentHtml}
+                        </div>`;
+                    } else {
+                        return `<div class="mb-1">${ddContentHtml}</div>`;
                     }
 
                 case 'address':
@@ -1179,6 +1192,16 @@
                     html += `<button onclick="addCheckboxOption()" class="w-full py-1 text-xs border border-dashed rounded text-gray-500 hover:bg-gray-50">+ Add Option</button>`;
                     break;
                 case 'dropdown':
+                    // Section box toggle
+                    html += checkbox('Show Section Box', 'showSection', b.showSection);
+                    if (b.showSection) {
+                        html += checkbox('Hide Title', 'hideTitle', b.hideTitle);
+                        if (!b.hideTitle) {
+                            html += field('Section Title', 'sectionTitle', b.sectionTitle || 'Section Title');
+                        }
+                    }
+                    html += `<hr class="my-2">`;
+
                     if (b.dropdowns && b.dropdowns.length > 0) {
                         html += `<p class="text-xs text-gray-500 font-medium">${b.dropdowns.length} Dropdown${b.dropdowns.length > 1 ? 's' : ''} in Row</p>`;
                         b.dropdowns.forEach((dd, i) => {
@@ -2569,25 +2592,40 @@
                         const ddFields = b.dropdowns || [];
                         const ddFieldCount = ddFields.length;
                         const ddFieldH = 38;
-                        ensureSpace(ddFieldH + 6);
+                        const ddHeaderHeight = (b.showSection && !b.hideTitle) ? 26 : 0;
+                        const ddTotalHeight = ddHeaderHeight + ddFieldH + (b.showSection ? 10 : 0);
+                        const ddInnerX = b.showSection ? mSide + 10 : mSide;
+                        const ddInnerW = b.showSection ? contentWidth - 20 : contentWidth;
+                        ensureSpace(ddTotalHeight + 8);
+
+                        if (b.showSection) {
+                            // Draw section box
+                            currentPage.drawRectangle({ x: mSide, y: y - ddTotalHeight, width: contentWidth, height: ddTotalHeight, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
+                            // Draw section title (unless hidden)
+                            if (!b.hideTitle) {
+                                currentPage.drawText((b.sectionTitle || 'Section Title').toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
+                                currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                                y -= ddHeaderHeight;
+                            }
+                        }
 
                         if (ddFieldCount === 1) {
                             const dd = ddFields[0];
                             y -= 6;
-                            currentPage.drawText(dd.label + (b.required ? ' *' : ''), { x: mSide, y, size: 10, font: fontBold, color: gray });
+                            currentPage.drawText(dd.label + (b.required ? ' *' : ''), { x: ddInnerX, y, size: 10, font: fontBold, color: gray });
                             if (b.required) {
-                                currentPage.drawText(' *', { x: mSide + fontBold.widthOfTextAtSize(dd.label, 10), y, size: 10, font: fontBold, color: red });
+                                currentPage.drawText(' *', { x: ddInnerX + fontBold.widthOfTextAtSize(dd.label, 10), y, size: 10, font: fontBold, color: red });
                             }
                             y -= 6;
                             const ddrop = form.createDropdown(dd.fieldName + '_' + b.id);
                             ddrop.addOptions(dd.options || []);
-                            ddrop.addToPage(currentPage, { x: mSide, y: y - 18, width: contentWidth, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            ddrop.addToPage(currentPage, { x: ddInnerX, y: y - 18, width: ddInnerW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                             y -= 26;
                         } else {
-                            const ddColW = (contentWidth - (ddFieldCount - 1) * 10) / ddFieldCount;
+                            const ddColW = (ddInnerW - (ddFieldCount - 1) * 10) / ddFieldCount;
                             y -= 6;
                             ddFields.forEach((dd, i) => {
-                                const xOff = mSide + i * (ddColW + 10);
+                                const xOff = ddInnerX + i * (ddColW + 10);
                                 currentPage.drawText(dd.label, { x: xOff, y, size: 10, font: fontBold, color: gray });
                                 if (b.required) {
                                     currentPage.drawText(' *', { x: xOff + fontBold.widthOfTextAtSize(dd.label, 10), y, size: 10, font: fontBold, color: red });
@@ -2595,12 +2633,16 @@
                             });
                             y -= 6;
                             ddFields.forEach((dd, i) => {
-                                const xOff = mSide + i * (ddColW + 10);
+                                const xOff = ddInnerX + i * (ddColW + 10);
                                 const ddrop = form.createDropdown(dd.fieldName + '_' + b.id);
                                 ddrop.addOptions(dd.options || []);
                                 ddrop.addToPage(currentPage, { x: xOff, y: y - 18, width: ddColW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                             });
                             y -= 26;
+                        }
+
+                        if (b.showSection) {
+                            y -= 10; // Bottom padding for section box
                         }
                         break;
 
