@@ -985,7 +985,8 @@
                     </div>`;
 
                 case 'signature':
-                    const sigReqStar = b.required ? ' <span style="color:#BA0C2F;">*</span>' : '';
+                    const sigRequired = b.required !== undefined ? b.required : true; // default true for backwards compat
+                    const sigReqStar = sigRequired ? ' <span style="color:#BA0C2F;">*</span>' : '';
                     const photoIdBoxHtml = b.includePhotoId ? `
                         <div style="width:180px;height:50px;border:2px dashed #999;border-radius:6px;display:flex;align-items:center;gap:10px;padding:0 12px;background:#fafafa;flex-shrink:0;">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1231,7 +1232,7 @@
                     break;
                 case 'signature':
                     html += field('Label', 'label', b.label);
-                    html += checkbox('Required', 'required', b.required);
+                    html += checkbox('Required', 'required', b.required !== undefined ? b.required : true);
                     html += checkbox('Include Date', 'includeDate', b.includeDate);
                     html += checkbox('Include Photo ID Attachment', 'includePhotoId', b.includePhotoId);
                     break;
@@ -2990,6 +2991,8 @@
                         break;
 
                     case 'signature':
+                        // Default required to true for backwards compat with saved templates
+                        const sigIsRequired = b.required !== undefined ? b.required : true;
                         // Fixed-width label column for consistent alignment across signature blocks
                         const SIG_LABEL_W = 150;
                         const sigLineStartX = mSide + SIG_LABEL_W + 10;
@@ -3015,7 +3018,7 @@
                         const sigLabelStartY = y;
                         sigLabelLines.forEach((line, i) => {
                             currentPage.drawText(line, { x: mSide, y: sigLabelStartY - i * 14, size: 10, font: fontBold, color: gray });
-                            if (b.required && i === sigLabelLines.length - 1) {
+                            if (sigIsRequired && i === sigLabelLines.length - 1) {
                                 currentPage.drawText(' *', { x: mSide + fontBold.widthOfTextAtSize(line, 10), y: sigLabelStartY - i * 14, size: 10, font: fontBold, color: red });
                             }
                         });
@@ -3027,7 +3030,7 @@
                         // Date row
                         if (b.includeDate) {
                             currentPage.drawText('Date', { x: mSide, y: y + 4, size: 10, font: fontBold, color: gray });
-                            if (b.required) {
+                            if (sigIsRequired) {
                                 currentPage.drawText(' *', { x: mSide + fontBold.widthOfTextAtSize('Date', 10), y: y + 4, size: 10, font: fontBold, color: red });
                             }
                             const dateField = form.createTextField(b.fieldName + '_date');
@@ -3054,7 +3057,7 @@
                             currentPage.drawLine({ start: { x: iconX + 1, y: iconY - 3 }, end: { x: iconX + 8, y: iconY - 3 }, thickness: 1, color: rgb(0.4, 0.4, 0.4) });
                             currentPage.drawText('Include copy of', { x: photoIdBoxX + 45, y: photoIdBoxY + 24, size: 9, font: fontBold, color: gray });
                             currentPage.drawText('Photo ID', { x: photoIdBoxX + 45, y: photoIdBoxY + 12, size: 9, font: fontBold, color: gray });
-                            if (b.required) {
+                            if (sigIsRequired) {
                                 currentPage.drawText(' *', { x: photoIdBoxX + 45 + fontBold.widthOfTextAtSize('Photo ID', 9), y: photoIdBoxY + 12, size: 9, font: fontBold, color: red });
                             }
                         }
