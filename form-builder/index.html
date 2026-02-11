@@ -86,7 +86,6 @@
         }
 
         .preview-section {
-            margin-bottom: 10px;
             padding: 8px 12px;
             border-radius: 4px;
             border: 1px solid #e2e2e2;
@@ -129,7 +128,6 @@
             border-left: 4px solid #BA0C2F;
             padding: 10px 14px;
             font-size: 12px;
-            margin-bottom: 14px;
             line-height: 1.5;
         }
 
@@ -150,6 +148,8 @@
             color: #4a4a4a;
             width: 140px;
             flex-shrink: 0;
+            overflow-wrap: break-word;
+            line-height: 1.3;
         }
         .preview-signature-line {
             flex: 1;
@@ -161,7 +161,6 @@
             background: #fff;
             border: 2px dashed #999;
             border-radius: 6px;
-            margin-top: 20px;
             padding: 8px 12px;
         }
         .preview-office-use .preview-section-header {
@@ -186,8 +185,9 @@
             vertical-align: middle;
         }
 
-        /* Block selection */
-        .block-item { position: relative; cursor: pointer; }
+        /* Block selection & consistent spacing */
+        .block-item { position: relative; cursor: pointer; margin-bottom: 10px; }
+        .block-item:last-child { margin-bottom: 0; }
         .block-item:hover { outline: 1px dashed #ccc; outline-offset: 2px; }
         .block-item.selected { outline: 2px solid #BA0C2F; outline-offset: 2px; }
 
@@ -547,7 +547,7 @@
             'address': { type: 'address', title: 'Address', fieldPrefix: 'addr', includePhone: false, includeTypeSelector: false },
             'student-info': { type: 'student-info', title: 'Student Information', fieldPrefix: 'student' },
             'course-info': { type: 'course-info', title: 'Course Information', fieldPrefix: 'course' },
-            'signature': { type: 'signature', label: 'Signature', fieldName: 'sig', includeDate: true, includePhotoId: false },
+            'signature': { type: 'signature', label: 'Signature', fieldName: 'sig', includeDate: true, includePhotoId: false, required: true },
             'office-use': { type: 'office-use', title: 'Office Use Only', includeApprovalCheckboxes: false, lines: ['System Updated By', 'Date'] },
             'footer': { type: 'footer', revisedMonth: 'January', revisedYear: '2026' },
             'info-paragraph': { type: 'info-paragraph', title: 'Information', text: 'Enter paragraph text here. Use **bold** for emphasis.' }
@@ -778,13 +778,13 @@
                     </div>`;
 
                 case 'section-title':
-                    return `<div style="background:#666;padding:6px 12px;margin-bottom:10px;">
+                    return `<div style="background:#666;padding:6px 12px;">
                         <div style="font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#fff;">${b.title}</div>
                     </div>`;
 
                 case 'notice':
-                    // Parse **bold** markdown per-word in notice text
-                    const noticeTextFormatted = (b.text || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    // Parse **bold** markdown using shared function
+                    const noticeTextFormatted = markdownToHtml(b.text || '');
                     return `<div class="preview-notice"><strong>${b.title}</strong> ${noticeTextFormatted}</div>`;
 
                 case 'text-field':
@@ -813,12 +813,12 @@
                             ${tfRowsHtml}
                         </div>`;
                     } else {
-                        return `<div class="mb-1">${tfRowsHtml}</div>`;
+                        return `<div>${tfRowsHtml}</div>`;
                     }
 
                 case 'textarea':
-                    return `<div class="mb-1">
-                        <div class="preview-field-label">${b.label}${b.required ? ' *' : ''}</div>
+                    return `<div>
+                        <div class="preview-field-label">${b.label}${b.required ? ' <span style="color:#BA0C2F;">*</span>' : ''}</div>
                         <div class="preview-field-multiline" style="height:${b.rows * 24}px"></div>
                     </div>`;
 
@@ -844,7 +844,7 @@
                     }).join('');
                     const cbLayout = b.layout === 'vertical' ? 'flex-direction:column;align-items:stretch;' : 'flex-direction:row;flex-wrap:wrap;gap:16px;';
                     const cbRequired = b.required ? '<span style="color:#BA0C2F;"> *</span>' : '';
-                    return `<div class="mb-3">
+                    return `<div>
                         <div style="border:1px solid #ccc;border-radius:4px;padding:16px 12px 10px 12px;position:relative;margin-top:8px;">
                             <div style="position:absolute;top:-9px;left:10px;background:#fff;padding:0 6px;font-size:11px;font-weight:600;color:#666;line-height:1;">${b.label}${cbRequired}</div>
                             <div style="display:flex;${cbLayout}width:100%;">${cbOpts}</div>
@@ -854,11 +854,12 @@
                 case 'dropdown':
                     const ddCount = b.dropdowns ? b.dropdowns.length : 1;
                     let ddContentHtml;
+                    const ddReqStar = b.required ? ' <span style="color:#BA0C2F;">*</span>' : '';
                     if (ddCount === 1) {
                         const dd = b.dropdowns ? b.dropdowns[0] : { label: 'Dropdown', options: [] };
                         const optionsHtml = (dd.options || []).map(o => `<option>${o}</option>`).join('');
                         ddContentHtml = `<div>
-                            <div class="preview-field-label">${dd.label}${b.required ? ' *' : ''}</div>
+                            <div class="preview-field-label">${dd.label}${ddReqStar}</div>
                             <select class="preview-field-line" style="height:28px;font-size:11px;padding:0 8px;color:#666;cursor:pointer;" disabled>
                                 <option value="">Select...</option>
                                 ${optionsHtml}
@@ -868,7 +869,7 @@
                         const cols = b.dropdowns.map(dd => {
                             const optionsHtml = (dd.options || []).map(o => `<option>${o}</option>`).join('');
                             return `<div>
-                                <div class="preview-field-label">${dd.label}${b.required ? ' *' : ''}</div>
+                                <div class="preview-field-label">${dd.label}${ddReqStar}</div>
                                 <select class="preview-field-line" style="height:28px;font-size:11px;padding:0 8px;color:#666;cursor:pointer;" disabled>
                                     <option value="">Select...</option>
                                     ${optionsHtml}
@@ -885,7 +886,7 @@
                             ${ddContentHtml}
                         </div>`;
                     } else {
-                        return `<div class="mb-1">${ddContentHtml}</div>`;
+                        return `<div>${ddContentHtml}</div>`;
                     }
 
                 case 'address':
@@ -945,7 +946,7 @@
                     return `<div class="preview-section">
                         <div class="preview-section-header">${b.title}</div>
                         <!-- Row 1: Name fields -->
-                        <div style="display:grid;grid-template-columns:1.2fr 1fr 0.8fr;gap:8px;margin-bottom:8px;">
+                        <div style="display:grid;grid-template-columns:1.2fr 1fr 0.8fr;gap:10px;margin-bottom:8px;">
                             <div><div class="preview-field-label">Last Name <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
                             <div><div class="preview-field-label">First Name <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
                             <div><div class="preview-field-label">Middle Name</div><div class="preview-field-line"></div></div>
@@ -954,11 +955,11 @@
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                             <div>
                                 <div class="preview-field-label">UGA ID (810X) Number <span style="color:#BA0C2F;">*</span></div>
-                                <div class="preview-field-line" style="margin-top:4px;"></div>
+                                <div class="preview-field-line"></div>
                             </div>
                             <div>
                                 <div class="preview-field-label">Contact Email Address <span style="color:#BA0C2F;">*</span></div>
-                                <div class="preview-field-line" style="margin-top:4px;"></div>
+                                <div class="preview-field-line"></div>
                             </div>
                         </div>
                     </div>`;
@@ -967,7 +968,7 @@
                     return `<div class="preview-section">
                         <div class="preview-section-header">${b.title}</div>
                         <!-- Row: CRN, Course Prefix, Course Number, Credit Hours -->
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">
                             <div><div class="preview-field-label">CRN <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
                             <div><div class="preview-field-label">Course Prefix <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
                             <div><div class="preview-field-label">Course Number <span style="color:#BA0C2F;">*</span></div><div class="preview-field-line"></div></div>
@@ -978,14 +979,15 @@
                 case 'info-paragraph':
                     // Parse markdown (bold, bullets, line breaks) for preview
                     const infoParagraphHtml = markdownToHtml(b.text || '');
-                    return `<div style="margin-bottom:12px;background:#f5f0eb;border-radius:4px;padding:10px 14px;">
+                    return `<div style="background:#f5f0eb;border-radius:4px;padding:10px 14px;">
                         <div style="font-size:10px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">${b.title}</div>
                         <div style="font-size:11px;color:#4a4a4a;line-height:1.6;">${infoParagraphHtml}</div>
                     </div>`;
 
                 case 'signature':
+                    const sigReqStar = b.required ? ' <span style="color:#BA0C2F;">*</span>' : '';
                     const photoIdBoxHtml = b.includePhotoId ? `
-                        <div style="width:180px;height:50px;border:2px dashed #999;border-radius:6px;display:flex;align-items:center;gap:10px;padding:0 12px;background:#fafafa;">
+                        <div style="width:180px;height:50px;border:2px dashed #999;border-radius:6px;display:flex;align-items:center;gap:10px;padding:0 12px;background:#fafafa;flex-shrink:0;">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                                 <circle cx="8" cy="10" r="2"></circle>
@@ -993,15 +995,15 @@
                                 <path d="M14 14h4"></path>
                                 <path d="M6 16h4"></path>
                             </svg>
-                            <span style="font-size:11px;color:#4a4a4a;font-weight:600;line-height:1.3;">Include copy of<br>Photo ID <span style="color:#BA0C2F;">*</span></span>
+                            <span style="font-size:11px;color:#4a4a4a;font-weight:600;line-height:1.3;">Include copy of<br>Photo ID${sigReqStar}</span>
                         </div>` : '';
-                    return `<div class="my-2" style="display:flex;align-items:flex-start;justify-content:space-between;">
-                        <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                    return `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                        <div style="display:flex;flex-direction:column;flex:1;min-width:0;">
                             <div class="preview-signature-row" style="justify-content:flex-start;">
-                                <span class="preview-signature-label">${b.label} <span style="color:#BA0C2F;">*</span></span>
-                                <span class="preview-signature-line" style="width:200px;"></span>
+                                <span class="preview-signature-label">${b.label}${sigReqStar}</span>
+                                <span class="preview-signature-line"></span>
                             </div>
-                            ${b.includeDate ? '<div class="preview-signature-row" style="justify-content:flex-start;"><span class="preview-signature-label">Date <span style="color:#BA0C2F;">*</span></span><div class="preview-field-line" style="width:200px;margin:0;"></div></div>' : ''}
+                            ${b.includeDate ? `<div class="preview-signature-row" style="justify-content:flex-start;"><span class="preview-signature-label">Date${sigReqStar}</span><div class="preview-field-line" style="flex:1;margin:0;"></div></div>` : ''}
                         </div>
                         ${photoIdBoxHtml}
                     </div>`;
@@ -1020,7 +1022,7 @@
                                 <div class="preview-field-line" style="flex:1;margin:0;"></div>
                             </div>
                         </div>` : '';
-                    return `<div class="preview-office-use" style="border:1px solid #000;padding:10px;border-radius:0;">
+                    return `<div class="preview-office-use" style="border:1px solid #000;border-radius:0;">
                         <div class="preview-section-header">${b.title}</div>
                         ${approvalHtml}
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -1029,7 +1031,7 @@
                     </div>`;
 
                 case 'footer':
-                    return `<div style="text-align:center;font-size:10px;color:#666;font-style:italic;margin-top:20px;padding-top:10px;border-top:1px solid #e0e0e0;">
+                    return `<div style="text-align:center;font-size:10px;color:#666;font-style:italic;padding-top:10px;border-top:1px solid #e0e0e0;">
                         Revised ${b.revisedMonth} ${b.revisedYear}
                     </div>`;
             }
@@ -1229,6 +1231,7 @@
                     break;
                 case 'signature':
                     html += field('Label', 'label', b.label);
+                    html += checkbox('Required', 'required', b.required);
                     html += checkbox('Include Date', 'includeDate', b.includeDate);
                     html += checkbox('Include Photo ID Attachment', 'includePhotoId', b.includePhotoId);
                     break;
@@ -2164,6 +2167,15 @@
             const mBottom = 29; // 0.4in * 72
             const contentWidth = pageWidth - (mSide * 2);
 
+            // Standardized spacing tokens (match preview CSS)
+            const BLOCK_GAP = 10;       // Space between blocks (matches .block-item margin-bottom)
+            const LABEL_GAP = 4;        // Space between label text and field below
+            const FIELD_HEIGHT = 18;    // Standard fillable field height
+            const SECTION_PAD = 10;     // Inner padding from section box edges
+            const GRID_GAP = 10;        // Gap between grid columns
+            const ROW_GAP = 6;          // Vertical gap between field rows within a text-field block
+            const FIELD_ROW_GAP = 12;   // Vertical gap between distinct label+field rows in hardcoded sections
+
             // Load and embed the logo
             let logoImage = null;
             try {
@@ -2185,6 +2197,24 @@
                     return true;
                 }
                 return false;
+            }
+
+            // Shared text wrapping helper — returns array of line strings
+            function wrapText(text, maxWidth, useFont, fontSize) {
+                const words = text.split(' ');
+                const lines = [];
+                let current = '';
+                words.forEach(word => {
+                    const test = current ? current + ' ' + word : word;
+                    if (useFont.widthOfTextAtSize(test, fontSize) > maxWidth && current) {
+                        lines.push(current);
+                        current = word;
+                    } else {
+                        current = test;
+                    }
+                });
+                if (current) lines.push(current);
+                return lines.length ? lines : [''];
             }
 
             // --- LETTERHEAD ---
@@ -2229,22 +2259,27 @@
             for (const b of blocks) {
                 switch(b.type) {
                     case 'section':
-                        const sectionH = 32;
-                        ensureSpace(sectionH + 10);
-                        // Draw padded section background with border
+                        const secTitleLines = wrapText(b.title.toUpperCase(), contentWidth - SECTION_PAD * 2, fontBold, 11);
+                        const sectionH = 32 + (secTitleLines.length - 1) * 14;
+                        ensureSpace(sectionH + BLOCK_GAP);
                         currentPage.drawRectangle({ x: mSide, y: y - sectionH, width: contentWidth, height: sectionH, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
-                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
-                        currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
-                        y -= sectionH + 10;
+                        secTitleLines.forEach((line, i) => {
+                            currentPage.drawText(line, { x: mSide + SECTION_PAD, y: y - 14 - i * 14, size: 11, font: fontBold, color: red });
+                        });
+                        const secUnderlineY = y - 20 - (secTitleLines.length - 1) * 14;
+                        currentPage.drawLine({ start: { x: mSide + SECTION_PAD, y: secUnderlineY }, end: { x: pageWidth - mSide - SECTION_PAD, y: secUnderlineY }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                        y -= sectionH + BLOCK_GAP;
                         break;
 
                     case 'section-title':
-                        const stH = 22;
-                        ensureSpace(stH + 8);
-                        // Grey bar with white text
+                        const stTitleLines = wrapText(b.title.toUpperCase(), contentWidth - SECTION_PAD * 2, font, 10);
+                        const stH = 22 + (stTitleLines.length - 1) * 13;
+                        ensureSpace(stH + BLOCK_GAP);
                         currentPage.drawRectangle({ x: mSide, y: y - stH, width: contentWidth, height: stH, color: rgb(0.4, 0.4, 0.4) });
-                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 15, size: 10, font: font, color: rgb(1, 1, 1) });
-                        y -= stH + 8;
+                        stTitleLines.forEach((line, i) => {
+                            currentPage.drawText(line, { x: mSide + SECTION_PAD, y: y - 15 - i * 13, size: 10, font: font, color: rgb(1, 1, 1) });
+                        });
+                        y -= stH + BLOCK_GAP;
                         break;
 
                     case 'notice':
@@ -2296,17 +2331,18 @@
                             });
                             noticeY -= noticeLineHeight;
                         });
-                        y -= noticeH + 8;
+                        y -= noticeH + BLOCK_GAP;
                         break;
 
                     case 'text-field':
                         // Handle both old format (fields array) and new format (rows array)
                         const tfAllRows = b.rows || [b.fields || [{ label: b.label || 'Field', fieldName: b.fieldName || 'field' }]];
                         const tfColCount = b.columns || (b.fields ? b.fields.length : 1);
-                        const tfGap = 10;
-                        const tfHeaderHeight = (b.showSection && !b.hideTitle) ? 26 : 0;
-                        const tfInnerX = b.showSection ? mSide + 10 : mSide;
-                        const tfInnerW = b.showSection ? contentWidth - 20 : contentWidth;
+                        const tfGap = GRID_GAP;
+                        const tfSecTitleLines = (b.showSection && !b.hideTitle) ? wrapText((b.sectionTitle || 'Section Title').toUpperCase(), contentWidth - SECTION_PAD * 2, fontBold, 11) : [];
+                        const tfHeaderHeight = tfSecTitleLines.length > 0 ? 26 + (tfSecTitleLines.length - 1) * 14 : 0;
+                        const tfInnerX = b.showSection ? mSide + SECTION_PAD : mSide;
+                        const tfInnerW = b.showSection ? contentWidth - (SECTION_PAD * 2) : contentWidth;
                         const tfFieldW = (tfInnerW - (tfGap * (tfColCount - 1))) / tfColCount;
 
                         // Helper function to wrap label text
@@ -2353,25 +2389,28 @@
                             return { row, wrappedLabels, maxLines, labelHeight, rowHeight: labelHeight + 24 }; // 24 = gap + field height
                         });
 
-                        const tfTotalRowsHeight = tfRowData.reduce((sum, rd) => sum + rd.rowHeight + 6, 0); // +6 for margin above each row
-                        const tfTotalHeight = tfHeaderHeight + tfTotalRowsHeight + (b.showSection ? 10 : 0);
+                        const tfTotalRowsHeight = tfRowData.reduce((sum, rd) => sum + rd.rowHeight + ROW_GAP, 0);
+                        const tfTotalHeight = tfHeaderHeight + tfTotalRowsHeight + (b.showSection ? SECTION_PAD : 0);
 
-                        ensureSpace(tfTotalHeight + 8);
+                        ensureSpace(tfTotalHeight + BLOCK_GAP);
 
                         if (b.showSection) {
                             // Draw section box
                             currentPage.drawRectangle({ x: mSide, y: y - tfTotalHeight, width: contentWidth, height: tfTotalHeight, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
                             // Draw section title (unless hidden)
                             if (!b.hideTitle) {
-                                currentPage.drawText((b.sectionTitle || 'Section Title').toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
-                                currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                                tfSecTitleLines.forEach((line, i) => {
+                                    currentPage.drawText(line, { x: mSide + SECTION_PAD, y: y - 14 - i * 14, size: 11, font: fontBold, color: red });
+                                });
+                                const tfUnderlineY = y - 20 - (tfSecTitleLines.length - 1) * 14;
+                                currentPage.drawLine({ start: { x: mSide + SECTION_PAD, y: tfUnderlineY }, end: { x: pageWidth - mSide - SECTION_PAD, y: tfUnderlineY }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
                                 y -= tfHeaderHeight;
                             }
                         }
 
                         // Render each row
                         tfRowData.forEach(({ row, wrappedLabels, maxLines, labelHeight }, rowIdx) => {
-                            y -= 6; // Margin above labels
+                            y -= ROW_GAP; // Margin above labels
                             const labelStartY = y;
 
                             // Draw wrapped labels for each field
@@ -2390,19 +2429,19 @@
                             });
 
                             y -= labelHeight; // Move past all label lines
-                            y -= 4; // Gap between label and field
+                            y -= LABEL_GAP; // Gap between label and field
 
                             // Draw fields
                             row.forEach((f, colIdx) => {
                                 const fieldX = tfInnerX + colIdx * (tfFieldW + tfGap);
                                 const tfField = form.createTextField(f.fieldName + '_' + b.id + '_r' + rowIdx);
-                                tfField.addToPage(currentPage, { x: fieldX, y: y - 16, width: tfFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                                tfField.addToPage(currentPage, { x: fieldX, y: y - FIELD_HEIGHT + 2, width: tfFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                             });
-                            y -= 20;
+                            y -= FIELD_HEIGHT + 2;
                         });
 
                         if (b.showSection) {
-                            y -= 10; // Bottom padding for section box
+                            y -= SECTION_PAD; // Bottom padding for section box
                         }
                         break;
 
@@ -2426,9 +2465,10 @@
                         if (taLabelLines.length === 0) taLabelLines.push('');
 
                         const taLabelHeight = taLabelLines.length * 14;
-                        const taHeight = b.rows * 18 + taLabelHeight + 16;
-                        ensureSpace(taHeight);
-                        y -= 6; // Add margin above label
+                        const taFieldH = b.rows * FIELD_HEIGHT;
+                        const taHeight = taFieldH + taLabelHeight + LABEL_GAP + ROW_GAP;
+                        ensureSpace(taHeight + BLOCK_GAP);
+                        y -= ROW_GAP; // Margin above label
 
                         // Render wrapped label lines
                         taLabelLines.forEach((line, idx) => {
@@ -2442,11 +2482,12 @@
                         });
 
                         y += 14; // Undo last line decrement
-                        y -= 6; // Reduced gap between label and field
+                        y -= LABEL_GAP; // Gap between label and field
                         const ta = form.createTextField(b.fieldName + '_' + b.id);
                         ta.enableMultiline();
-                        ta.addToPage(currentPage, { x: mSide, y: y - b.rows * 18, width: contentWidth, height: b.rows * 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        y -= b.rows * 18 + 10;
+                        ta.addToPage(currentPage, { x: mSide, y: y - taFieldH, width: contentWidth, height: taFieldH, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        ta.setFontSize(11);
+                        y -= taFieldH + BLOCK_GAP;
                         break;
 
                     case 'checkbox':
@@ -2499,7 +2540,7 @@
                         }
 
                         let cbX = mSide + 10;
-                        let cbY = y - 18;
+                        let cbY = y - 14;
                         const standardFieldWidth = contentWidth - 150; // Standardized width
 
                         // Helper to wrap checkbox text into lines (preserves **bold** markers)
@@ -2575,6 +2616,9 @@
                                     optField.enableMultiline();
                                 }
                                 optField.addToPage(currentPage, { x: fieldX, y: cbY - fieldHeight + 4, width: standardFieldWidth - firstLineWidth, height: fieldHeight, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                                if (fieldRows > 1) {
+                                    optField.setFontSize(11);
+                                }
                             }
 
                             if (isVertical) {
@@ -2585,76 +2629,85 @@
                                 cbX += firstLineWidth + (hasField ? standardFieldWidth - firstLineWidth + 20 : 36);
                             }
                         });
-                        y -= cbBoxHeight + 8;
+                        y -= cbBoxHeight + BLOCK_GAP;
                         break;
 
                     case 'dropdown':
                         const ddFields = b.dropdowns || [];
                         const ddFieldCount = ddFields.length;
                         const ddFieldH = 38;
-                        const ddHeaderHeight = (b.showSection && !b.hideTitle) ? 26 : 0;
-                        const ddTotalHeight = ddHeaderHeight + ddFieldH + (b.showSection ? 10 : 0);
-                        const ddInnerX = b.showSection ? mSide + 10 : mSide;
-                        const ddInnerW = b.showSection ? contentWidth - 20 : contentWidth;
-                        ensureSpace(ddTotalHeight + 8);
+                        const ddSecTitleLines = (b.showSection && !b.hideTitle) ? wrapText((b.sectionTitle || 'Section Title').toUpperCase(), contentWidth - SECTION_PAD * 2, fontBold, 11) : [];
+                        const ddHeaderHeight = ddSecTitleLines.length > 0 ? 26 + (ddSecTitleLines.length - 1) * 14 : 0;
+                        const ddTotalHeight = ddHeaderHeight + ddFieldH + (b.showSection ? SECTION_PAD : 0);
+                        const ddInnerX = b.showSection ? mSide + SECTION_PAD : mSide;
+                        const ddInnerW = b.showSection ? contentWidth - (SECTION_PAD * 2) : contentWidth;
+                        ensureSpace(ddTotalHeight + BLOCK_GAP);
 
                         if (b.showSection) {
                             // Draw section box
                             currentPage.drawRectangle({ x: mSide, y: y - ddTotalHeight, width: contentWidth, height: ddTotalHeight, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
                             // Draw section title (unless hidden)
                             if (!b.hideTitle) {
-                                currentPage.drawText((b.sectionTitle || 'Section Title').toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
-                                currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                                ddSecTitleLines.forEach((line, i) => {
+                                    currentPage.drawText(line, { x: mSide + SECTION_PAD, y: y - 14 - i * 14, size: 11, font: fontBold, color: red });
+                                });
+                                const ddUnderlineY = y - 20 - (ddSecTitleLines.length - 1) * 14;
+                                currentPage.drawLine({ start: { x: mSide + SECTION_PAD, y: ddUnderlineY }, end: { x: pageWidth - mSide - SECTION_PAD, y: ddUnderlineY }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
                                 y -= ddHeaderHeight;
                             }
                         }
 
                         if (ddFieldCount === 1) {
                             const dd = ddFields[0];
-                            y -= 6;
-                            currentPage.drawText(dd.label + (b.required ? ' *' : ''), { x: ddInnerX, y, size: 10, font: fontBold, color: gray });
+                            y -= ROW_GAP;
+                            currentPage.drawText(dd.label, { x: ddInnerX, y, size: 10, font: fontBold, color: gray });
                             if (b.required) {
                                 currentPage.drawText(' *', { x: ddInnerX + fontBold.widthOfTextAtSize(dd.label, 10), y, size: 10, font: fontBold, color: red });
                             }
-                            y -= 6;
+                            y -= LABEL_GAP;
                             const ddrop = form.createDropdown(dd.fieldName + '_' + b.id);
                             ddrop.addOptions(dd.options || []);
-                            ddrop.addToPage(currentPage, { x: ddInnerX, y: y - 18, width: ddInnerW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                            y -= 26;
+                            ddrop.addToPage(currentPage, { x: ddInnerX, y: y - FIELD_HEIGHT, width: ddInnerW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            y -= FIELD_HEIGHT + LABEL_GAP;
                         } else {
-                            const ddColW = (ddInnerW - (ddFieldCount - 1) * 10) / ddFieldCount;
-                            y -= 6;
+                            const ddColW = (ddInnerW - (ddFieldCount - 1) * GRID_GAP) / ddFieldCount;
+                            y -= ROW_GAP;
                             ddFields.forEach((dd, i) => {
-                                const xOff = ddInnerX + i * (ddColW + 10);
+                                const xOff = ddInnerX + i * (ddColW + GRID_GAP);
                                 currentPage.drawText(dd.label, { x: xOff, y, size: 10, font: fontBold, color: gray });
                                 if (b.required) {
                                     currentPage.drawText(' *', { x: xOff + fontBold.widthOfTextAtSize(dd.label, 10), y, size: 10, font: fontBold, color: red });
                                 }
                             });
-                            y -= 6;
+                            y -= LABEL_GAP;
                             ddFields.forEach((dd, i) => {
-                                const xOff = ddInnerX + i * (ddColW + 10);
+                                const xOff = ddInnerX + i * (ddColW + GRID_GAP);
                                 const ddrop = form.createDropdown(dd.fieldName + '_' + b.id);
                                 ddrop.addOptions(dd.options || []);
-                                ddrop.addToPage(currentPage, { x: xOff, y: y - 18, width: ddColW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                                ddrop.addToPage(currentPage, { x: xOff, y: y - FIELD_HEIGHT, width: ddColW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                             });
-                            y -= 26;
+                            y -= FIELD_HEIGHT + LABEL_GAP;
                         }
 
                         if (b.showSection) {
-                            y -= 10; // Bottom padding for section box
+                            y -= SECTION_PAD; // Bottom padding for section box
                         }
                         break;
 
                     case 'address':
+                        const addrTitleLines = wrapText(b.title.toUpperCase(), contentWidth - SECTION_PAD * 2, fontBold, 11);
+                        const addrHeaderExtra = (addrTitleLines.length - 1) * 14;
                         const addrTypeH = b.includeTypeSelector ? 22 : 0;
-                        const addrH = (b.includePhone ? 145 : 118) + addrTypeH;
-                        ensureSpace(addrH + 16);
+                        const addrH = (b.includePhone ? 138 : 108) + addrTypeH + addrHeaderExtra;
+                        ensureSpace(addrH + BLOCK_GAP);
                         currentPage.drawRectangle({ x: mSide, y: y - addrH, width: contentWidth, height: addrH, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
-                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
-                        currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
-                        y -= 30;
-                        const addrInnerW = contentWidth - 20;
+                        addrTitleLines.forEach((line, i) => {
+                            currentPage.drawText(line, { x: mSide + SECTION_PAD, y: y - 14 - i * 14, size: 11, font: fontBold, color: red });
+                        });
+                        const addrUnderlineY = y - 20 - addrHeaderExtra;
+                        currentPage.drawLine({ start: { x: mSide + SECTION_PAD, y: addrUnderlineY }, end: { x: pageWidth - mSide - SECTION_PAD, y: addrUnderlineY }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                        y -= 30 + addrHeaderExtra;
+                        const addrInnerW = contentWidth - (SECTION_PAD * 2);
                         // Type selector checkboxes (optional)
                         if (b.includeTypeSelector) {
                             y -= 4; // Add slight space below header line
@@ -2680,10 +2733,10 @@
                         currentPage.drawText(' *', { x: mSide + 10 + fontBold.widthOfTextAtSize('Street Address', 9), y, size: 9, font: fontBold, color: red });
                         // Apt (no required)
                         currentPage.drawText('Apt', { x: mSide + 10 + streetW + streetGap, y, size: 9, font: fontBold, color: gray });
-                        y -= 12;
-                        form.createTextField(b.fieldPrefix + '_street').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: streetW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_apt').addToPage(currentPage, { x: mSide + 10 + streetW + streetGap, y: y - 16, width: aptW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        y -= 28;
+                        y -= LABEL_GAP;
+                        form.createTextField(b.fieldPrefix + '_street').addToPage(currentPage, { x: mSide + 10, y: y - FIELD_HEIGHT, width: streetW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_apt').addToPage(currentPage, { x: mSide + 10 + streetW + streetGap, y: y - FIELD_HEIGHT, width: aptW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        y -= FIELD_HEIGHT + FIELD_ROW_GAP;
                         // City, State, Country, Zip Code row - all with required *
                         const cityW = addrInnerW * 0.32, stateW = addrInnerW * 0.12, countryW = addrInnerW * 0.24, zipW = addrInnerW * 0.20;
                         const gap2 = 8;
@@ -2695,12 +2748,12 @@
                         currentPage.drawText(' *', { x: mSide + 10 + cityW + stateW + gap2*2 + fontBold.widthOfTextAtSize('Country', 9), y, size: 9, font: fontBold, color: red });
                         currentPage.drawText('Zip Code', { x: mSide + 10 + cityW + stateW + countryW + gap2*3, y, size: 9, font: fontBold, color: gray });
                         currentPage.drawText(' *', { x: mSide + 10 + cityW + stateW + countryW + gap2*3 + fontBold.widthOfTextAtSize('Zip Code', 9), y, size: 9, font: fontBold, color: red });
-                        y -= 12;
-                        form.createTextField(b.fieldPrefix + '_city').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: cityW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_state').addToPage(currentPage, { x: mSide + 10 + cityW + gap2, y: y - 16, width: stateW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_country').addToPage(currentPage, { x: mSide + 10 + cityW + stateW + gap2*2, y: y - 16, width: countryW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_zip').addToPage(currentPage, { x: mSide + 10 + cityW + stateW + countryW + gap2*3, y: y - 16, width: zipW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        y -= 26;
+                        y -= LABEL_GAP;
+                        form.createTextField(b.fieldPrefix + '_city').addToPage(currentPage, { x: mSide + 10, y: y - FIELD_HEIGHT, width: cityW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_state').addToPage(currentPage, { x: mSide + 10 + cityW + gap2, y: y - FIELD_HEIGHT, width: stateW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_country').addToPage(currentPage, { x: mSide + 10 + cityW + stateW + gap2*2, y: y - FIELD_HEIGHT, width: countryW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_zip').addToPage(currentPage, { x: mSide + 10 + cityW + stateW + countryW + gap2*3, y: y - FIELD_HEIGHT, width: zipW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        y -= FIELD_HEIGHT + FIELD_ROW_GAP;
                         // Phone fields (optional)
                         if (b.includePhone) {
                             // Country Code label
@@ -2715,89 +2768,99 @@
                             const phoneNumX = areaCodeX + 80;
                             currentPage.drawText('Phone Number', { x: phoneNumX, y, size: 9, font: fontBold, color: gray });
                             currentPage.drawText(' *', { x: phoneNumX + fontBold.widthOfTextAtSize('Phone Number', 9), y, size: 9, font: fontBold, color: red });
-                            y -= 12;
+                            y -= LABEL_GAP;
                             // Phone input fields
                             const countryCodeW = 70;
                             const areaCodeW = 70;
                             const phoneNumW = addrInnerW - countryCodeW - areaCodeW - 130;
-                            form.createTextField(b.fieldPrefix + '_country_code').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: countryCodeW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                            form.createTextField(b.fieldPrefix + '_area_code').addToPage(currentPage, { x: areaCodeX, y: y - 16, width: areaCodeW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                            form.createTextField(b.fieldPrefix + '_phone').addToPage(currentPage, { x: phoneNumX, y: y - 16, width: phoneNumW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            form.createTextField(b.fieldPrefix + '_country_code').addToPage(currentPage, { x: mSide + 10, y: y - FIELD_HEIGHT, width: countryCodeW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            form.createTextField(b.fieldPrefix + '_area_code').addToPage(currentPage, { x: areaCodeX, y: y - FIELD_HEIGHT, width: areaCodeW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            form.createTextField(b.fieldPrefix + '_phone').addToPage(currentPage, { x: phoneNumX, y: y - FIELD_HEIGHT, width: phoneNumW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                             // Make primary phone checkbox
                             const phoneCb = form.createCheckBox(b.fieldPrefix + '_primary_phone');
                             phoneCb.addToPage(currentPage, { x: phoneNumX + phoneNumW + 15, y: y - 12, width: 12, height: 12 });
                             currentPage.drawText('Make primary phone', { x: phoneNumX + phoneNumW + 30, y: y - 10, size: 9, font, color: gray });
                             y -= 26;
                         }
-                        y -= 12;
+                        y -= BLOCK_GAP;
                         break;
 
                     case 'student-info':
-                        const siH = 112;
-                        ensureSpace(siH + 16);
+                        const siTitleLines = wrapText(b.title.toUpperCase(), contentWidth - SECTION_PAD * 2, fontBold, 11);
+                        const siHeaderExtra = (siTitleLines.length - 1) * 14;
+                        const siH = 96 + siHeaderExtra;
+                        ensureSpace(siH + BLOCK_GAP);
                         currentPage.drawRectangle({ x: mSide, y: y - siH, width: contentWidth, height: siH, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
-                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
-                        currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
-                        y -= 30;
+                        siTitleLines.forEach((line, i) => {
+                            currentPage.drawText(line, { x: mSide + SECTION_PAD, y: y - 14 - i * 14, size: 11, font: fontBold, color: red });
+                        });
+                        const siUnderlineY = y - 20 - siHeaderExtra;
+                        currentPage.drawLine({ start: { x: mSide + SECTION_PAD, y: siUnderlineY }, end: { x: pageWidth - mSide - SECTION_PAD, y: siUnderlineY }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                        y -= 30 + siHeaderExtra;
                         // Row 1: Name fields (Last, First, Middle)
-                        const siInnerW = contentWidth - 20;
+                        const siInnerW = contentWidth - (SECTION_PAD * 2);
                         const nameW1 = siInnerW * 0.38, nameW2 = siInnerW * 0.32, nameW3 = siInnerW * 0.26;
-                        const nameGap = 6;
+                        const nameGap = ROW_GAP;
                         // Last Name with required *
-                        currentPage.drawText('Last Name', { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
-                        currentPage.drawText(' *', { x: mSide + 10 + fontBold.widthOfTextAtSize('Last Name', 9), y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText('Last Name', { x: mSide + SECTION_PAD, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + SECTION_PAD + fontBold.widthOfTextAtSize('Last Name', 9), y, size: 9, font: fontBold, color: red });
                         // First Name with required *
-                        currentPage.drawText('First Name', { x: mSide + 10 + nameW1 + nameGap, y, size: 9, font: fontBold, color: gray });
-                        currentPage.drawText(' *', { x: mSide + 10 + nameW1 + nameGap + fontBold.widthOfTextAtSize('First Name', 9), y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText('First Name', { x: mSide + SECTION_PAD + nameW1 + nameGap, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + SECTION_PAD + nameW1 + nameGap + fontBold.widthOfTextAtSize('First Name', 9), y, size: 9, font: fontBold, color: red });
                         // Middle Name (no required)
-                        currentPage.drawText('Middle Name', { x: mSide + 10 + nameW1 + nameW2 + nameGap*2, y, size: 9, font: fontBold, color: gray });
-                        y -= 12;
-                        form.createTextField(b.fieldPrefix + '_last').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: nameW1, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_first').addToPage(currentPage, { x: mSide + 10 + nameW1 + nameGap, y: y - 16, width: nameW2, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_middle').addToPage(currentPage, { x: mSide + 10 + nameW1 + nameW2 + nameGap*2, y: y - 16, width: nameW3 - nameGap, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        y -= 30;
+                        currentPage.drawText('Middle Name', { x: mSide + SECTION_PAD + nameW1 + nameW2 + nameGap*2, y, size: 9, font: fontBold, color: gray });
+                        y -= LABEL_GAP;
+                        form.createTextField(b.fieldPrefix + '_last').addToPage(currentPage, { x: mSide + SECTION_PAD, y: y - FIELD_HEIGHT, width: nameW1, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_first').addToPage(currentPage, { x: mSide + SECTION_PAD + nameW1 + nameGap, y: y - FIELD_HEIGHT, width: nameW2, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_middle').addToPage(currentPage, { x: mSide + SECTION_PAD + nameW1 + nameW2 + nameGap*2, y: y - FIELD_HEIGHT, width: nameW3 - nameGap, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        y -= FIELD_HEIGHT + FIELD_ROW_GAP;
                         // Row 2: UGA ID (left) + Email (right)
                         const siHalfW = (siInnerW - 12) / 2;
                         // UGA ID Number with required * and inline hint
                         const ugaIdLabel = 'UGA ID (810X) Number';
-                        currentPage.drawText(ugaIdLabel, { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(ugaIdLabel, { x: mSide + SECTION_PAD, y, size: 9, font: fontBold, color: gray });
                         const ugaIdLabelW = fontBold.widthOfTextAtSize(ugaIdLabel, 9);
-                        currentPage.drawText(' *', { x: mSide + 10 + ugaIdLabelW, y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText(' *', { x: mSide + SECTION_PAD + ugaIdLabelW, y, size: 9, font: fontBold, color: red });
                         // Contact Email Address with required *
-                        currentPage.drawText('Contact Email Address', { x: mSide + 10 + siHalfW + 12, y, size: 9, font: fontBold, color: gray });
-                        currentPage.drawText(' *', { x: mSide + 10 + siHalfW + 12 + fontBold.widthOfTextAtSize('Contact Email Address', 9), y, size: 9, font: fontBold, color: red });
-                        y -= 12;
+                        currentPage.drawText('Contact Email Address', { x: mSide + SECTION_PAD + siHalfW + 12, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + SECTION_PAD + siHalfW + 12 + fontBold.widthOfTextAtSize('Contact Email Address', 9), y, size: 9, font: fontBold, color: red });
+                        y -= LABEL_GAP;
                         // UGA ID field
-                        form.createTextField(b.fieldPrefix + '_ugaid').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: siHalfW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_ugaid').addToPage(currentPage, { x: mSide + SECTION_PAD, y: y - FIELD_HEIGHT, width: siHalfW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                         // Email field on right
-                        form.createTextField(b.fieldPrefix + '_email').addToPage(currentPage, { x: mSide + 10 + siHalfW + 12, y: y - 16, width: siHalfW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        y -= 38;
+                        form.createTextField(b.fieldPrefix + '_email').addToPage(currentPage, { x: mSide + SECTION_PAD + siHalfW + 12, y: y - FIELD_HEIGHT, width: siHalfW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        y -= FIELD_HEIGHT + SECTION_PAD + BLOCK_GAP;
                         break;
 
                     case 'course-info':
-                        const ciH = 70;
-                        ensureSpace(ciH + 16);
+                        const ciTitleLines = wrapText(b.title.toUpperCase(), contentWidth - SECTION_PAD * 2, fontBold, 11);
+                        const ciHeaderExtra = (ciTitleLines.length - 1) * 14;
+                        const ciH = 62 + ciHeaderExtra;
+                        ensureSpace(ciH + BLOCK_GAP);
                         currentPage.drawRectangle({ x: mSide, y: y - ciH, width: contentWidth, height: ciH, color: rgb(0.98, 0.98, 0.98), borderColor: rgb(0.89, 0.89, 0.89), borderWidth: 0.5 });
-                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 10, y: y - 14, size: 11, font: fontBold, color: red });
-                        currentPage.drawLine({ start: { x: mSide + 10, y: y - 20 }, end: { x: pageWidth - mSide - 10, y: y - 20 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
-                        y -= 30;
-                        const ciInnerW = contentWidth - 20;
-                        const ciFieldW = (ciInnerW - 18) / 4;
-                        const ciGap = 6;
-                        currentPage.drawText('CRN', { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
-                        currentPage.drawText(' *', { x: mSide + 10 + fontBold.widthOfTextAtSize('CRN', 9), y, size: 9, font: fontBold, color: red });
-                        currentPage.drawText('Course Prefix', { x: mSide + 10 + ciFieldW + ciGap, y, size: 9, font: fontBold, color: gray });
-                        currentPage.drawText(' *', { x: mSide + 10 + ciFieldW + ciGap + fontBold.widthOfTextAtSize('Course Prefix', 9), y, size: 9, font: fontBold, color: red });
-                        currentPage.drawText('Course Number', { x: mSide + 10 + (ciFieldW + ciGap) * 2, y, size: 9, font: fontBold, color: gray });
-                        currentPage.drawText(' *', { x: mSide + 10 + (ciFieldW + ciGap) * 2 + fontBold.widthOfTextAtSize('Course Number', 9), y, size: 9, font: fontBold, color: red });
-                        currentPage.drawText('Credit Hours', { x: mSide + 10 + (ciFieldW + ciGap) * 3, y, size: 9, font: fontBold, color: gray });
-                        currentPage.drawText(' *', { x: mSide + 10 + (ciFieldW + ciGap) * 3 + fontBold.widthOfTextAtSize('Credit Hours', 9), y, size: 9, font: fontBold, color: red });
-                        y -= 12;
-                        form.createTextField(b.fieldPrefix + '_crn').addToPage(currentPage, { x: mSide + 10, y: y - 16, width: ciFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_prefix').addToPage(currentPage, { x: mSide + 10 + ciFieldW + ciGap, y: y - 16, width: ciFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_number').addToPage(currentPage, { x: mSide + 10 + (ciFieldW + ciGap) * 2, y: y - 16, width: ciFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_hours').addToPage(currentPage, { x: mSide + 10 + (ciFieldW + ciGap) * 3, y: y - 16, width: ciFieldW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        y -= 38;
+                        ciTitleLines.forEach((line, i) => {
+                            currentPage.drawText(line, { x: mSide + SECTION_PAD, y: y - 14 - i * 14, size: 11, font: fontBold, color: red });
+                        });
+                        const ciUnderlineY = y - 20 - ciHeaderExtra;
+                        currentPage.drawLine({ start: { x: mSide + SECTION_PAD, y: ciUnderlineY }, end: { x: pageWidth - mSide - SECTION_PAD, y: ciUnderlineY }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) });
+                        y -= 30 + ciHeaderExtra;
+                        const ciInnerW = contentWidth - (SECTION_PAD * 2);
+                        const ciFieldW = (ciInnerW - (GRID_GAP * 3)) / 4;
+                        const ciGap = GRID_GAP;
+                        currentPage.drawText('CRN', { x: mSide + SECTION_PAD, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + SECTION_PAD + fontBold.widthOfTextAtSize('CRN', 9), y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText('Course Prefix', { x: mSide + SECTION_PAD + ciFieldW + ciGap, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + SECTION_PAD + ciFieldW + ciGap + fontBold.widthOfTextAtSize('Course Prefix', 9), y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText('Course Number', { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 2, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 2 + fontBold.widthOfTextAtSize('Course Number', 9), y, size: 9, font: fontBold, color: red });
+                        currentPage.drawText('Credit Hours', { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 3, y, size: 9, font: fontBold, color: gray });
+                        currentPage.drawText(' *', { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 3 + fontBold.widthOfTextAtSize('Credit Hours', 9), y, size: 9, font: fontBold, color: red });
+                        y -= LABEL_GAP;
+                        form.createTextField(b.fieldPrefix + '_crn').addToPage(currentPage, { x: mSide + SECTION_PAD, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_prefix').addToPage(currentPage, { x: mSide + SECTION_PAD + ciFieldW + ciGap, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_number').addToPage(currentPage, { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 2, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        form.createTextField(b.fieldPrefix + '_hours').addToPage(currentPage, { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 3, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        y -= FIELD_HEIGHT + SECTION_PAD + BLOCK_GAP;
                         break;
 
                     case 'info-paragraph':
@@ -2923,43 +2986,58 @@
                                 infoY -= infoLineHeight;
                             });
                         });
-                        y -= infoBoxH + 8;
+                        y -= infoBoxH + BLOCK_GAP;
                         break;
 
                     case 'signature':
-                        ensureSpace(80);
-                        y -= 10; // Add space above signature block
-                        // Left-aligned signature - both lines same width
-                        const sigLineW = 200;
-                        const sigLabelW = fontBold.widthOfTextAtSize(b.label, 10);
-                        const sigLabelX = mSide;
-                        const sigLineX = mSide + sigLabelW + 15;
+                        // Fixed-width label column for consistent alignment across signature blocks
+                        const SIG_LABEL_W = 150;
+                        const sigLineStartX = mSide + SIG_LABEL_W + 10;
 
-                        // Photo ID box dimensions (right side) - horizontal layout
+                        // Photo ID box dimensions (right side)
                         const photoIdBoxW = 140;
                         const photoIdBoxH = 40;
                         const photoIdBoxX = pageWidth - mSide - photoIdBoxW;
-                        const photoIdBoxY = y - photoIdBoxH + 5;
+                        const sigLineEndX = b.includePhotoId ? (photoIdBoxX - 15) : (pageWidth - mSide);
+                        const sigLineW = sigLineEndX - sigLineStartX;
 
-                        // Signature label with required *
-                        currentPage.drawText(b.label, { x: sigLabelX, y, size: 10, font: fontBold, color: gray });
-                        currentPage.drawText(' *', { x: sigLabelX + sigLabelW, y, size: 10, font: fontBold, color: red });
-                        // Signature line
-                        currentPage.drawLine({ start: { x: sigLineX, y: y - 2 }, end: { x: sigLineX + sigLineW, y: y - 2 }, thickness: 0.5, color: rgb(0.5, 0.5, 0.5) });
-                        y -= 22;
+                        // Wrap label text within fixed-width column
+                        const sigLabelLines = wrapText(b.label, SIG_LABEL_W, fontBold, 10);
+                        const sigLabelH = sigLabelLines.length * 14;
+                        const sigRowH = Math.max(sigLabelH, 18);
+                        const dateRowH = b.includeDate ? 22 : 0;
+                        const sigTotalH = sigRowH + dateRowH + BLOCK_GAP;
+
+                        ensureSpace(Math.max(sigTotalH, b.includePhotoId ? photoIdBoxH + BLOCK_GAP : 0) + BLOCK_GAP);
+                        y -= BLOCK_GAP;
+
+                        // Draw wrapped label lines
+                        const sigLabelStartY = y;
+                        sigLabelLines.forEach((line, i) => {
+                            currentPage.drawText(line, { x: mSide, y: sigLabelStartY - i * 14, size: 10, font: fontBold, color: gray });
+                            if (b.required && i === sigLabelLines.length - 1) {
+                                currentPage.drawText(' *', { x: mSide + fontBold.widthOfTextAtSize(line, 10), y: sigLabelStartY - i * 14, size: 10, font: fontBold, color: red });
+                            }
+                        });
+
+                        // Signature line (aligned to first label line)
+                        currentPage.drawLine({ start: { x: sigLineStartX, y: y - 2 }, end: { x: sigLineEndX, y: y - 2 }, thickness: 0.5, color: rgb(0.5, 0.5, 0.5) });
+                        y -= sigRowH;
+
+                        // Date row
                         if (b.includeDate) {
-                            const dateLabelW = fontBold.widthOfTextAtSize('Date', 10);
-                            // Date label with required *
-                            currentPage.drawText('Date', { x: sigLabelX, y: y + 4, size: 10, font: fontBold, color: gray });
-                            currentPage.drawText(' *', { x: sigLabelX + dateLabelW, y: y + 4, size: 10, font: fontBold, color: red });
-                            // Date as fillable text field
+                            currentPage.drawText('Date', { x: mSide, y: y + 4, size: 10, font: fontBold, color: gray });
+                            if (b.required) {
+                                currentPage.drawText(' *', { x: mSide + fontBold.widthOfTextAtSize('Date', 10), y: y + 4, size: 10, font: fontBold, color: red });
+                            }
                             const dateField = form.createTextField(b.fieldName + '_date');
-                            dateField.addToPage(currentPage, { x: sigLineX, y: y - 10, width: sigLineW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                            y -= 22;
+                            dateField.addToPage(currentPage, { x: sigLineStartX, y: y - 10, width: sigLineW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            y -= dateRowH;
                         }
-                        // Photo ID attachment box (right side)
+
+                        // Photo ID attachment box (right-aligned)
                         if (b.includePhotoId) {
-                            // Dashed border box
+                            const photoIdBoxY = sigLabelStartY - photoIdBoxH + 5;
                             currentPage.drawRectangle({
                                 x: photoIdBoxX, y: photoIdBoxY,
                                 width: photoIdBoxW, height: photoIdBoxH,
@@ -2968,28 +3046,32 @@
                                 color: rgb(0.98, 0.98, 0.98),
                                 borderDashArray: [4, 3]
                             });
-                            // ID card icon on left side
                             const iconX = photoIdBoxX + 22;
                             const iconY = photoIdBoxY + photoIdBoxH/2;
                             currentPage.drawRectangle({ x: iconX - 12, y: iconY - 8, width: 24, height: 16, borderColor: rgb(0.4, 0.4, 0.4), borderWidth: 1 });
                             currentPage.drawEllipse({ x: iconX - 5, y: iconY - 1, xScale: 3, yScale: 3, borderColor: rgb(0.4, 0.4, 0.4), borderWidth: 0.75 });
                             currentPage.drawLine({ start: { x: iconX + 1, y: iconY + 1 }, end: { x: iconX + 8, y: iconY + 1 }, thickness: 1, color: rgb(0.4, 0.4, 0.4) });
                             currentPage.drawLine({ start: { x: iconX + 1, y: iconY - 3 }, end: { x: iconX + 8, y: iconY - 3 }, thickness: 1, color: rgb(0.4, 0.4, 0.4) });
-                            // Text on right side - bigger and bolder
                             currentPage.drawText('Include copy of', { x: photoIdBoxX + 45, y: photoIdBoxY + 24, size: 9, font: fontBold, color: gray });
                             currentPage.drawText('Photo ID', { x: photoIdBoxX + 45, y: photoIdBoxY + 12, size: 9, font: fontBold, color: gray });
-                            currentPage.drawText(' *', { x: photoIdBoxX + 45 + fontBold.widthOfTextAtSize('Photo ID', 9), y: photoIdBoxY + 12, size: 9, font: fontBold, color: red });
+                            if (b.required) {
+                                currentPage.drawText(' *', { x: photoIdBoxX + 45 + fontBold.widthOfTextAtSize('Photo ID', 9), y: photoIdBoxY + 12, size: 9, font: fontBold, color: red });
+                            }
                         }
                         break;
 
                     case 'office-use':
+                        const ouTitleLines = wrapText(b.title.toUpperCase(), contentWidth - 16, fontBold, 9);
+                        const ouTitleExtra = (ouTitleLines.length - 1) * 12;
                         const approvalH = b.includeApprovalCheckboxes ? 20 : 0;
                         const linesH = Math.ceil(b.lines.length / 2) * 22;
-                        const boxH = linesH + approvalH + 24;
+                        const boxH = linesH + approvalH + 24 + ouTitleExtra;
                         ensureSpace(boxH + 6);
                         currentPage.drawRectangle({ x: mSide, y: y - boxH, width: contentWidth, height: boxH, borderWidth: 0.75, borderColor: rgb(0, 0, 0) });
-                        currentPage.drawText(b.title.toUpperCase(), { x: mSide + 8, y: y - 12, size: 9, font: fontBold, color: gray });
-                        y -= 20;
+                        ouTitleLines.forEach((line, i) => {
+                            currentPage.drawText(line, { x: mSide + 8, y: y - 12 - i * 12, size: 9, font: fontBold, color: gray });
+                        });
+                        y -= 20 + ouTitleExtra;
 
                         // Approval checkboxes + denial reason all on one line
                         if (b.includeApprovalCheckboxes) {
@@ -3024,18 +3106,18 @@
                             }
                             y -= 20;
                         }
-                        y -= 4;
+                        y -= BLOCK_GAP;
                         break;
 
                     case 'footer':
                         ensureSpace(30);
-                        y -= 10;
+                        y -= BLOCK_GAP;
                         currentPage.drawLine({ start: { x: mSide, y: y }, end: { x: pageWidth - mSide, y: y }, thickness: 0.5, color: rgb(0.8, 0.8, 0.8) });
                         y -= 12;
                         const footerText = `Revised ${b.revisedMonth} ${b.revisedYear}`;
                         const footerWidth = font.widthOfTextAtSize(footerText, 9);
                         currentPage.drawText(footerText, { x: (pageWidth - footerWidth) / 2, y, size: 9, font: font, color: rgb(0.4, 0.4, 0.4) });
-                        y -= 20;
+                        y -= BLOCK_GAP;
                         break;
                 }
             }
