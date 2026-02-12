@@ -164,7 +164,10 @@ Converts `**bold**` to `<strong>`, `- items` to `<ul><li>`, and `\n` to `<br>`. 
 Converts `<strong>` back to `**bold**` for storage. Used by contenteditable editors.
 
 ### PDF Bold Rendering Pattern
-All blocks that support bold text use the same inline parsing pattern:
+`info-paragraph` uses bold-aware wrapping via `wrapInfoBoldLine()`: bold markers are parsed
+**before** word wrapping, producing `{text, bold}` tokens per word. This ensures bold spans
+that cross word-wrap boundaries render correctly. Other blocks (checkbox, notice) still use
+the simpler inline regex split:
 ```js
 const parts = line.split(/(\*\*[^*]+\*\*)/g);
 parts.forEach(part => {

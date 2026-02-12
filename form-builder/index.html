@@ -2871,25 +2871,48 @@
                         const infoMaxWidth = contentWidth - 20;
                         const infoSourceLines = infoText.split('\n');
 
-                        // Helper to wrap a single line of text
-                        function wrapInfoLine(line, maxWidth, isBullet) {
-                            const indent = isBullet ? 12 : 0;
-                            const availableWidth = maxWidth - indent;
-                            const plainLine = line.replace(/\*\*/g, '');
-                            const words = plainLine.split(' ');
-                            let wrapped = [];
-                            let current = '';
-                            words.forEach(word => {
-                                const test = current ? current + ' ' + word : word;
-                                if (font.widthOfTextAtSize(test, 9) > availableWidth && current) {
-                                    wrapped.push(current);
-                                    current = word;
-                                } else {
-                                    current = test;
+                        // Bold-aware line wrapping: parses **bold** markers first,
+                        // then word-wraps with correct font per word.
+                        // Returns array of lines, each line is array of {text, bold} tokens.
+                        function wrapInfoBoldLine(lineContent, maxWidth, indent) {
+                            const availW = maxWidth - indent;
+                            const rawParts = lineContent.split(/(\*\*[^*]+\*\*)/g);
+                            const segments = rawParts.filter(p => p !== '').map(part => {
+                                if (part.startsWith('**') && part.endsWith('**')) {
+                                    return { text: part.slice(2, -2), bold: true };
                                 }
+                                return { text: part, bold: false };
                             });
-                            if (current) wrapped.push(current);
-                            return wrapped.length || 1;
+                            const tokens = [];
+                            segments.forEach(seg => {
+                                seg.text.split(/( +)/).forEach(piece => {
+                                    if (piece) tokens.push({ text: piece, bold: seg.bold });
+                                });
+                            });
+                            const lines = [[]];
+                            let lineWidth = 0;
+                            for (let i = 0; i < tokens.length; i++) {
+                                const token = tokens[i];
+                                const isSpace = token.text.trim() === '';
+                                const f = token.bold ? fontBold : font;
+                                const w = f.widthOfTextAtSize(token.text, 9);
+                                if (isSpace) {
+                                    lines[lines.length - 1].push(token);
+                                    lineWidth += w;
+                                } else {
+                                    if (lineWidth > 0 && lineWidth + w > availW) {
+                                        const cur = lines[lines.length - 1];
+                                        while (cur.length && cur[cur.length - 1].text.trim() === '') cur.pop();
+                                        lines.push([]);
+                                        lineWidth = 0;
+                                    }
+                                    lines[lines.length - 1].push(token);
+                                    lineWidth += w;
+                                }
+                            }
+                            const last = lines[lines.length - 1];
+                            while (last.length && last[last.length - 1].text.trim() === '') last.pop();
+                            return lines.length ? lines : [[]];
                         }
 
                         // Helper to wrap title text and return array of lines
@@ -2914,15 +2937,19 @@
                         const infoTitleLines = wrapInfoTitle(b.title.toUpperCase(), infoMaxWidth);
                         const infoTitleHeight = infoTitleLines.length * infoTitleLineHeight;
 
-                        // Calculate total wrapped lines for height
-                        let infoTotalLines = 0;
+                        // Pre-compute all wrapped body lines (bold-aware) for height AND rendering
+                        const allInfoLines = [];
                         infoSourceLines.forEach(line => {
                             const isBullet = line.trim().startsWith('- ');
                             const cleanLine = isBullet ? line.trim().substring(2) : line;
-                            infoTotalLines += wrapInfoLine(cleanLine, infoMaxWidth, isBullet);
+                            const indent = isBullet ? 12 : 0;
+                            const wrapped = wrapInfoBoldLine(cleanLine, infoMaxWidth, indent);
+                            wrapped.forEach((tokens, i) => {
+                                allInfoLines.push({ tokens, isBullet, isFirstOfBullet: isBullet && i === 0 });
+                            });
                         });
 
-                        const infoBoxH = 20 + infoTitleHeight + 10 + (infoTotalLines * infoLineHeight);
+                        const infoBoxH = 20 + infoTitleHeight + 10 + (allInfoLines.length * infoLineHeight);
                         ensureSpace(infoBoxH + 20);
 
                         // Single light background box
@@ -2939,53 +2966,25 @@
                         const underlineY = y - 14 - infoTitleHeight - 4;
                         currentPage.drawLine({ start: { x: mSide + 10, y: underlineY }, end: { x: pageWidth - mSide - 10, y: underlineY }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
 
-                        // Render text with word wrapping, bold, bullets, and line breaks
+                        // Render all pre-computed wrapped body lines
                         let infoY = underlineY - 14;
-                        infoSourceLines.forEach(srcLine => {
-                            const isBullet = srcLine.trim().startsWith('- ');
-                            let lineContent = isBullet ? srcLine.trim().substring(2) : srcLine;
+                        allInfoLines.forEach(wl => {
                             const baseX = mSide + 10;
-                            const indent = isBullet ? 12 : 0;
-                            const availableWidth = infoMaxWidth - indent;
-
-                            // Word wrap this line
-                            const words = lineContent.split(' ');
-                            let wrappedLines = [];
-                            let currentLine = '';
-                            words.forEach(word => {
-                                const plainWord = word.replace(/\*\*/g, '');
-                                const testLine = currentLine ? currentLine + ' ' + word : word;
-                                const plainTest = testLine.replace(/\*\*/g, '');
-                                if (font.widthOfTextAtSize(plainTest, 9) > availableWidth && currentLine) {
-                                    wrappedLines.push(currentLine);
-                                    currentLine = word;
+                            const indent = wl.isBullet ? 12 : 0;
+                            let infoX = baseX + indent;
+                            if (wl.isFirstOfBullet) {
+                                currentPage.drawText('•', { x: baseX, y: infoY, size: 9, font, color: gray });
+                            }
+                            wl.tokens.forEach(token => {
+                                if (token.text.trim() === '') {
+                                    infoX += font.widthOfTextAtSize(token.text, 9);
                                 } else {
-                                    currentLine = testLine;
+                                    const f = token.bold ? fontBold : font;
+                                    currentPage.drawText(token.text, { x: infoX, y: infoY, size: 9, font: f, color: gray });
+                                    infoX += f.widthOfTextAtSize(token.text, 9);
                                 }
                             });
-                            if (currentLine) wrappedLines.push(currentLine);
-                            if (wrappedLines.length === 0) wrappedLines.push('');
-
-                            wrappedLines.forEach((wLine, wIdx) => {
-                                let infoX = baseX + indent;
-                                // Draw bullet only on first wrapped line
-                                if (isBullet && wIdx === 0) {
-                                    currentPage.drawText('•', { x: baseX, y: infoY, size: 9, font, color: gray });
-                                }
-                                // Handle **bold** in this wrapped line
-                                const parts = wLine.split(/(\*\*[^*]+\*\*)/g);
-                                parts.forEach(part => {
-                                    if (part.startsWith('**') && part.endsWith('**')) {
-                                        const boldText = part.slice(2, -2);
-                                        currentPage.drawText(boldText, { x: infoX, y: infoY, size: 9, font: fontBold, color: gray });
-                                        infoX += fontBold.widthOfTextAtSize(boldText, 9);
-                                    } else if (part) {
-                                        currentPage.drawText(part, { x: infoX, y: infoY, size: 9, font, color: gray });
-                                        infoX += font.widthOfTextAtSize(part, 9);
-                                    }
-                                });
-                                infoY -= infoLineHeight;
-                            });
+                            infoY -= infoLineHeight;
                         });
                         y -= infoBoxH + BLOCK_GAP;
                         break;
