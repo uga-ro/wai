@@ -2152,6 +2152,18 @@
             const pdf = await PDFDocument.create();
             const form = pdf.getForm();
 
+            // Accessibility: Document metadata
+            const formTitleText = document.getElementById('formTitle').value || 'Untitled Form';
+            pdf.setTitle(formTitleText);
+            pdf.setAuthor('UGA Office of the Registrar');
+            pdf.setSubject(formTitleText);
+            pdf.setCreator('REGI Form Builder');
+
+            // Accessibility: Document language
+            try {
+                pdf.catalog.set(PDFLib.PDFName.of('Lang'), PDFLib.PDFString.of('en-US'));
+            } catch(e) { console.warn('Could not set document language:', e); }
+
             const font = await pdf.embedFont(StandardFonts.Helvetica);
             const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
             const fontSerif = await pdf.embedFont(StandardFonts.TimesRoman);
@@ -2188,12 +2200,14 @@
 
             // Track current page and y position
             let currentPage = pdf.addPage([pageWidth, pageHeight]);
+            currentPage.node.set(PDFLib.PDFName.of('Tabs'), PDFLib.PDFName.of('S'));
             let y = pageHeight - mTop;
 
             // Helper to check if we need a new page and create one if needed
             function ensureSpace(neededHeight) {
                 if (y - neededHeight < mBottom) {
                     currentPage = pdf.addPage([pageWidth, pageHeight]);
+                    currentPage.node.set(PDFLib.PDFName.of('Tabs'), PDFLib.PDFName.of('S'));
                     y = pageHeight - mTop;
                     return true;
                 }
@@ -2216,6 +2230,19 @@
                 });
                 if (current) lines.push(current);
                 return lines.length ? lines : [''];
+            }
+
+            // Accessibility: Set tooltip and required flag on PDF form fields
+            function setFieldA11y(field, tooltip, isRequired) {
+                try {
+                    const dict = field.acroField.dict;
+                    dict.set(PDFLib.PDFName.of('TU'), PDFLib.PDFHexString.fromText(tooltip));
+                    if (isRequired) {
+                        const flags = dict.get(PDFLib.PDFName.of('Ff'));
+                        const currentFlags = flags ? flags.asNumber() : 0;
+                        dict.set(PDFLib.PDFName.of('Ff'), PDFLib.PDFNumber.of(currentFlags | 2));
+                    }
+                } catch(e) { /* accessibility enhancement - non-critical */ }
             }
 
             // --- LETTERHEAD ---
@@ -2437,6 +2464,7 @@
                                 const fieldX = tfInnerX + colIdx * (tfFieldW + tfGap);
                                 const tfField = form.createTextField(f.fieldName + '_' + b.id + '_r' + rowIdx);
                                 tfField.addToPage(currentPage, { x: fieldX, y: y - FIELD_HEIGHT + 2, width: tfFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                                setFieldA11y(tfField, f.label, b.required);
                             });
                             y -= FIELD_HEIGHT + 2;
                         });
@@ -2488,6 +2516,7 @@
                         ta.enableMultiline();
                         ta.addToPage(currentPage, { x: mSide, y: y - taFieldH, width: contentWidth, height: taFieldH, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
                         ta.setFontSize(11);
+                        setFieldA11y(ta, b.label, b.required);
                         y -= taFieldH + BLOCK_GAP;
                         break;
 
@@ -2574,6 +2603,7 @@
 
                             const cb = form.createCheckBox(b.fieldName + '_' + i + '_' + b.id);
                             cb.addToPage(currentPage, { x: cbX, y: cbY - 10, width: 12, height: 12 });
+                            setFieldA11y(cb, text.replace(/\*\*/g, ''), b.required);
 
                             // Calculate wrapped lines for this checkbox text
                             const textStartX = cbX + 16;
@@ -2620,6 +2650,7 @@
                                 if (fieldRows > 1) {
                                     optField.setFontSize(11);
                                 }
+                                setFieldA11y(optField, text.replace(/\*\*/g, '') + ' (details)', false);
                             }
 
                             if (isVertical) {
@@ -2669,6 +2700,7 @@
                             const ddrop = form.createDropdown(dd.fieldName + '_' + b.id);
                             ddrop.addOptions(dd.options || []);
                             ddrop.addToPage(currentPage, { x: ddInnerX, y: y - FIELD_HEIGHT, width: ddInnerW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            setFieldA11y(ddrop, dd.label, b.required);
                             y -= FIELD_HEIGHT + LABEL_GAP;
                         } else {
                             const ddColW = (ddInnerW - (ddFieldCount - 1) * GRID_GAP) / ddFieldCount;
@@ -2686,6 +2718,7 @@
                                 const ddrop = form.createDropdown(dd.fieldName + '_' + b.id);
                                 ddrop.addOptions(dd.options || []);
                                 ddrop.addToPage(currentPage, { x: xOff, y: y - FIELD_HEIGHT, width: ddColW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                                setFieldA11y(ddrop, dd.label, b.required);
                             });
                             y -= FIELD_HEIGHT + LABEL_GAP;
                         }
@@ -2720,6 +2753,7 @@
                             typeLabels.forEach((label, i) => {
                                 const typeCb = form.createCheckBox(b.fieldPrefix + '_type_' + label.toLowerCase());
                                 typeCb.addToPage(currentPage, { x: typeX, y: y - 3, width: 12, height: 12 });
+                                setFieldA11y(typeCb, 'Address Type: ' + label, true);
                                 currentPage.drawText(label, { x: typeX + 15, y, size: 9, font, color: gray });
                                 typeX += 15 + font.widthOfTextAtSize(label, 9) + 20;
                             });
@@ -2735,8 +2769,12 @@
                         // Apt (no required)
                         currentPage.drawText('Apt', { x: mSide + 10 + streetW + streetGap, y, size: 9, font: fontBold, color: gray });
                         y -= LABEL_GAP;
-                        form.createTextField(b.fieldPrefix + '_street').addToPage(currentPage, { x: mSide + 10, y: y - FIELD_HEIGHT, width: streetW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_apt').addToPage(currentPage, { x: mSide + 10 + streetW + streetGap, y: y - FIELD_HEIGHT, width: aptW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        const addrStreet = form.createTextField(b.fieldPrefix + '_street');
+                        addrStreet.addToPage(currentPage, { x: mSide + 10, y: y - FIELD_HEIGHT, width: streetW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(addrStreet, 'Street Address', true);
+                        const addrApt = form.createTextField(b.fieldPrefix + '_apt');
+                        addrApt.addToPage(currentPage, { x: mSide + 10 + streetW + streetGap, y: y - FIELD_HEIGHT, width: aptW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(addrApt, 'Apt', false);
                         y -= FIELD_HEIGHT + FIELD_ROW_GAP;
                         // City, State, Country, Zip Code row - all with required *
                         const cityW = addrInnerW * 0.32, stateW = addrInnerW * 0.12, countryW = addrInnerW * 0.24, zipW = addrInnerW * 0.20;
@@ -2750,10 +2788,18 @@
                         currentPage.drawText('Zip Code', { x: mSide + 10 + cityW + stateW + countryW + gap2*3, y, size: 9, font: fontBold, color: gray });
                         currentPage.drawText(' *', { x: mSide + 10 + cityW + stateW + countryW + gap2*3 + fontBold.widthOfTextAtSize('Zip Code', 9), y, size: 9, font: fontBold, color: red });
                         y -= LABEL_GAP;
-                        form.createTextField(b.fieldPrefix + '_city').addToPage(currentPage, { x: mSide + 10, y: y - FIELD_HEIGHT, width: cityW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_state').addToPage(currentPage, { x: mSide + 10 + cityW + gap2, y: y - FIELD_HEIGHT, width: stateW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_country').addToPage(currentPage, { x: mSide + 10 + cityW + stateW + gap2*2, y: y - FIELD_HEIGHT, width: countryW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_zip').addToPage(currentPage, { x: mSide + 10 + cityW + stateW + countryW + gap2*3, y: y - FIELD_HEIGHT, width: zipW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        const addrCity = form.createTextField(b.fieldPrefix + '_city');
+                        addrCity.addToPage(currentPage, { x: mSide + 10, y: y - FIELD_HEIGHT, width: cityW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(addrCity, 'City', true);
+                        const addrState = form.createTextField(b.fieldPrefix + '_state');
+                        addrState.addToPage(currentPage, { x: mSide + 10 + cityW + gap2, y: y - FIELD_HEIGHT, width: stateW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(addrState, 'State', true);
+                        const addrCountry = form.createTextField(b.fieldPrefix + '_country');
+                        addrCountry.addToPage(currentPage, { x: mSide + 10 + cityW + stateW + gap2*2, y: y - FIELD_HEIGHT, width: countryW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(addrCountry, 'Country', true);
+                        const addrZip = form.createTextField(b.fieldPrefix + '_zip');
+                        addrZip.addToPage(currentPage, { x: mSide + 10 + cityW + stateW + countryW + gap2*3, y: y - FIELD_HEIGHT, width: zipW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(addrZip, 'Zip Code', true);
                         y -= FIELD_HEIGHT + FIELD_ROW_GAP;
                         // Phone fields (optional)
                         if (b.includePhone) {
@@ -2774,12 +2820,19 @@
                             const countryCodeW = 70;
                             const areaCodeW = 70;
                             const phoneNumW = addrInnerW - countryCodeW - areaCodeW - 130;
-                            form.createTextField(b.fieldPrefix + '_country_code').addToPage(currentPage, { x: mSide + 10, y: y - FIELD_HEIGHT, width: countryCodeW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                            form.createTextField(b.fieldPrefix + '_area_code').addToPage(currentPage, { x: areaCodeX, y: y - FIELD_HEIGHT, width: areaCodeW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                            form.createTextField(b.fieldPrefix + '_phone').addToPage(currentPage, { x: phoneNumX, y: y - FIELD_HEIGHT, width: phoneNumW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            const phoneCC = form.createTextField(b.fieldPrefix + '_country_code');
+                            phoneCC.addToPage(currentPage, { x: mSide + 10, y: y - FIELD_HEIGHT, width: countryCodeW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            setFieldA11y(phoneCC, 'Country Code (non-US)', false);
+                            const phoneAC = form.createTextField(b.fieldPrefix + '_area_code');
+                            phoneAC.addToPage(currentPage, { x: areaCodeX, y: y - FIELD_HEIGHT, width: areaCodeW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            setFieldA11y(phoneAC, 'Area Code', true);
+                            const phoneNum = form.createTextField(b.fieldPrefix + '_phone');
+                            phoneNum.addToPage(currentPage, { x: phoneNumX, y: y - FIELD_HEIGHT, width: phoneNumW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            setFieldA11y(phoneNum, 'Phone Number', true);
                             // Make primary phone checkbox
                             const phoneCb = form.createCheckBox(b.fieldPrefix + '_primary_phone');
                             phoneCb.addToPage(currentPage, { x: phoneNumX + phoneNumW + 15, y: y - 12, width: 12, height: 12 });
+                            setFieldA11y(phoneCb, 'Make primary phone', false);
                             currentPage.drawText('Make primary phone', { x: phoneNumX + phoneNumW + 30, y: y - 10, size: 9, font, color: gray });
                             y -= 26;
                         }
@@ -2811,9 +2864,15 @@
                         // Middle Name (no required)
                         currentPage.drawText('Middle Name', { x: mSide + SECTION_PAD + nameW1 + nameW2 + nameGap*2, y, size: 9, font: fontBold, color: gray });
                         y -= LABEL_GAP;
-                        form.createTextField(b.fieldPrefix + '_last').addToPage(currentPage, { x: mSide + SECTION_PAD, y: y - FIELD_HEIGHT, width: nameW1, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_first').addToPage(currentPage, { x: mSide + SECTION_PAD + nameW1 + nameGap, y: y - FIELD_HEIGHT, width: nameW2, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_middle').addToPage(currentPage, { x: mSide + SECTION_PAD + nameW1 + nameW2 + nameGap*2, y: y - FIELD_HEIGHT, width: nameW3 - nameGap, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        const siLast = form.createTextField(b.fieldPrefix + '_last');
+                        siLast.addToPage(currentPage, { x: mSide + SECTION_PAD, y: y - FIELD_HEIGHT, width: nameW1, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(siLast, 'Last Name', true);
+                        const siFirst = form.createTextField(b.fieldPrefix + '_first');
+                        siFirst.addToPage(currentPage, { x: mSide + SECTION_PAD + nameW1 + nameGap, y: y - FIELD_HEIGHT, width: nameW2, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(siFirst, 'First Name', true);
+                        const siMiddle = form.createTextField(b.fieldPrefix + '_middle');
+                        siMiddle.addToPage(currentPage, { x: mSide + SECTION_PAD + nameW1 + nameW2 + nameGap*2, y: y - FIELD_HEIGHT, width: nameW3 - nameGap, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(siMiddle, 'Middle Name', false);
                         y -= FIELD_HEIGHT + FIELD_ROW_GAP;
                         // Row 2: UGA ID (left) + Email (right)
                         const siHalfW = (siInnerW - 12) / 2;
@@ -2827,9 +2886,13 @@
                         currentPage.drawText(' *', { x: mSide + SECTION_PAD + siHalfW + 12 + fontBold.widthOfTextAtSize('Contact Email Address', 9), y, size: 9, font: fontBold, color: red });
                         y -= LABEL_GAP;
                         // UGA ID field
-                        form.createTextField(b.fieldPrefix + '_ugaid').addToPage(currentPage, { x: mSide + SECTION_PAD, y: y - FIELD_HEIGHT, width: siHalfW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        const siUgaId = form.createTextField(b.fieldPrefix + '_ugaid');
+                        siUgaId.addToPage(currentPage, { x: mSide + SECTION_PAD, y: y - FIELD_HEIGHT, width: siHalfW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(siUgaId, 'UGA ID (810X) Number', true);
                         // Email field on right
-                        form.createTextField(b.fieldPrefix + '_email').addToPage(currentPage, { x: mSide + SECTION_PAD + siHalfW + 12, y: y - FIELD_HEIGHT, width: siHalfW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        const siEmail = form.createTextField(b.fieldPrefix + '_email');
+                        siEmail.addToPage(currentPage, { x: mSide + SECTION_PAD + siHalfW + 12, y: y - FIELD_HEIGHT, width: siHalfW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(siEmail, 'Contact Email Address', true);
                         y -= FIELD_HEIGHT + SECTION_PAD + BLOCK_GAP;
                         break;
 
@@ -2857,10 +2920,18 @@
                         currentPage.drawText('Credit Hours', { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 3, y, size: 9, font: fontBold, color: gray });
                         currentPage.drawText(' *', { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 3 + fontBold.widthOfTextAtSize('Credit Hours', 9), y, size: 9, font: fontBold, color: red });
                         y -= LABEL_GAP;
-                        form.createTextField(b.fieldPrefix + '_crn').addToPage(currentPage, { x: mSide + SECTION_PAD, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_prefix').addToPage(currentPage, { x: mSide + SECTION_PAD + ciFieldW + ciGap, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_number').addToPage(currentPage, { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 2, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
-                        form.createTextField(b.fieldPrefix + '_hours').addToPage(currentPage, { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 3, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        const ciCrn = form.createTextField(b.fieldPrefix + '_crn');
+                        ciCrn.addToPage(currentPage, { x: mSide + SECTION_PAD, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(ciCrn, 'CRN', true);
+                        const ciPrefix = form.createTextField(b.fieldPrefix + '_prefix');
+                        ciPrefix.addToPage(currentPage, { x: mSide + SECTION_PAD + ciFieldW + ciGap, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(ciPrefix, 'Course Prefix', true);
+                        const ciNumber = form.createTextField(b.fieldPrefix + '_number');
+                        ciNumber.addToPage(currentPage, { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 2, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(ciNumber, 'Course Number', true);
+                        const ciHours = form.createTextField(b.fieldPrefix + '_hours');
+                        ciHours.addToPage(currentPage, { x: mSide + SECTION_PAD + (ciFieldW + ciGap) * 3, y: y - FIELD_HEIGHT, width: ciFieldW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                        setFieldA11y(ciHours, 'Credit Hours', true);
                         y -= FIELD_HEIGHT + SECTION_PAD + BLOCK_GAP;
                         break;
 
@@ -3034,6 +3105,7 @@
                             }
                             const dateField = form.createTextField(b.fieldName + '_date');
                             dateField.addToPage(currentPage, { x: sigLineStartX, y: y - 10, width: sigLineW, height: 18, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
+                            setFieldA11y(dateField, 'Date', sigIsRequired);
                             y -= dateRowH;
                         }
 
@@ -3079,14 +3151,18 @@
                         if (b.includeApprovalCheckboxes) {
                             const approvedCb = form.createCheckBox('office_approved');
                             approvedCb.addToPage(currentPage, { x: mSide + 8, y: y - 8, width: 10, height: 10 });
+                            setFieldA11y(approvedCb, 'Request Approved', false);
                             currentPage.drawText('Request Approved', { x: mSide + 22, y: y - 6, size: 9, font, color: gray });
 
                             const deniedCb = form.createCheckBox('office_denied');
                             deniedCb.addToPage(currentPage, { x: mSide + 115, y: y - 8, width: 10, height: 10 });
+                            setFieldA11y(deniedCb, 'Request Denied', false);
                             currentPage.drawText('Request Denied', { x: mSide + 129, y: y - 6, size: 9, font, color: gray });
 
                             currentPage.drawText('Denial Reason:', { x: mSide + 215, y: y - 6, size: 9, font, color: gray });
-                            form.createTextField('office_denial_reason').addToPage(currentPage, { x: mSide + 285, y: y - 10, width: contentWidth - 295, height: 14, borderWidth: 1, borderColor: rgb(0.7, 0.7, 0.7) });
+                            const denialField = form.createTextField('office_denial_reason');
+                            denialField.addToPage(currentPage, { x: mSide + 285, y: y - 10, width: contentWidth - 295, height: 14, borderWidth: 1, borderColor: rgb(0.7, 0.7, 0.7) });
+                            setFieldA11y(denialField, 'Denial Reason', false);
                             y -= 18;
                         }
 
@@ -3097,14 +3173,18 @@
                             const leftLine = b.lines[i];
                             const leftLabelW = font.widthOfTextAtSize(leftLine + ':', 9) + 4;
                             currentPage.drawText(leftLine + ':', { x: mSide + 8, y: y - 4, size: 9, font: font, color: gray });
-                            form.createTextField('office_' + leftLine.toLowerCase().replace(/\s+/g, '_')).addToPage(currentPage, { x: mSide + 8 + leftLabelW, y: y - 8, width: halfW - leftLabelW - 4, height: 14, borderWidth: 1, borderColor: rgb(0.7, 0.7, 0.7) });
+                            const leftField = form.createTextField('office_' + leftLine.toLowerCase().replace(/\s+/g, '_'));
+                            leftField.addToPage(currentPage, { x: mSide + 8 + leftLabelW, y: y - 8, width: halfW - leftLabelW - 4, height: 14, borderWidth: 1, borderColor: rgb(0.7, 0.7, 0.7) });
+                            setFieldA11y(leftField, leftLine, false);
 
                             // Right side (if exists)
                             if (i + 1 < b.lines.length) {
                                 const rightLine = b.lines[i + 1];
                                 const rightLabelW = font.widthOfTextAtSize(rightLine + ':', 9) + 4;
                                 currentPage.drawText(rightLine + ':', { x: mSide + 8 + halfW + 12, y: y - 4, size: 9, font: font, color: gray });
-                                form.createTextField('office_' + rightLine.toLowerCase().replace(/\s+/g, '_')).addToPage(currentPage, { x: mSide + 8 + halfW + 12 + rightLabelW, y: y - 8, width: halfW - rightLabelW, height: 14, borderWidth: 1, borderColor: rgb(0.7, 0.7, 0.7) });
+                                const rightField = form.createTextField('office_' + rightLine.toLowerCase().replace(/\s+/g, '_'));
+                                rightField.addToPage(currentPage, { x: mSide + 8 + halfW + 12 + rightLabelW, y: y - 8, width: halfW - rightLabelW, height: 14, borderWidth: 1, borderColor: rgb(0.7, 0.7, 0.7) });
+                                setFieldA11y(rightField, rightLine, false);
                             }
                             y -= 20;
                         }
