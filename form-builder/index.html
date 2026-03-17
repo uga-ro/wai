@@ -2473,7 +2473,7 @@
             const FIELD_HEIGHT = 18;    // Standard fillable field height
             const SECTION_PAD = 10;     // Inner padding from section box edges
             const GRID_GAP = 10;        // Gap between grid columns
-            const ROW_GAP = 6;          // Vertical gap between field rows within a text-field block
+            const ROW_GAP = 8;          // Vertical gap between field rows within a text-field block
             const FIELD_ROW_GAP = 12;   // Vertical gap between distinct label+field rows in hardcoded sections
 
             // Load and embed the logo
@@ -2779,8 +2779,8 @@
                         const tfRowData = tfAllRows.map(row => {
                             const wrappedLabels = row.map(f => wrapLabel(f.label, tfFieldW - 10)); // -10 for some padding
                             const maxLines = Math.max(...wrappedLabels.map(l => l.length));
-                            const labelHeight = maxLines * 11; // 11px per line
-                            return { row, wrappedLabels, maxLines, labelHeight, rowHeight: labelHeight + 24 }; // 24 = gap + field height
+                            const labelHeight = (maxLines - 1) * 11 + 2; // inter-line spacing + descent only (not full line height)
+                            return { row, wrappedLabels, maxLines, labelHeight, rowHeight: labelHeight + LABEL_GAP + FIELD_HEIGHT + 2 };
                         });
 
                         const tfTotalRowsHeight = tfRowData.reduce((sum, rd) => sum + rd.rowHeight + ROW_GAP, 0);
@@ -2846,6 +2846,7 @@
                         if (b.showSection) {
                             y -= SECTION_PAD; // Bottom padding for section box
                         }
+                        y -= BLOCK_GAP;
                         break;
 
                     case 'textarea':
@@ -2867,26 +2868,25 @@
                         if (taLabelCurrent) taLabelLines.push(taLabelCurrent);
                         if (taLabelLines.length === 0) taLabelLines.push('');
 
-                        const taLabelHeight = taLabelLines.length * 14;
+                        const taLabelHeight = (taLabelLines.length - 1) * 14 + 3; // inter-line spacing + descent only
                         const taFieldH = b.rows * FIELD_HEIGHT;
                         const taHeight = taFieldH + taLabelHeight + LABEL_GAP + ROW_GAP;
                         ensureSpace(taHeight + BLOCK_GAP);
                         y -= ROW_GAP; // Margin above label
 
-                        // Render wrapped label lines
+                        // Render wrapped label lines (use local var to avoid y drift)
+                        const taLabelStartY = y;
                         tagContent('P', b.label + (b.required ? ' (required)' : ''), () => {
                             taLabelLines.forEach((line, idx) => {
-                                let labelX = mSide;
-                                currentPage.drawText(line, { x: labelX, y, size: 10, font: fontBold, color: gray });
-                                // Add required asterisk to last line
+                                const labelX = mSide;
+                                const lineY = taLabelStartY - idx * 14;
+                                currentPage.drawText(line, { x: labelX, y: lineY, size: 10, font: fontBold, color: gray });
                                 if (b.required && idx === taLabelLines.length - 1) {
-                                    currentPage.drawText(' *', { x: labelX + fontBold.widthOfTextAtSize(line, 10), y, size: 10, font: fontBold, color: red });
+                                    currentPage.drawText(' *', { x: labelX + fontBold.widthOfTextAtSize(line, 10), y: lineY, size: 10, font: fontBold, color: red });
                                 }
-                                y -= 14;
                             });
                         });
-
-                        y += 14; // Undo last line decrement
+                        y -= taLabelHeight; // Move past all label lines
                         y -= LABEL_GAP; // Gap between label and field
                         const ta = form.createTextField(b.fieldName + '_' + b.id);
                         ta.enableMultiline();
@@ -3203,7 +3203,7 @@
                     case 'dropdown':
                         const ddFields = b.dropdowns || [];
                         const ddFieldCount = ddFields.length;
-                        const ddFieldH = 38;
+                        const ddFieldH = ROW_GAP + LABEL_GAP + FIELD_HEIGHT + LABEL_GAP; // 32
                         const ddSecTitleLines = (b.showSection && !b.hideTitle) ? wrapText((b.sectionTitle || 'Section Title').toUpperCase(), contentWidth - SECTION_PAD * 2, fontBold, 11) : [];
                         const ddHeaderHeight = ddSecTitleLines.length > 0 ? 26 + (ddSecTitleLines.length - 1) * 14 : 0;
                         const ddTotalHeight = ddHeaderHeight + ddFieldH + (b.showSection ? SECTION_PAD : 0);
@@ -3413,7 +3413,7 @@
                             });
                             y -= 26;
                         }
-                        y -= BLOCK_GAP;
+                        y -= SECTION_PAD + BLOCK_GAP;
                         break;
 
                     case 'student-info':
@@ -3753,7 +3753,7 @@
                                 }
                             });
                         }
-                        y -= sigBlockH;
+                        y -= sigBlockH + BLOCK_GAP;
                         break;
 
                     case 'office-use':
