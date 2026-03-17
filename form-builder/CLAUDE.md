@@ -243,6 +243,9 @@ These are completely independent code paths. A fix in one does NOT affect the ot
 2. Add `case` in `renderBlock()` for HTML preview
 3. Add `case` in `renderProps()` for properties panel
 4. Add `case` in `exportPDF()` for PDF rendering
+   - Wrap headings in `tagContent('H', title, () => { ... })`
+   - Wrap field labels in `tagContent('P', label, () => { ... })`
+   - Wrap decorative elements (backgrounds, borders, lines) in `tagArtifact(() => { ... })`
 5. Add button in left sidebar HTML
 
 ### Section Box Pattern (Preview)
@@ -257,18 +260,91 @@ No outer margin needed — `.block-item` handles it.
 ### Section Box Pattern (PDF)
 ```js
 ensureSpace(totalH + BLOCK_GAP);
-currentPage.drawRectangle({ x: mSide, y: y - totalH, width: contentWidth, height: totalH,
-    color: rgb(0.98,0.98,0.98), borderColor: rgb(0.89,0.89,0.89), borderWidth: 0.5 });
-currentPage.drawText(title.toUpperCase(), { x: mSide + SECTION_PAD, y: y - 14, size: 11, font: fontBold, color: red });
-currentPage.drawLine({ start: {x: mSide + SECTION_PAD, y: y-20}, end: {x: pageWidth - mSide - SECTION_PAD, y: y-20}, thickness: 0.5, color: rgb(0.88,0.88,0.88) });
+tagArtifact(() => {
+    currentPage.drawRectangle({ x: mSide, y: y - totalH, width: contentWidth, height: totalH,
+        color: rgb(0.98,0.98,0.98), borderColor: rgb(0.89,0.89,0.89), borderWidth: 0.5 });
+});
+tagContent('H', title, () => {
+    currentPage.drawText(title.toUpperCase(), { x: mSide + SECTION_PAD, y: y - 14, size: 11, font: fontBold, color: red });
+});
+tagArtifact(() => {
+    currentPage.drawLine({ start: {x: mSide + SECTION_PAD, y: y-20}, end: {x: pageWidth - mSide - SECTION_PAD, y: y-20},
+        thickness: 0.5, color: rgb(0.88,0.88,0.88) });
+});
 y -= 30; // past header
-// ... render fields using SECTION_PAD, LABEL_GAP, FIELD_HEIGHT, GRID_GAP ...
+// ... render fields, wrapping labels in tagContent('P', ...) ...
 y -= totalH + BLOCK_GAP; // advance past block
 ```
 
 ### Required Asterisk
 - Preview: `<span style="color:#BA0C2F;"> *</span>`
 - PDF: `currentPage.drawText(' *', { ..., font: fontBold, color: red });`
+
+## PDF Accessibility (Tagged PDF)
+
+The exported PDFs include a full tag structure for screen reader navigation of ALL content — both interactive form fields and static visual content (headings, labels, paragraphs, images).
+
+### What's Implemented
+- **Document metadata**: title, author, subject, language (`/Lang en-US`), producer, creator
+- **`/ViewerPreferences << /DisplayDocTitle true >>`**: Shows document title in viewer title bar
+- **`/MarkInfo << /Marked true >>`**: Declares the PDF as tagged
+- **`/StructTreeRoot`**: Nested structure tree: `/Document` → `/Sect` (for section-boxed blocks) → `/H`, `/H2`, `/P`, `/Figure`, `/Form`, `/Link` elements
+- **Marked content (BDC/EMC)**: All static text and images wrapped in marked content operators via `tagContent()` / `tagArtifact()`
+- **Form field `/TU` tooltips**: Every widget annotation has an accessible name via `setFieldAccessibility()`
+- **Required `/Ff` flags**: Bit 0x2 set on required fields
+- **Print flag `/F 4`**: Set on all widget and link annotations (PDF/UA requirement)
+- **`/StructParent` + `/StructParents` + `/ParentTree`**: Widgets/links use `/StructParent` (singular), pages use `/StructParents` (plural) for MCR arrays
+- **`/Tabs /S`**: Structure-based tab order on every page
+- **Link tagging**: URL/email link annotations get `/Link` structure elements with alt text
+
+### How It Works — Two-Phase Tagging
+
+**Phase 1: During block rendering (inline)**
+1. `setFieldAccessibility(field, label, required)` sets `/TU` and `/Ff` on each widget
+2. Radio button options get per-widget TU after `addOptionToPage()`
+3. `tagContent(structType, altText, drawFn)` wraps static content draws:
+   - Creates MCID properties dict, stores in page `/Resources/Properties`
+   - Pushes `BDC` operator (via `PDFLib.PDFOperator.of('BDC', ...)`) before draw calls
+   - Pushes `EMC` operator after draw calls
+   - Records `{mcid, structType, altText}` in `pageTagEntries` Map for later
+4. `tagArtifact(drawFn)` wraps decorative elements in `BMC Artifact` / `EMC`
+
+**Phase 2: After block loop (retroactive, per-block grouping)**
+1. Iterates blocks in order (letterhead first as blockIdx -1, then each block 0..N)
+2. For section-boxed blocks (`section`, `student-info`, `course-info`, `address`, `office-use`, `text-field`+showSection, `dropdown`+showSection): creates `/Sect` wrapper element under `/Document`
+3. For each block: adds MCR elements (tagged static content) then OBJR elements (annotations) — **interleaved per block** for correct reading order
+4. Annotation tracking: `snapshotAnnotsBefore()`/`findNewAnnots()` captures which annotations each block created
+5. Safety net: any untracked annotations get tagged flat under `/Document`
+6. Builds page `StructParents` arrays, unified ParentTree, and `StructTreeRoot`
+7. Wrapped in try/catch — structure tree errors don't break PDF export
+
+### Tagged Content Types
+
+| Content | Struct Type | Tagged By |
+|---------|------------|-----------|
+| Section headers | `/H` | `tagContent('H', ...)` |
+| Grey bar titles | `/H2` | `tagContent('H2', ...)` |
+| Field labels, body text | `/P` | `tagContent('P', ...)` |
+| Logo image | `/Figure` | `tagContent('Figure', ...)` with alt text |
+| Form fields | `/Form` | OBJR (retroactive pass) |
+| URL/email links | `/Link` | OBJR (retroactive pass) |
+| Backgrounds, borders, lines, footer | `Artifact` | `tagArtifact(...)` |
+
+### Graceful Degradation
+If `PDFLib.PDFOperator` is not available (checked at export start), `tagContent` and `tagArtifact` call `drawFn()` directly without BDC/EMC. The PDF generates identically to pre-tagging behavior. If any individual `tagContent` call fails, tagging is disabled for the remainder and content is still drawn.
+
+### Key Low-Level APIs Used
+```js
+pdf.context.obj({...})      // Create direct PDF objects (dict, array, etc.)
+pdf.context.register(obj)   // Register as indirect object, returns PDFRef
+pdf.context.lookup(ref)     // Dereference PDFRef to underlying object
+pdf.catalog.set(name, val)  // Set entries on the PDF catalog dictionary
+page.node.set(name, val)    // Set entries on page dictionary
+page.node.lookup(name)      // Get + dereference from page dictionary
+PDFHexString.fromText(str)  // Unicode-safe string encoding
+PDFLib.PDFOperator.of(name, args)  // Create content stream operator (BDC, BMC, EMC)
+currentPage.pushOperators(op)      // Push operator into page content stream
+```
 
 ## Dependencies
 
