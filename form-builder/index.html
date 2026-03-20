@@ -2339,9 +2339,12 @@
             function setFieldAccessibility(field, label, required) {
                 try {
                     const widgets = field.acroField.getWidgets();
+                    const altText = label + (required ? ' (required)' : '');
                     widgets.forEach(w => {
                         // TU = tooltip / accessible name for screen readers
-                        w.dict.set(PDFName.of('TU'), PDFHexString.fromText(label + (required ? ' (required)' : '')));
+                        w.dict.set(PDFName.of('TU'), PDFHexString.fromText(altText));
+                        // Contents = annotation alternative text (PDF spec §14.9.3, required by PDF/UA)
+                        w.dict.set(PDFName.of('Contents'), PDFHexString.fromText(altText));
                         // Set Print flag (/F bit 2 = 0x4) — PDF/UA requires widget annotations be printable
                         const existingF = w.dict.get(PDFName.of('F'));
                         const fVal = existingF ? (existingF.numberValue ?? 0) : 0;
@@ -3146,6 +3149,7 @@
                                 if (lastRbWidget) {
                                     const optLabel = b.label + ': ' + text.replace(/\*\*/g, '') + (b.required ? ' (required)' : '');
                                     lastRbWidget.dict.set(PDFName.of('TU'), PDFHexString.fromText(optLabel));
+                                    lastRbWidget.dict.set(PDFName.of('Contents'), PDFHexString.fromText(optLabel));
                                     // Set Print flag on radio widget (created after setFieldAccessibility)
                                     const rbF = lastRbWidget.dict.get(PDFName.of('F'));
                                     const rbFVal = rbF ? (rbF.numberValue ?? 0) : 0;
@@ -3896,6 +3900,11 @@
                                 if (tu && typeof tu.decodeText === 'function') label = tu.decodeText();
                             } catch(e) {}
 
+                            // Ensure /Contents alt text exists on the annotation (PDF/UA §14.9.3)
+                            if (!annotDict.get(PDFName.of('Contents'))) {
+                                annotDict.set(PDFName.of('Contents'), PDFHexString.fromText(label));
+                            }
+
                             const objr = pdf.context.obj({ Type: 'OBJR', Obj: annotRef, Pg: page.ref });
                             const formElem = pdf.context.obj({ Type: 'StructElem', S: 'Form', P: parentRef, K: objr });
                             formElem.set(PDFName.of('Alt'), PDFHexString.fromText(label));
@@ -3922,6 +3931,9 @@
                                     else if (uri && typeof uri.decodeText === 'function') linkText = uri.decodeText();
                                 }
                             } catch(e) {}
+
+                            // Annotation alt text (PDF/UA §14.9.3)
+                            annotDict.set(PDFName.of('Contents'), PDFHexString.fromText(linkText));
 
                             const objr = pdf.context.obj({ Type: 'OBJR', Obj: annotRef, Pg: page.ref });
                             const linkElem = pdf.context.obj({ Type: 'StructElem', S: 'Link', P: parentRef, K: objr });
