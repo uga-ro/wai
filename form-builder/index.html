@@ -2666,7 +2666,7 @@
                         tagArtifact(() => {
                             currentPage.drawRectangle({ x: mSide, y: y - stH, width: contentWidth, height: stH, color: rgb(0.4, 0.4, 0.4) });
                         });
-                        tagContent('H2', b.title, () => {
+                        tagContent('H', b.title, () => {
                             stTitleLines.forEach((line, i) => {
                                 currentPage.drawText(line, { x: mSide + SECTION_PAD, y: y - 15 - i * 13, size: 10, font: font, color: rgb(1, 1, 1) });
                             });
@@ -4052,6 +4052,8 @@
             } catch (structError) {
                 console.warn('Could not build PDF structure tree (non-fatal):', structError);
             }
+
+            form.updateFieldAppearances(font);
 
             const bytes = await pdf.save();
             const blob = new Blob([bytes], { type: 'application/pdf' });
