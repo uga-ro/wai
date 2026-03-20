@@ -3907,7 +3907,8 @@
 
                             const objr = pdf.context.obj({ Type: 'OBJR', Obj: annotRef, Pg: page.ref });
                             const formElem = pdf.context.obj({ Type: 'StructElem', S: 'Form', P: parentRef, K: objr });
-                            formElem.set(PDFName.of('Alt'), PDFHexString.fromText(label));
+                            // Do NOT set /Alt on /Form — it hides the child annotation from screen readers.
+                            // The widget's /TU provides the accessible name instead.
                             const formRef = pdf.context.register(formElem);
                             parentKids.push(formRef);
 
@@ -3937,7 +3938,8 @@
 
                             const objr = pdf.context.obj({ Type: 'OBJR', Obj: annotRef, Pg: page.ref });
                             const linkElem = pdf.context.obj({ Type: 'StructElem', S: 'Link', P: parentRef, K: objr });
-                            linkElem.set(PDFName.of('Alt'), PDFHexString.fromText(linkText));
+                            // Do NOT set /Alt on /Link — it hides the child annotation from screen readers.
+                            // The annotation's /Contents provides the accessible description instead.
                             const linkRef = pdf.context.register(linkElem);
                             parentKids.push(linkRef);
 
