@@ -4083,6 +4083,40 @@
                 }
             } catch(e) {}
 
+            // Final pass: ensure all annotations have correct flags and alt text
+            // (runs AFTER updateFieldAppearances to guarantee nothing is overwritten)
+            try {
+                const finalPages = pdf.getPages();
+                finalPages.forEach(page => {
+                    let annots;
+                    try { annots = page.node.lookup(PDFName.of('Annots')); } catch(e) { return; }
+                    if (!annots || typeof annots.size !== 'function') return;
+                    for (let i = 0; i < annots.size(); i++) {
+                        try {
+                            const ref = annots.get(i);
+                            const dict = pdf.context.lookup(ref);
+                            if (!dict || typeof dict.get !== 'function') continue;
+                            const subtype = dict.get(PDFName.of('Subtype'));
+                            if (!subtype) continue;
+                            const st = subtype.toString();
+                            if (st === '/Widget' || st === '/Link') {
+                                // Force Print flag, clear Hidden/NoView bits
+                                dict.set(PDFName.of('F'), PDFNumber.of(4));
+                                // Ensure /Contents alt text exists
+                                if (!dict.get(PDFName.of('Contents'))) {
+                                    let desc = 'Form field';
+                                    try {
+                                        const tu = dict.get(PDFName.of('TU'));
+                                        if (tu && typeof tu.decodeText === 'function') desc = tu.decodeText();
+                                    } catch(e) {}
+                                    dict.set(PDFName.of('Contents'), PDFHexString.fromText(desc));
+                                }
+                            }
+                        } catch(e) {}
+                    }
+                });
+            } catch(e) {}
+
             const bytes = await pdf.save();
             const blob = new Blob([bytes], { type: 'application/pdf' });
             const a = document.createElement('a');
