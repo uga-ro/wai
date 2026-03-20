@@ -2342,6 +2342,10 @@
                     widgets.forEach(w => {
                         // TU = tooltip / accessible name for screen readers
                         w.dict.set(PDFName.of('TU'), PDFHexString.fromText(label + (required ? ' (required)' : '')));
+                        // Set Print flag (/F bit 2 = 0x4) — PDF/UA requires widget annotations be printable
+                        const existingF = w.dict.get(PDFName.of('F'));
+                        const fVal = existingF ? (existingF.numberValue ?? 0) : 0;
+                        w.dict.set(PDFName.of('F'), PDFNumber.of(fVal | 4));
                     });
                     if (required) {
                         // Set the Required flag (bit position 2 = 0x2) on the field flags
@@ -3142,6 +3146,10 @@
                                 if (lastRbWidget) {
                                     const optLabel = b.label + ': ' + text.replace(/\*\*/g, '') + (b.required ? ' (required)' : '');
                                     lastRbWidget.dict.set(PDFName.of('TU'), PDFHexString.fromText(optLabel));
+                                    // Set Print flag on radio widget (created after setFieldAccessibility)
+                                    const rbF = lastRbWidget.dict.get(PDFName.of('F'));
+                                    const rbFVal = rbF ? (rbF.numberValue ?? 0) : 0;
+                                    lastRbWidget.dict.set(PDFName.of('F'), PDFNumber.of(rbFVal | 4));
                                 }
                             } catch(e) {}
 
@@ -4054,6 +4062,14 @@
             }
 
             form.updateFieldAppearances(font);
+
+            // PDF/UA: NeedAppearances must be absent — all appearances are pre-generated
+            try {
+                const acroForm = pdf.catalog.lookup(PDFName.of('AcroForm'));
+                if (acroForm && typeof acroForm.delete === 'function') {
+                    acroForm.delete(PDFName.of('NeedAppearances'));
+                }
+            } catch(e) {}
 
             const bytes = await pdf.save();
             const blob = new Blob([bytes], { type: 'application/pdf' });
