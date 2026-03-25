@@ -2524,6 +2524,81 @@
                 return lines.length ? lines : [''];
             }
 
+            // Bold-aware word wrapper: parses **bold** markers into {text, bold} tokens
+            // BEFORE wrapping, so bold spans that cross line breaks render correctly.
+            // Returns array of lines, each line is an array of {text, bold} tokens.
+            // firstLineOffset: extra width consumed on first line (e.g. a title prefix)
+            function wrapBoldText(text, maxWidth, fontSize, firstLineOffset) {
+                const rawParts = text.split(/(\*\*[^*]+\*\*)/g);
+                const segments = rawParts.filter(p => p !== '').map(part => {
+                    if (part.startsWith('**') && part.endsWith('**')) {
+                        return { text: part.slice(2, -2), bold: true };
+                    }
+                    return { text: part, bold: false };
+                });
+                const tokens = [];
+                segments.forEach(seg => {
+                    seg.text.split(/( +)/).forEach(piece => {
+                        if (piece) tokens.push({ text: piece, bold: seg.bold });
+                    });
+                });
+                const lines = [[]];
+                let lineWidth = firstLineOffset || 0;
+                for (let i = 0; i < tokens.length; i++) {
+                    const token = tokens[i];
+                    const isSpace = token.text.trim() === '';
+                    const f = token.bold ? fontBold : font;
+                    const w = f.widthOfTextAtSize(token.text, fontSize);
+                    if (isSpace) {
+                        lines[lines.length - 1].push(token);
+                        lineWidth += w;
+                    } else {
+                        if (lineWidth > 0 && lineWidth + w > maxWidth) {
+                            const cur = lines[lines.length - 1];
+                            while (cur.length && cur[cur.length - 1].text.trim() === '') cur.pop();
+                            lines.push([]);
+                            lineWidth = 0;
+                        }
+                        lines[lines.length - 1].push(token);
+                        lineWidth += w;
+                    }
+                }
+                const last = lines[lines.length - 1];
+                while (last.length && last[last.length - 1].text.trim() === '') last.pop();
+                return lines.length ? lines : [[]];
+            }
+
+            // Render a single line of bold-aware tokens
+            function drawBoldTokens(tokens, x, y, fontSize, defaultColor) {
+                let curX = x;
+                tokens.forEach(token => {
+                    const f = token.bold ? fontBold : font;
+                    currentPage.drawText(token.text, { x: curX, y, size: fontSize, font: f, color: defaultColor });
+                    curX += f.widthOfTextAtSize(token.text, fontSize);
+                });
+                return curX;
+            }
+
+            // Render a line of bold-aware tokens with hyperlink support
+            function drawBoldTokensWithLinks(tokens, x, y, fontSize, defaultColor) {
+                let curX = x;
+                tokens.forEach(token => {
+                    const f = token.bold ? fontBold : font;
+                    curX = drawTextWithLinks(token.text, curX, y, fontSize, f, defaultColor);
+                });
+                return curX;
+            }
+
+            // Get plain text width of a line of bold-aware tokens
+            function boldTokensWidth(tokens, fontSize) {
+                let w = 0;
+                tokens.forEach(token => {
+                    const f = token.bold ? fontBold : font;
+                    w += f.widthOfTextAtSize(token.text, fontSize);
+                });
+                return w;
+            }
+
             // Helper: add a clickable link annotation to the current page
             const blue = rgb(26/255, 115/255, 232/255); // #1a73e8
             function addLinkAnnotation(x, linkY, width, height, url) {
@@ -2682,29 +2757,14 @@
                         break;
 
                     case 'notice':
-                        // Word-wrap notice text
+                        // Word-wrap notice text with bold-aware wrapping
                         const noticeText = b.text || '';
                         const noticeMaxWidth = contentWidth - 24;
                         const noticeTitleWidth = fontBold.widthOfTextAtSize(b.title, 9) + 4;
-                        const noticeWords = noticeText.replace(/\*\*/g, '').split(' ');
-                        let noticeLines = [];
-                        let noticeLine = '';
-                        let firstLine = true;
-                        noticeWords.forEach(word => {
-                            const testLine = noticeLine ? noticeLine + ' ' + word : word;
-                            const lineWidth = font.widthOfTextAtSize(testLine, 9) + (firstLine ? noticeTitleWidth : 0);
-                            if (lineWidth > noticeMaxWidth && noticeLine) {
-                                noticeLines.push({ text: noticeLine, isFirst: firstLine });
-                                noticeLine = word;
-                                firstLine = false;
-                            } else {
-                                noticeLine = testLine;
-                            }
-                        });
-                        if (noticeLine) noticeLines.push({ text: noticeLine, isFirst: firstLine });
+                        const noticeWrapped = wrapBoldText(noticeText, noticeMaxWidth, 9, noticeTitleWidth);
 
                         const noticeLineHeight = 12;
-                        const noticeH = Math.max(28, 16 + noticeLines.length * noticeLineHeight);
+                        const noticeH = Math.max(28, 16 + noticeWrapped.length * noticeLineHeight);
                         ensureSpace(noticeH + BLOCK_GAP);
                         tagArtifact(() => {
                             currentPage.drawRectangle({ x: mSide, y: y - noticeH, width: contentWidth, height: noticeH, color: rgb(1, 0.97, 0.96) });
@@ -2713,22 +2773,13 @@
 
                         let noticeY = y - 11;
                         tagContent('P', b.title + ': ' + (b.text || '').replace(/\*\*/g, ''), () => {
-                            noticeLines.forEach((line, idx) => {
+                            noticeWrapped.forEach((tokens, idx) => {
                                 let noticeX = mSide + 12;
-                                if (line.isFirst) {
+                                if (idx === 0) {
                                     currentPage.drawText(b.title, { x: noticeX, y: noticeY, size: 9, font: fontBold });
                                     noticeX += noticeTitleWidth;
                                 }
-                                // Render text with **bold** and hyperlink support
-                                const parts = line.text.split(/(\*\*[^*]+\*\*)/g);
-                                parts.forEach(part => {
-                                    if (part.startsWith('**') && part.endsWith('**')) {
-                                        const boldText = part.slice(2, -2);
-                                        noticeX = drawTextWithLinks(boldText, noticeX, noticeY, 9, fontBold, rgb(0, 0, 0));
-                                    } else if (part) {
-                                        noticeX = drawTextWithLinks(part, noticeX, noticeY, 9, font, rgb(0, 0, 0));
-                                    }
-                                });
+                                drawBoldTokensWithLinks(tokens, noticeX, noticeY, 9, rgb(0, 0, 0));
                                 noticeY -= noticeLineHeight;
                             });
                         });
@@ -2908,33 +2959,15 @@
                         const isVertical = b.layout === 'vertical';
                         const cbTextMaxWidth = contentWidth - 36; // Available width for text (minus margins and checkbox)
 
-                        // Helper function to calculate wrapped lines for checkbox text
-                        function getCheckboxTextLines(text, maxWidth) {
-                            const words = text.replace(/\*\*/g, '').split(' ');
-                            let lines = [];
-                            let currentLine = '';
-                            words.forEach(word => {
-                                const testLine = currentLine ? currentLine + ' ' + word : word;
-                                const lineWidth = font.widthOfTextAtSize(testLine, 9);
-                                if (lineWidth > maxWidth && currentLine) {
-                                    lines.push(currentLine);
-                                    currentLine = word;
-                                } else {
-                                    currentLine = testLine;
-                                }
-                            });
-                            if (currentLine) lines.push(currentLine);
-                            return lines.length || 1;
-                        }
-
                         // Calculate total height including multi-row fields and text wrapping
                         let totalCbHeight = 24; // Base padding
                         cbOptions.forEach(opt => {
                             const text = typeof opt === 'string' ? opt : opt.text;
                             const rows = typeof opt === 'object' ? (opt.fieldRows || 1) : 1;
                             const hasField = typeof opt === 'object' && opt.hasField;
-                            const textLines = getCheckboxTextLines(text, hasField ? cbTextMaxWidth * 0.4 : cbTextMaxWidth);
-                            const textHeight = textLines * 12;
+                            const availW = hasField ? cbTextMaxWidth * 0.4 : cbTextMaxWidth;
+                            const wrappedLines = wrapBoldText(text, availW, 9);
+                            const textHeight = wrappedLines.length * 12;
                             const fieldHeight = hasField && rows > 1 ? (rows * 14 + 8) : 20;
                             totalCbHeight += Math.max(textHeight, fieldHeight);
                         });
@@ -2962,30 +2995,8 @@
                         let cbY = y - 14;
                         const standardFieldWidth = contentWidth - 150; // Standardized width
 
-                        // Helper to wrap checkbox text into lines (preserves **bold** markers)
-                        function wrapCheckboxText(text, maxWidth, useFont) {
-                            const words = text.split(' ');
-                            let lines = [];
-                            let currentLine = '';
-                            words.forEach(word => {
-                                const testLine = currentLine ? currentLine + ' ' + word : word;
-                                // Calculate width without bold markers
-                                const plainTest = testLine.replace(/\*\*/g, '');
-                                const lineWidth = useFont.widthOfTextAtSize(plainTest, 9);
-                                if (lineWidth > maxWidth && currentLine) {
-                                    lines.push(currentLine);
-                                    currentLine = word;
-                                } else {
-                                    currentLine = testLine;
-                                }
-                            });
-                            if (currentLine) lines.push(currentLine);
-                            return lines;
-                        }
-
                         cbOptions.forEach((opt, i) => {
                             const text = typeof opt === 'string' ? opt : opt.text;
-                            const isBold = typeof opt === 'object' && opt.bold;
                             const hasField = typeof opt === 'object' && opt.hasField;
                             const fieldRows = typeof opt === 'object' ? (opt.fieldRows || 1) : 1;
                             const fieldHeight = fieldRows * 14;
@@ -2994,41 +3005,21 @@
                             cb.addToPage(currentPage, { x: cbX, y: cbY - 10, width: 12, height: 12 });
                             setFieldAccessibility(cb, text.replace(/\*\*/g, ''), b.required);
 
-                            // Calculate wrapped lines for this checkbox text
                             const textStartX = cbX + 16;
                             const availableWidth = hasField ? cbTextMaxWidth * 0.4 : cbTextMaxWidth;
-                            const useFont = isBold ? fontBold : font;
-                            const wrappedLines = wrapCheckboxText(text, availableWidth, useFont);
+                            const wrappedLines = wrapBoldText(text, availableWidth, 9);
                             const lineHeight = 12;
 
-                            // Render each wrapped line with inline bold support
                             let lineY = cbY - 8;
                             tagContent('P', text.replace(/\*\*/g, ''), () => {
-                                wrappedLines.forEach((line, lineIdx) => {
-                                    let textX = textStartX;
-                                    if (isBold) {
-                                        // Entire option is bold
-                                        currentPage.drawText(line, { x: textX, y: lineY, size: 9, font: fontBold, color: gray });
-                                    } else {
-                                        // Check for inline **bold** markers
-                                        const parts = line.split(/(\*\*[^*]+\*\*)/g);
-                                        parts.forEach(part => {
-                                            if (part.startsWith('**') && part.endsWith('**')) {
-                                                const boldText = part.slice(2, -2);
-                                                currentPage.drawText(boldText, { x: textX, y: lineY, size: 9, font: fontBold, color: gray });
-                                                textX += fontBold.widthOfTextAtSize(boldText, 9);
-                                            } else if (part) {
-                                                currentPage.drawText(part, { x: textX, y: lineY, size: 9, font: font, color: gray });
-                                                textX += font.widthOfTextAtSize(part, 9);
-                                            }
-                                        });
-                                    }
+                                wrappedLines.forEach(tokens => {
+                                    drawBoldTokens(tokens, textStartX, lineY, 9, gray);
                                     lineY -= lineHeight;
                                 });
                             });
 
-                            // Calculate total width of first line for field positioning (strip bold markers)
-                            const firstLineWidth = useFont.widthOfTextAtSize((wrappedLines[0] || '').replace(/\*\*/g, ''), 9);
+                            // Calculate total width of first line for field positioning
+                            const firstLineWidth = boldTokensWidth(wrappedLines[0] || [], 9);
 
                             // Add fillable field if enabled
                             if (hasField) {
@@ -3060,31 +3051,14 @@
                         const rbIsVertical = b.layout === 'vertical';
                         const rbTextMaxWidth = contentWidth - 36;
 
-                        function getRbTextLines(text, maxWidth) {
-                            const words = text.replace(/\*\*/g, '').split(' ');
-                            let lines = [];
-                            let currentLine = '';
-                            words.forEach(word => {
-                                const testLine = currentLine ? currentLine + ' ' + word : word;
-                                const lineWidth = font.widthOfTextAtSize(testLine, 9);
-                                if (lineWidth > maxWidth && currentLine) {
-                                    lines.push(currentLine);
-                                    currentLine = word;
-                                } else {
-                                    currentLine = testLine;
-                                }
-                            });
-                            if (currentLine) lines.push(currentLine);
-                            return lines.length || 1;
-                        }
-
                         let totalRbHeight = 24;
                         rbOptions.forEach(opt => {
                             const text = typeof opt === 'string' ? opt : opt.text;
                             const rows = typeof opt === 'object' ? (opt.fieldRows || 1) : 1;
                             const hasField = typeof opt === 'object' && opt.hasField;
-                            const textLines = getRbTextLines(text, hasField ? rbTextMaxWidth * 0.4 : rbTextMaxWidth);
-                            const textHeight = textLines * 12;
+                            const availW = hasField ? rbTextMaxWidth * 0.4 : rbTextMaxWidth;
+                            const wrappedLines = wrapBoldText(text, availW, 9);
+                            const textHeight = wrappedLines.length * 12;
                             const fieldHeight = hasField && rows > 1 ? (rows * 14 + 8) : 20;
                             totalRbHeight += Math.max(textHeight, fieldHeight);
                         });
@@ -3113,28 +3087,8 @@
                         let rbY = y - 14;
                         const rbStandardFieldWidth = contentWidth - 150;
 
-                        function wrapRbText(text, maxWidth, useFont) {
-                            const words = text.split(' ');
-                            let lines = [];
-                            let currentLine = '';
-                            words.forEach(word => {
-                                const testLine = currentLine ? currentLine + ' ' + word : word;
-                                const plainTest = testLine.replace(/\*\*/g, '');
-                                const lineWidth = useFont.widthOfTextAtSize(plainTest, 9);
-                                if (lineWidth > maxWidth && currentLine) {
-                                    lines.push(currentLine);
-                                    currentLine = word;
-                                } else {
-                                    currentLine = testLine;
-                                }
-                            });
-                            if (currentLine) lines.push(currentLine);
-                            return lines;
-                        }
-
                         rbOptions.forEach((opt, i) => {
                             const text = typeof opt === 'string' ? opt : opt.text;
-                            const isBold = typeof opt === 'object' && opt.bold;
                             const hasField = typeof opt === 'object' && opt.hasField;
                             const fieldRows = typeof opt === 'object' ? (opt.fieldRows || 1) : 1;
                             const fieldHeight = fieldRows * 14;
@@ -3159,34 +3113,18 @@
 
                             const textStartX = rbX + 16;
                             const availableWidth = hasField ? rbTextMaxWidth * 0.4 : rbTextMaxWidth;
-                            const useFont = isBold ? fontBold : font;
-                            const wrappedLines = wrapRbText(text, availableWidth, useFont);
+                            const wrappedLines = wrapBoldText(text, availableWidth, 9);
                             const lineHeight = 12;
 
                             let lineY = rbY - 8;
                             tagContent('P', text.replace(/\*\*/g, ''), () => {
-                                wrappedLines.forEach((line, lineIdx) => {
-                                    let textX = textStartX;
-                                    if (isBold) {
-                                        currentPage.drawText(line, { x: textX, y: lineY, size: 9, font: fontBold, color: gray });
-                                    } else {
-                                        const parts = line.split(/(\*\*[^*]+\*\*)/g);
-                                        parts.forEach(part => {
-                                            if (part.startsWith('**') && part.endsWith('**')) {
-                                                const boldText = part.slice(2, -2);
-                                                currentPage.drawText(boldText, { x: textX, y: lineY, size: 9, font: fontBold, color: gray });
-                                                textX += fontBold.widthOfTextAtSize(boldText, 9);
-                                            } else if (part) {
-                                                currentPage.drawText(part, { x: textX, y: lineY, size: 9, font: font, color: gray });
-                                                textX += font.widthOfTextAtSize(part, 9);
-                                            }
-                                        });
-                                    }
+                                wrappedLines.forEach(tokens => {
+                                    drawBoldTokens(tokens, textStartX, lineY, 9, gray);
                                     lineY -= lineHeight;
                                 });
                             });
 
-                            const firstLineWidth = useFont.widthOfTextAtSize((wrappedLines[0] || '').replace(/\*\*/g, ''), 9);
+                            const firstLineWidth = boldTokensWidth(wrappedLines[0] || [], 9);
 
                             if (hasField) {
                                 const fieldX = textStartX + firstLineWidth + 8;
@@ -3561,50 +3499,6 @@
                         const infoMaxWidth = contentWidth - 20;
                         const infoSourceLines = infoText.split('\n');
 
-                        // Bold-aware line wrapping: parses **bold** markers first,
-                        // then word-wraps with correct font per word.
-                        // Returns array of lines, each line is array of {text, bold} tokens.
-                        function wrapInfoBoldLine(lineContent, maxWidth, indent) {
-                            const availW = maxWidth - indent;
-                            const rawParts = lineContent.split(/(\*\*[^*]+\*\*)/g);
-                            const segments = rawParts.filter(p => p !== '').map(part => {
-                                if (part.startsWith('**') && part.endsWith('**')) {
-                                    return { text: part.slice(2, -2), bold: true };
-                                }
-                                return { text: part, bold: false };
-                            });
-                            const tokens = [];
-                            segments.forEach(seg => {
-                                seg.text.split(/( +)/).forEach(piece => {
-                                    if (piece) tokens.push({ text: piece, bold: seg.bold });
-                                });
-                            });
-                            const lines = [[]];
-                            let lineWidth = 0;
-                            for (let i = 0; i < tokens.length; i++) {
-                                const token = tokens[i];
-                                const isSpace = token.text.trim() === '';
-                                const f = token.bold ? fontBold : font;
-                                const w = f.widthOfTextAtSize(token.text, 9);
-                                if (isSpace) {
-                                    lines[lines.length - 1].push(token);
-                                    lineWidth += w;
-                                } else {
-                                    if (lineWidth > 0 && lineWidth + w > availW) {
-                                        const cur = lines[lines.length - 1];
-                                        while (cur.length && cur[cur.length - 1].text.trim() === '') cur.pop();
-                                        lines.push([]);
-                                        lineWidth = 0;
-                                    }
-                                    lines[lines.length - 1].push(token);
-                                    lineWidth += w;
-                                }
-                            }
-                            const last = lines[lines.length - 1];
-                            while (last.length && last[last.length - 1].text.trim() === '') last.pop();
-                            return lines.length ? lines : [[]];
-                        }
-
                         // Helper to wrap title text and return array of lines
                         function wrapInfoTitle(title, maxWidth) {
                             const words = title.split(' ');
@@ -3633,7 +3527,7 @@
                             const isBullet = line.trim().startsWith('- ');
                             const cleanLine = isBullet ? line.trim().substring(2) : line;
                             const indent = isBullet ? 12 : 0;
-                            const wrapped = wrapInfoBoldLine(cleanLine, infoMaxWidth, indent);
+                            const wrapped = wrapBoldText(cleanLine, infoMaxWidth - indent, 9);
                             wrapped.forEach((tokens, i) => {
                                 allInfoLines.push({ tokens, isBullet, isFirstOfBullet: isBullet && i === 0 });
                             });
@@ -3672,14 +3566,7 @@
                                 if (wl.isFirstOfBullet) {
                                     currentPage.drawText('•', { x: baseX, y: infoY, size: 9, font, color: gray });
                                 }
-                                wl.tokens.forEach(token => {
-                                    if (token.text.trim() === '') {
-                                        infoX += font.widthOfTextAtSize(token.text, 9);
-                                    } else {
-                                        const f = token.bold ? fontBold : font;
-                                        infoX = drawTextWithLinks(token.text, infoX, infoY, 9, f, gray);
-                                    }
-                                });
+                                drawBoldTokensWithLinks(wl.tokens, infoX, infoY, 9, gray);
                                 infoY -= infoLineHeight;
                             });
                         });

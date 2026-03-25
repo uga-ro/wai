@@ -163,31 +163,26 @@ Converts `**bold**` to `<strong>`, `- items` to `<ul><li>`, and `\n` to `<br>`. 
 ### Reverse: `htmlToMarkdown(html)`
 Converts `<strong>` back to `**bold**` for storage. Used by contenteditable editors.
 
-### PDF Bold Rendering Pattern
-`info-paragraph` uses bold-aware wrapping via `wrapInfoBoldLine()`: bold markers are parsed
-**before** word wrapping, producing `{text, bold}` tokens per word. This ensures bold spans
-that cross word-wrap boundaries render correctly. Other blocks (checkbox, notice) still use
-the simpler inline regex split:
+### PDF Bold Rendering — Shared Helpers
+All blocks use the shared `wrapBoldText()` function for bold-aware word wrapping in PDF export.
+It parses `**bold**` markers into `{text, bold}` tokens **before** word wrapping, so bold spans
+that cross line breaks render correctly.
+
 ```js
-const parts = line.split(/(\*\*[^*]+\*\*)/g);
-parts.forEach(part => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-        const boldText = part.slice(2, -2);
-        currentPage.drawText(boldText, { x, y, size, font: fontBold, color });
-        x += fontBold.widthOfTextAtSize(boldText, size);
-    } else if (part) {
-        currentPage.drawText(part, { x, y, size, font: font, color });
-        x += font.widthOfTextAtSize(part, size);
-    }
-});
+// Returns array of lines, each line is array of {text, bold} tokens
+wrapBoldText(text, maxWidth, fontSize, firstLineOffset?)
+
+// Render tokens (plain)
+drawBoldTokens(tokens, x, y, fontSize, color)
+
+// Render tokens with hyperlink detection
+drawBoldTokensWithLinks(tokens, x, y, fontSize, color)
+
+// Measure token line width
+boldTokensWidth(tokens, fontSize)
 ```
 
-### Checkbox Bold
-Checkbox options support TWO bold modes:
-- `opt.bold: true` — entire option text rendered in bold
-- Inline `**bold**` markdown — parsed per-word like notice/info-paragraph
-
-Both modes work in preview AND PDF export.
+Used by: `checkbox`, `radio`, `notice`, `info-paragraph` blocks.
 
 ---
 
