@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -427,9 +428,14 @@
                 </div>
             </div>
             <div class="px-4 py-3 border-t bg-gray-50 flex justify-between items-center">
-                <button onclick="loadFromFile()" class="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-white flex items-center gap-1">
-                    <i data-lucide="upload" class="w-4 h-4"></i> Import from File
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="loadFromFile()" class="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-white flex items-center gap-1">
+                        <i data-lucide="upload" class="w-4 h-4"></i> Import from File
+                    </button>
+                    <button onclick="exportAllPDFs()" class="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-white flex items-center gap-1">
+                        <i data-lucide="download" class="w-4 h-4"></i> Export All PDFs
+                    </button>
+                </div>
                 <button onclick="closeLibrary()" class="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-white">Close</button>
             </div>
         </div>
@@ -2308,12 +2314,12 @@
             });
         }
 
-        async function exportPDF() {
+        async function exportPDF(options = {}) {
             const { PDFDocument, StandardFonts, rgb, PDFName, PDFString, PDFNumber, PDFHexString } = PDFLib;
             const pdf = await PDFDocument.create();
 
             // --- ACCESSIBILITY: Document metadata ---
-            const formTitle = document.getElementById('formTitle').value || 'UGA Registrar Form';
+            const formTitle = options.title || document.getElementById('formTitle').value || 'UGA Registrar Form';
             pdf.setTitle(formTitle);
             pdf.setAuthor('University of Georgia - Office of the Registrar');
             pdf.setSubject(formTitle);
@@ -2666,10 +2672,11 @@
             }
 
             // Title (right aligned, underlined)
-            const titleWidth = fontSerif.widthOfTextAtSize(letterheadTitle, 12);
+            const _letterheadTitle = options.letterheadTitle !== undefined ? options.letterheadTitle : letterheadTitle;
+            const titleWidth = fontSerif.widthOfTextAtSize(_letterheadTitle, 12);
             const titleX = pageWidth - mSide - titleWidth;
-            tagContent('H', letterheadTitle, () => {
-                currentPage.drawText(letterheadTitle, { x: titleX, y: y, size: 12, font: fontSerif });
+            tagContent('H', _letterheadTitle, () => {
+                currentPage.drawText(_letterheadTitle, { x: titleX, y: y, size: 12, font: fontSerif });
             });
             tagArtifact(() => {
                 currentPage.drawLine({ start: { x: titleX, y: y - 2 }, end: { x: titleX + titleWidth, y: y - 2 }, thickness: 0.5, color: rgb(0, 0, 0) });
@@ -2699,7 +2706,8 @@
             y -= 16;
 
             // --- BLOCKS ---
-            for (const b of blocks) {
+            const _blocks = options.blocks || blocks;
+            for (const b of _blocks) {
                 // --- Track block for nested structure tree ---
                 currentBlockIdx++;
                 const _isSect = (
@@ -4006,11 +4014,96 @@
             } catch(e) {}
 
             const bytes = await pdf.save();
+            if (options.returnBytes) return bytes;
             const blob = new Blob([bytes], { type: 'application/pdf' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = document.getElementById('formTitle').value.replace(/[\/\\:*?"<>|]/g, '').trim() + '.pdf';
+            a.download = formTitle.replace(/[\/\\:*?"<>|]/g, '').trim() + '.pdf';
             a.click();
+        }
+
+        async function exportAllPDFs() {
+            document.getElementById('modalTitle').textContent = 'Exporting All PDFs';
+            document.getElementById('modalMessage').innerHTML = 'Fetching form list...';
+            document.getElementById('modalButtons').innerHTML = '';
+            document.getElementById('appModal').classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${RODS_API_BASE}/${RODS_TABLE}?order=title.asc`, {
+                    headers: getApiHeaders(false),
+                    cache: 'no-store'
+                });
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const records = await response.json();
+                const forms = records.filter(r => r.title !== '__folder_placeholder__' && r.form_data && r.form_data.blocks);
+
+                if (forms.length === 0) {
+                    document.getElementById('modalMessage').innerHTML = 'No forms found to export.';
+                    document.getElementById('modalButtons').innerHTML =
+                        '<button onclick="closeModal(true)" class="px-4 py-2 text-sm rounded bg-gray-800 text-white hover:bg-gray-700">OK</button>';
+                    return;
+                }
+
+                const zip = new JSZip();
+                let completed = 0;
+                const errors = [];
+
+                for (const record of forms) {
+                    completed++;
+                    const formData = record.form_data;
+                    const title = formData.title || record.title || 'Untitled';
+                    const folder = record.folder || '';
+
+                    document.getElementById('modalMessage').innerHTML =
+                        `Generating PDF ${completed} of ${forms.length}...<br>` +
+                        `<span class="text-gray-500 text-xs">${title}</span><br>` +
+                        `<div class="w-full bg-gray-200 rounded-full h-2 mt-2">` +
+                        `<div class="bg-gray-800 h-2 rounded-full" style="width:${Math.round(completed / forms.length * 100)}%"></div></div>`;
+
+                    // Yield to browser for UI update
+                    await new Promise(r => setTimeout(r, 0));
+
+                    try {
+                        const pdfBytes = await exportPDF({
+                            blocks: formData.blocks,
+                            title: title,
+                            letterheadTitle: formData.letterheadTitle || 'Title',
+                            returnBytes: true
+                        });
+                        const sanitizedTitle = title.replace(/[\/\\:*?"<>|]/g, '').trim() || 'Untitled';
+                        const filePath = folder ? `${folder}/${sanitizedTitle}.pdf` : `${sanitizedTitle}.pdf`;
+                        zip.file(filePath, pdfBytes);
+                    } catch (err) {
+                        console.error(`Error exporting "${title}":`, err);
+                        errors.push(title);
+                    }
+                }
+
+                document.getElementById('modalMessage').innerHTML = 'Creating ZIP archive...';
+                await new Promise(r => setTimeout(r, 0));
+
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(zipBlob);
+                a.download = 'UGA_Forms_Export.zip';
+                a.click();
+
+                let msg = `Successfully exported ${completed - errors.length} of ${forms.length} forms.`;
+                if (errors.length > 0) {
+                    msg += `<br><br><span class="text-red-600">Failed (${errors.length}):</span><br>` +
+                        errors.map(e => `<span class="text-xs text-gray-500">- ${e}</span>`).join('<br>');
+                }
+                document.getElementById('modalMessage').innerHTML = msg;
+                document.getElementById('modalButtons').innerHTML =
+                    '<button onclick="closeModal(true)" class="px-4 py-2 text-sm rounded bg-gray-800 text-white hover:bg-gray-700">OK</button>';
+            } catch (err) {
+                document.getElementById('modalMessage').innerHTML =
+                    `<span class="text-red-600">Export failed: ${err.message}</span>`;
+                document.getElementById('modalButtons').innerHTML =
+                    '<button onclick="closeModal(true)" class="px-4 py-2 text-sm rounded bg-gray-800 text-white hover:bg-gray-700">OK</button>';
+                console.error('Export all error:', err);
+            }
         }
 
         render();
