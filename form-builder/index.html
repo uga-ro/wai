@@ -978,11 +978,8 @@
                         <div style="margin-top:8px;">
                             <div style="display:flex;align-items:end;gap:10px;">
                                 <div style="flex:0 0 auto;">
-                                    <div class="preview-field-label">Country Code</div>
-                                    <div style="display:flex;align-items:center;gap:6px;">
-                                        <div class="preview-field-line" style="margin:0;width:50px;"></div>
-                                        <span style="font-style:italic;color:#767676;font-size:9px;white-space:nowrap;">(non-US)</span>
-                                    </div>
+                                    <div class="preview-field-label">Country Code <span style="font-weight:normal;font-style:italic;color:#767676;font-size:9px;">(non-US)</span></div>
+                                    <div class="preview-field-line" style="margin:0;width:100px;"></div>
                                 </div>
                                 <div style="flex:0 0 auto;">
                                     <div class="preview-field-label">Area Code <span style="color:#BA0C2F;">*</span></div>
@@ -1746,7 +1743,7 @@
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = data.title.replace(/[^a-z0-9]/gi, '_') + '.json';
+            a.download = data.title.replace(/[\/\\:*?"<>|]/g, '').trim() + '.json';
             a.click();
         }
 
@@ -2221,7 +2218,7 @@
                     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                     const a = document.createElement('a');
                     a.href = URL.createObjectURL(blob);
-                    a.download = (data.title || 'form').replace(/[^a-z0-9]/gi, '_') + '.json';
+                    a.download = (data.title || 'form').replace(/[\/\\:*?"<>|]/g, '').trim() + '.json';
                     a.click();
                 }
             } catch (err) {
@@ -3322,28 +3319,30 @@
                         y -= FIELD_HEIGHT + FIELD_ROW_GAP;
                         // Phone fields (optional)
                         if (b.includePhone) {
-                            // Country Code label
+                            // Country Code label — calculate width dynamically to prevent overlap
                             const countryCodeLabel = 'Country Code';
+                            const countryCodeNonUS = ' (non-US)';
+                            const ccLabelW = fontBold.widthOfTextAtSize(countryCodeLabel, 9) + font.widthOfTextAtSize(countryCodeNonUS, 9);
+                            const countryCodeW = Math.max(70, Math.ceil(ccLabelW) + 4);
                             tagContent('P', 'Country Code (non-US)', () => {
                                 currentPage.drawText(countryCodeLabel, { x: mSide + 10, y, size: 9, font: fontBold, color: gray });
-                                currentPage.drawText(' (non-US)', { x: mSide + 10 + fontBold.widthOfTextAtSize(countryCodeLabel, 9), y, size: 9, font, color: gray });
+                                currentPage.drawText(countryCodeNonUS, { x: mSide + 10 + fontBold.widthOfTextAtSize(countryCodeLabel, 9), y, size: 9, font, color: gray });
                             });
                             // Area Code label
-                            const areaCodeX = mSide + 10 + 80;
+                            const areaCodeX = mSide + 10 + countryCodeW + GRID_GAP;
+                            const areaCodeW = 70;
                             tagContent('P', 'Area Code (required)', () => {
                                 currentPage.drawText('Area Code', { x: areaCodeX, y, size: 9, font: fontBold, color: gray });
                                 currentPage.drawText(' *', { x: areaCodeX + fontBold.widthOfTextAtSize('Area Code', 9), y, size: 9, font: fontBold, color: red });
                             });
                             // Phone Number label
-                            const phoneNumX = areaCodeX + 80;
+                            const phoneNumX = areaCodeX + areaCodeW + GRID_GAP;
                             tagContent('P', 'Phone Number (required)', () => {
                                 currentPage.drawText('Phone Number', { x: phoneNumX, y, size: 9, font: fontBold, color: gray });
                                 currentPage.drawText(' *', { x: phoneNumX + fontBold.widthOfTextAtSize('Phone Number', 9), y, size: 9, font: fontBold, color: red });
                             });
                             y -= LABEL_GAP;
                             // Phone input fields
-                            const countryCodeW = 70;
-                            const areaCodeW = 70;
                             const phoneNumW = addrInnerW - countryCodeW - areaCodeW - 130;
                             const phoneCC = form.createTextField(b.fieldPrefix + '_country_code');
                             phoneCC.addToPage(currentPage, { x: mSide + 10, y: y - FIELD_HEIGHT, width: countryCodeW, height: FIELD_HEIGHT, borderWidth: 1, borderColor: rgb(0.81, 0.81, 0.81) });
@@ -4010,7 +4009,7 @@
             const blob = new Blob([bytes], { type: 'application/pdf' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = document.getElementById('formTitle').value.replace(/[^a-z0-9]/gi, '_') + '.pdf';
+            a.download = document.getElementById('formTitle').value.replace(/[\/\\:*?"<>|]/g, '').trim() + '.pdf';
             a.click();
         }
 
